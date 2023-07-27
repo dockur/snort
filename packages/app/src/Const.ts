@@ -39,9 +39,7 @@ export const ProfileCacheExpire = 1_000 * 60 * 60 * 6;
  * Default bootstrap relays
  */
 export const DefaultRelays = new Map<string, RelaySettings>([
-  ["wss://relay.snort.social/", { read: true, write: true }],
-  ["wss://nostr.wine/", { read: true, write: false }],
-  ["wss://nos.lol/", { read: true, write: true }],
+  ["wss://soloco.nl/", { read: true, write: true }],
 ]);
 
 /**
