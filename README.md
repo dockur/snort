@@ -1,5 +1,10 @@
 ## Snort
 
+[![Build]][build_url]
+[![Version]][tag_url]
+[![Size]][tag_url]
+[![Pulls]][hub_url]
+
 Snort is a nostr UI built with React aiming for speed and efficiency.
 
 Snort supports the following NIP's:
@@ -70,3 +75,12 @@ yarn workspace @snort/app intl-compile
 ```
 
 This will create the source file `packages/app/src/translations/en.json`
+
+[build_url]: https://github.com/dockur/snort/
+[hub_url]: https://hub.docker.com/r/dockurr/snort/
+[tag_url]: https://hub.docker.com/r/dockurr/snort/tags
+
+[Build]: https://github.com/dockur/snirt/actions/workflows/build.yml/badge.svg
+[Size]: https://img.shields.io/docker/image-size/dockurr/snort/latest?color=066da5&label=size
+[Pulls]: https://img.shields.io/docker/pulls/dockurr/snort.svg?style=flat&label=pulls&logo=docker
+[Version]: https://img.shields.io/docker/v/dockurr/snort?arch=amd64&sort=date&color=066da5
