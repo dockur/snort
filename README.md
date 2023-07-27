@@ -80,7 +80,7 @@ This will create the source file `packages/app/src/translations/en.json`
 [hub_url]: https://hub.docker.com/r/dockurr/snort/
 [tag_url]: https://hub.docker.com/r/dockurr/snort/tags
 
-[Build]: https://github.com/dockur/snirt/actions/workflows/build.yml/badge.svg
+[Build]: https://github.com/dockur/snort/actions/workflows/build.yml/badge.svg
 [Size]: https://img.shields.io/docker/image-size/dockurr/snort/latest?color=066da5&label=size
 [Pulls]: https://img.shields.io/docker/pulls/dockurr/snort.svg?style=flat&label=pulls&logo=docker
 [Version]: https://img.shields.io/docker/v/dockurr/snort?arch=amd64&sort=date&color=066da5
