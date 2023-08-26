@@ -107,7 +107,7 @@ export default function Layout() {
       {!shouldHideHeader && (
         <header className="main-content">
           <Link to="/" className="logo">
-            <h1>Snort</h1>
+            <h1>Soloco</h1>
             {currentSubscription && (
               <small className="flex">
                 <Icon name="diamond" size={10} className="mr5" />
