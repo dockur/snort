@@ -243,7 +243,7 @@ export default function LoginPage() {
       <div>
         <div className="login-container">
           <h1 className="logo" onClick={() => navigate("/")}>
-            Snort
+            Soloco
           </h1>
           <h1 dir="auto">
             <FormattedMessage defaultMessage="Login" description="Login header" />
