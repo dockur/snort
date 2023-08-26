@@ -4,7 +4,7 @@ import { unwrap, ExternalStore, unixNowMs } from "@snort/shared";
 
 import { DefaultConnectTimeout } from "./const";
 import { ConnectionStats } from "./connection-stats";
-import { NostrEvent, ReqCommand, TaggedRawEvent, u256 } from "./nostr";
+import { NostrEvent, ReqCommand, TaggedNostrEvent, u256 } from "./nostr";
 import { RelayInfo } from "./relay-info";
 
 export type AuthHandler = (challenge: string, relay: string) => Promise<NostrEvent | undefined>;
@@ -62,7 +62,7 @@ export class Connection extends ExternalStore<ConnectionStateSnapshot> {
   ReconnectTimer?: ReturnType<typeof setTimeout>;
   EventsCallback: Map<u256, (msg: boolean[]) => void>;
   OnConnected?: (wasReconnect: boolean) => void;
-  OnEvent?: (sub: string, e: TaggedRawEvent) => void;
+  OnEvent?: (sub: string, e: TaggedNostrEvent) => void;
   OnEose?: (sub: string) => void;
   OnDisconnect?: (code: number) => void;
   Auth?: AuthHandler;
@@ -153,7 +153,7 @@ export class Connection extends ExternalStore<ConnectionStateSnapshot> {
       this.#log(
         `[${this.Address}] Closed (code=${e.code}), trying again in ${(this.ConnectTimeout / 1000)
           .toFixed(0)
-          .toLocaleString()} sec`
+          .toLocaleString()} sec`,
       );
       this.ReconnectTimer = setTimeout(() => {
         this.Connect();
@@ -425,7 +425,7 @@ export class Connection extends ExternalStore<ConnectionStateSnapshot> {
               "%s Inactive connection has %d active requests! %O",
               this.Address,
               this.ActiveRequests.size,
-              this.ActiveRequests
+              this.ActiveRequests,
             );
           } else {
             this.Close();

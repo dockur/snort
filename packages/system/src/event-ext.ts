@@ -2,8 +2,8 @@ import * as secp from "@noble/curves/secp256k1";
 import * as utils from "@noble/curves/abstract/utils";
 import { getPublicKey, sha256, unixNow } from "@snort/shared";
 
-import { EventKind, HexKey, NostrEvent } from ".";
-import { Nip4WebCryptoEncryptor } from "./impl/nip4";
+import { EventKind, HexKey, NostrEvent, NotSignedNostrEvent } from ".";
+import { minePow } from "./pow-util";
 
 export interface Tag {
   key: string;
@@ -44,6 +44,7 @@ export abstract class EventExt {
     if (!secp.schnorr.verify(e.sig, e.id, e.pubkey)) {
       throw new Error("Signing failed");
     }
+    return e;
   }
 
   /**
@@ -56,15 +57,16 @@ export abstract class EventExt {
     return result;
   }
 
-  static createId(e: NostrEvent) {
+  static createId(e: NostrEvent | NotSignedNostrEvent) {
     const payload = [0, e.pubkey, e.created_at, e.kind, e.tags, e.content];
+    return sha256(JSON.stringify(payload));
+  }
 
-    const hash = sha256(JSON.stringify(payload));
-    if (e.id !== "" && hash !== e.id) {
-      console.debug(payload);
-      throw new Error("ID doesnt match!");
-    }
-    return hash;
+  /**
+   * Mine POW for an event (NIP-13)
+   */
+  static minePow(e: NostrEvent, target: number) {
+    return minePow(e, target);
   }
 
   /**
@@ -135,17 +137,5 @@ export abstract class EventExt {
     }
     ret.pubKeys = Array.from(new Set(ev.tags.filter(a => a[0] === "p").map(a => a[1])));
     return ret;
-  }
-
-  static async decryptDm(content: string, privkey: HexKey, pubkey: HexKey) {
-    const enc = new Nip4WebCryptoEncryptor();
-    const key = enc.getSharedSecret(privkey, pubkey);
-    return await enc.decryptData(content, key);
-  }
-
-  static async encryptDm(content: string, privKey: HexKey, pubKey: HexKey) {
-    const enc = new Nip4WebCryptoEncryptor();
-    const secret = enc.getSharedSecret(privKey, pubKey);
-    return await enc.encryptData(content, secret);
   }
 }

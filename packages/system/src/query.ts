@@ -2,11 +2,12 @@ import { v4 as uuid } from "uuid";
 import debug from "debug";
 import { unixNowMs, unwrap } from "@snort/shared";
 
-import { Connection, ReqFilter, Nips, TaggedRawEvent } from ".";
+import { Connection, ReqFilter, Nips, TaggedNostrEvent } from ".";
 import { NoteStore } from "./note-collection";
 import { flatMerge } from "./request-merger";
 import { BuiltRawReqFilter } from "./request-builder";
 import { FlatReqFilter, expandFilter } from "./request-expander";
+import { eventMatchesFilter } from "./request-matcher";
 
 /**
  * Tracing for relay query status
@@ -27,7 +28,7 @@ class QueryTrace {
     readonly filters: Array<ReqFilter>,
     readonly connId: string,
     fnClose: (id: string) => void,
-    fnProgress: () => void
+    fnProgress: () => void,
   ) {
     this.id = uuid();
     this.start = unixNowMs();
@@ -176,10 +177,14 @@ export class Query implements QueryBase {
     return this.#feed;
   }
 
-  onEvent(sub: string, e: TaggedRawEvent) {
+  onEvent(sub: string, e: TaggedNostrEvent) {
     for (const t of this.#tracing) {
       if (t.id === sub) {
-        this.feed.add(e);
+        if (t.filters.some(v => eventMatchesFilter(e, v))) {
+          this.feed.add(e);
+        } else {
+          this.#log("Event did not match filter, rejecting %O", e);
+        }
         break;
       }
     }
@@ -293,7 +298,7 @@ export class Query implements QueryBase {
       q.filters,
       c.Id,
       x => c.CloseReq(x),
-      () => this.#onProgress()
+      () => this.#onProgress(),
     );
     this.#tracing.push(qt);
     c.QueueReq(["REQ", qt.id, ...qt.filters], () => qt.sentToRelay());

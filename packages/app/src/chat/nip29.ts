@@ -1,5 +1,5 @@
 import { ExternalStore, FeedCache, dedupe } from "@snort/shared";
-import { RequestBuilder, NostrEvent, EventKind, SystemInterface } from "@snort/system";
+import { RequestBuilder, NostrEvent, EventKind, SystemInterface, TaggedRawEvent } from "@snort/system";
 import { unwrap } from "SnortUtils";
 import { Chat, ChatSystem, ChatType, lastReadInChat } from "chat";
 
@@ -31,8 +31,8 @@ export class Nip29ChatSystem extends ExternalStore<Array<Chat>> implements ChatS
     return rb;
   }
 
-  async onEvent(evs: NostrEvent[]) {
-    const msg = evs.filter(a => a.kind === EventKind.SimpleChatMessage);
+  async onEvent(evs: readonly TaggedRawEvent[]) {
+    const msg = evs.filter(a => a.kind === EventKind.SimpleChatMessage && a.tags.some(b => b[0] === "g"));
     if (msg.length > 0) {
       await this.#cache.bulkSet(msg);
       this.notifyChange();
@@ -57,19 +57,41 @@ export class Nip29ChatSystem extends ExternalStore<Array<Chat>> implements ChatS
       return {
         type: ChatType.PublicGroupChat,
         id: g,
+        title: `${relay}/${channel}`,
         unread: messages.reduce((acc, v) => (v.created_at > lastRead ? acc++ : acc), 0),
         lastMessage: messages.reduce((acc, v) => (v.created_at > acc ? v.created_at : acc), 0),
-        messages,
-        createMessage: (msg, pub) => {
-          return pub.generic(eb => {
-            return eb
-              .kind(EventKind.SimpleChatMessage)
-              .tag(["g", `/${channel}`, relay])
-              .content(msg);
-          });
+        messages: messages.map(m => ({
+          id: m.id,
+          created_at: m.created_at,
+          from: m.pubkey,
+          tags: m.tags,
+          needsDecryption: false,
+          content: m.content,
+          decrypt: async () => {
+            return m.content;
+          },
+        })),
+        participants: [
+          {
+            type: "generic",
+            id: "",
+            profile: {
+              name: `${relay}/${channel}`,
+            },
+          },
+        ],
+        createMessage: async (msg, pub) => {
+          return [
+            await pub.generic(eb => {
+              return eb
+                .kind(EventKind.SimpleChatMessage)
+                .tag(["g", `/${channel}`, relay])
+                .content(msg);
+            }),
+          ];
         },
-        sendMessage: async (ev: NostrEvent, system: SystemInterface) => {
-          await system.WriteOnceToRelay(`wss://${relay}`, ev);
+        sendMessage: async (ev, system: SystemInterface) => {
+          ev.forEach(async a => await system.WriteOnceToRelay(`wss://${relay}`, a));
         },
       } as Chat;
     });

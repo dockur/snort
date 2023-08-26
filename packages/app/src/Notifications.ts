@@ -1,9 +1,7 @@
-import Nostrich from "public/logo_256.png";
-
-import { TaggedRawEvent, EventKind, MetadataCache } from "@snort/system";
+import { TaggedNostrEvent, EventKind, MetadataCache } from "@snort/system";
 import { getDisplayName } from "Element/ProfileImage";
 import { MentionRegex } from "Const";
-import { tagFilterOfTextRepost, unwrap } from "SnortUtils";
+import { defaultAvatar, tagFilterOfTextRepost, unwrap } from "SnortUtils";
 import { UserCache } from "Cache";
 import { LoginSession } from "Login";
 
@@ -14,7 +12,7 @@ export interface NotificationRequest {
   timestamp: number;
 }
 
-export async function makeNotification(ev: TaggedRawEvent): Promise<NotificationRequest | null> {
+export async function makeNotification(ev: TaggedNostrEvent): Promise<NotificationRequest | null> {
   switch (ev.kind) {
     case EventKind.TextNote: {
       if (ev.tags.some(tagFilterOfTextRepost(ev))) {
@@ -28,7 +26,7 @@ export async function makeNotification(ev: TaggedRawEvent): Promise<Notification
         .map(a => unwrap(a));
       const fromUser = UserCache.getFromCache(ev.pubkey);
       const name = getDisplayName(fromUser, ev.pubkey);
-      const avatarUrl = fromUser?.picture || Nostrich;
+      const avatarUrl = fromUser?.picture || defaultAvatar(ev.pubkey);
       return {
         title: `Reply from ${name}`,
         body: replaceTagsWithUser(ev, allUsers).substring(0, 50),
@@ -40,7 +38,7 @@ export async function makeNotification(ev: TaggedRawEvent): Promise<Notification
   return null;
 }
 
-function replaceTagsWithUser(ev: TaggedRawEvent, users: MetadataCache[]) {
+function replaceTagsWithUser(ev: TaggedNostrEvent, users: MetadataCache[]) {
   return ev.content
     .split(MentionRegex)
     .map(match => {

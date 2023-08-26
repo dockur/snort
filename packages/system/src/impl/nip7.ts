@@ -1,6 +1,5 @@
 import { WorkQueueItem, processWorkQueue, barrierQueue, unwrap } from "@snort/shared";
-import { EventSigner } from "../event-publisher";
-import { HexKey, NostrEvent } from "../nostr";
+import { EventSigner, HexKey, NostrEvent } from "..";
 
 const Nip7Queue: Array<WorkQueueItem> = [];
 processWorkQueue(Nip7Queue);
@@ -38,7 +37,7 @@ export class Nip7Signer implements EventSigner {
       throw new Error("Cannot use NIP-07 signer, not found!");
     }
     return await barrierQueue(Nip7Queue, () =>
-      unwrap(window.nostr?.nip04?.encrypt).call(window.nostr?.nip04, key, content)
+      unwrap(window.nostr?.nip04?.encrypt).call(window.nostr?.nip04, key, content),
     );
   }
 
@@ -47,8 +46,16 @@ export class Nip7Signer implements EventSigner {
       throw new Error("Cannot use NIP-07 signer, not found!");
     }
     return await barrierQueue(Nip7Queue, () =>
-      unwrap(window.nostr?.nip04?.decrypt).call(window.nostr?.nip04, otherKey, content)
+      unwrap(window.nostr?.nip04?.decrypt).call(window.nostr?.nip04, otherKey, content),
     );
+  }
+
+  async nip44Encrypt(content: string, key: string): Promise<string> {
+    throw new Error("Method not implemented.");
+  }
+
+  async nip44Decrypt(content: string, otherKey: string): Promise<string> {
+    throw new Error("Method not implemented.");
   }
 
   async sign(ev: NostrEvent): Promise<NostrEvent> {

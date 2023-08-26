@@ -1,10 +1,9 @@
 import { useMemo } from "react";
-import { HexKey, TaggedRawEvent, Lists, EventKind, NoteCollection, RequestBuilder } from "@snort/system";
+import { HexKey, TaggedNostrEvent, Lists, EventKind, NoteCollection, RequestBuilder } from "@snort/system";
 import { useRequestBuilder } from "@snort/system-react";
 
 import { getNewest } from "SnortUtils";
 import useLogin from "Hooks/useLogin";
-import { System } from "index";
 
 export default function useMutedFeed(pubkey?: HexKey) {
   const { publicKey, muted } = useLogin();
@@ -17,7 +16,7 @@ export default function useMutedFeed(pubkey?: HexKey) {
     return b;
   }, [pubkey]);
 
-  const mutedFeed = useRequestBuilder<NoteCollection>(System, NoteCollection, sub);
+  const mutedFeed = useRequestBuilder(NoteCollection, sub);
 
   const mutedList = useMemo(() => {
     if (pubkey && mutedFeed.data) {
@@ -29,10 +28,10 @@ export default function useMutedFeed(pubkey?: HexKey) {
   return isMe ? muted.item : mutedList;
 }
 
-export function getMutedKeys(rawNotes: TaggedRawEvent[]): {
+export function getMutedKeys(rawNotes: TaggedNostrEvent[]): {
   createdAt: number;
   keys: HexKey[];
-  raw?: TaggedRawEvent;
+  raw?: TaggedNostrEvent;
 } {
   const newest = getNewest(rawNotes);
   if (newest) {
@@ -47,7 +46,7 @@ export function getMutedKeys(rawNotes: TaggedRawEvent[]): {
   return { createdAt: 0, keys: [] };
 }
 
-export function getMuted(feed: readonly TaggedRawEvent[], pubkey: HexKey): HexKey[] {
+export function getMuted(feed: readonly TaggedNostrEvent[], pubkey: HexKey): HexKey[] {
   const lists = feed.filter(a => a.kind === EventKind.PubkeyLists && a.pubkey === pubkey);
   return getMutedKeys(lists).keys;
 }

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import {
   HexKey,
   FullRelaySettings,
-  TaggedRawEvent,
+  TaggedNostrEvent,
   RelaySettings,
   EventKind,
   NoteCollection,
@@ -13,7 +13,6 @@ import debug from "debug";
 
 import { sanitizeRelayUrl } from "SnortUtils";
 import { UserRelays } from "Cache";
-import { System } from "index";
 
 interface RelayList {
   pubkey: string;
@@ -30,7 +29,7 @@ export default function useRelaysFeedFollows(pubkeys: HexKey[]): Array<RelayList
     return b;
   }, [pubkeys]);
 
-  function mapFromRelays(notes: Array<TaggedRawEvent>): Array<RelayList> {
+  function mapFromRelays(notes: Array<TaggedNostrEvent>): Array<RelayList> {
     return notes.map(ev => {
       return {
         pubkey: ev.pubkey,
@@ -51,7 +50,7 @@ export default function useRelaysFeedFollows(pubkeys: HexKey[]): Array<RelayList
   }
 
   // instead of discarding the follow list we should also use it for follow graph
-  function mapFromContactList(notes: Array<TaggedRawEvent>): Array<RelayList> {
+  function mapFromContactList(notes: Array<TaggedNostrEvent>): Array<RelayList> {
     return notes.map(ev => {
       if (ev.content !== "" && ev.content !== "{}" && ev.content.startsWith("{") && ev.content.endsWith("}")) {
         try {
@@ -80,7 +79,7 @@ export default function useRelaysFeedFollows(pubkeys: HexKey[]): Array<RelayList
     });
   }
 
-  const relays = useRequestBuilder<NoteCollection>(System, NoteCollection, sub);
+  const relays = useRequestBuilder(NoteCollection, sub);
   const notesRelays = relays.data?.filter(a => a.kind === EventKind.Relays) ?? [];
   const notesContactLists = relays.data?.filter(a => a.kind === EventKind.ContactList) ?? [];
   return useMemo(() => {

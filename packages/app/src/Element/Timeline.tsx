@@ -2,7 +2,7 @@ import "./Timeline.css";
 import { FormattedMessage } from "react-intl";
 import { useCallback, useMemo } from "react";
 import { useInView } from "react-intersection-observer";
-import { TaggedRawEvent, EventKind, u256, parseZap } from "@snort/system";
+import { TaggedNostrEvent, EventKind, u256, parseZap } from "@snort/system";
 
 import Icon from "Icons/Icon";
 import { dedupeByPubkey, findTag, tagFilterOfTextRepost } from "SnortUtils";
@@ -14,6 +14,7 @@ import NoteReaction from "Element/NoteReaction";
 import useModeration from "Hooks/useModeration";
 import ProfilePreview from "Element/ProfilePreview";
 import { UserCache } from "Cache";
+import { LiveStreams } from "Element/LiveStreams";
 
 export interface TimelineProps {
   postsOnly: boolean;
@@ -43,8 +44,8 @@ const Timeline = (props: TimelineProps) => {
   const { ref, inView } = useInView();
 
   const filterPosts = useCallback(
-    (nts: readonly TaggedRawEvent[]) => {
-      const a = [...nts];
+    (nts: readonly TaggedNostrEvent[]) => {
+      const a = [...nts.filter(a => a.kind !== EventKind.LiveEvent)];
       props.noSort || a.sort((a, b) => b.created_at - a.created_at);
       return a
         ?.filter(a => (props.postsOnly ? !a.tags.some(b => b[0] === "e") : true))
@@ -65,6 +66,10 @@ const Timeline = (props: TimelineProps) => {
     },
     [feed.related]
   );
+  const liveStreams = useMemo(() => {
+    return (feed.main ?? []).filter(a => a.kind === EventKind.LiveEvent && findTag(a, "status") === "live");
+  }, [feed]);
+
   const findRelated = useCallback(
     (id?: u256) => {
       if (!id) return undefined;
@@ -76,7 +81,7 @@ const Timeline = (props: TimelineProps) => {
     return dedupeByPubkey(latestFeed).map(e => e.pubkey);
   }, [latestFeed]);
 
-  function eventElement(e: TaggedRawEvent) {
+  function eventElement(e: TaggedNostrEvent) {
     switch (e.kind) {
       case EventKind.SetMetadata: {
         return <ProfilePreview actions={<></>} pubkey={e.pubkey} className="card" />;
@@ -112,9 +117,10 @@ const Timeline = (props: TimelineProps) => {
 
   return (
     <>
+      <LiveStreams evs={liveStreams} />
       {latestFeed.length > 0 && (
         <>
-          <div className="card latest-notes pointer" onClick={() => onShowLatest()} ref={ref}>
+          <div className="card latest-notes" onClick={() => onShowLatest()} ref={ref}>
             {latestAuthors.slice(0, 3).map(p => {
               return <ProfileImage pubkey={p} showUsername={false} link={""} />;
             })}
