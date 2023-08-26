@@ -4,6 +4,9 @@ WORKDIR /app
 COPY package.json yarn.lock .
 COPY packages/app/package.json packages/app/
 COPY packages/nostr/package.json packages/nostr/
+COPY packages/shared/package.json packages/shared/
+COPY packages/system/package.json packages/system/
+COPY packages/system-react/package.json packages/system-react/
 RUN yarn install --network-timeout 1000000
 
 COPY . .
