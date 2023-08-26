@@ -4,7 +4,6 @@ WORKDIR /app
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn .yarn
 COPY packages packages
-COPY plugins-bundled plugins-bundled
 
 RUN yarn install --network-timeout 1000000
 
