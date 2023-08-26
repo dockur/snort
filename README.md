@@ -1,80 +1,31 @@
-## Snort
-
+<h1 align="center">snort-docker<br />
+<div align="center">
+<img src="https://raw.githubusercontent.com/dockur/snort/master/packages/app/public/nostrich_256.png" title="Logo" style="max-width:100%;" width="128" heigth="128"/>
+</div>
+<div align="center">
+  
 [![Build]][build_url]
 [![Version]][tag_url]
 [![Size]][tag_url]
 [![Pulls]][hub_url]
 
-Snort is a nostr UI built with React aiming for speed and efficiency.
+</div></h1>
 
-Snort supports the following NIP's:
+Docker image of [snort](https://github.com/v0l/snort), an UI for the [nostr](https://github.com/nostr-protocol/nostr) protocol.
 
-- [x] NIP-01: Basic protocol flow description
-- [x] NIP-02: Contact List and Petnames (No petname support)
-- [ ] NIP-03: OpenTimestamps Attestations for Events
-- [x] NIP-04: Encrypted Direct Message
-- [x] NIP-05: Mapping Nostr keys to DNS-based internet identifiers
-- [x] NIP-06: Basic key derivation from mnemonic seed phrase
-- [x] NIP-07: `window.nostr` capability for web browsers
-- [x] NIP-08: Handling Mentions
-- [x] NIP-09: Event Deletion
-- [x] NIP-10: Conventions for clients' use of `e` and `p` tags in text events
-- [x] NIP-11: Relay Information Document
-- [x] NIP-12: Generic Tag Queries
-- [ ] NIP-13: Proof of Work
-- [ ] NIP-14: Subject tag in text events
-- [x] NIP-15: End of Stored Events Notice
-- [x] NIP-18: Reposts
-- [x] NIP-19: bech32-encoded entities
-- [x] NIP-20: Command Results
-- [x] NIP-21: `nostr:` Protocol handler (`web+nostr`)
-- [x] NIP-25: Reactions
-- [x] NIP-26: Delegated Event Signing (Display delegated signings only)
-- [x] NIP-27: Text note references (Parsing only)
-- [ ] NIP-28: Public Chat
-- [x] NIP-30: Custom Emoji
-- [x] NIP-36: Sensitive Content
-- [ ] NIP-40: Expiration Timestamp
-- [x] NIP-42: Authentication of clients to relays
-- [x] NIP-44: Versioned encryption
-- [x] NIP-50: Search
-- [x] NIP-51: Lists
-- [x] NIP-58: Badges
-- [x] NIP-59: Gift Wrap
-- [x] NIP-65: Relay List Metadata
-- [ ] NIP-78: App specific data
-- [x] NIP-102: Live Events
+## How to use
 
-### Running
+Via `docker-compose`
 
-This repository is a yarn workspace. To install dependencies, run `yarn` from the project root.
-
-To run the application, use
-
+```yaml
+version: "3"
+services:
+  snort:
+    container_name: snort
+    image: dockurr/snort:latest
+    ports:
+        - 80:80
 ```
-$ yarn start
-```
-
-To build the application and nostr package, use
-
-```
-$ yarn build
-```
-
-### Translations
-
-[![Crowdin](https://badges.crowdin.net/snort/localized.svg)](https://crowdin.com/project/snort)
-
-Translations are managed on [Crowdin](https://crowdin.com/project/snort)
-
-To extract translations run:
-
-```bash
-yarn workspace @snort/app intl-extract
-yarn workspace @snort/app intl-compile
-```
-
-This will create the source file `packages/app/src/translations/en.json`
 
 [build_url]: https://github.com/dockur/snort/
 [hub_url]: https://hub.docker.com/r/dockurr/snort/
