@@ -1,12 +1,11 @@
 FROM node:16 as build
 WORKDIR /app
 
-COPY package.json yarn.lock .
-COPY packages/app/package.json packages/app/
-COPY packages/nostr/package.json packages/nostr/
-COPY packages/shared/package.json packages/shared/
-COPY packages/system/package.json packages/system/
-COPY packages/system-react/package.json packages/system-react/
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn .yarn
+COPY packages packages
+COPY plugins-bundled plugins-bundled
+
 RUN yarn install --network-timeout 1000000
 
 COPY . .
