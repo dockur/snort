@@ -19,6 +19,7 @@ import {
   normalizeReaction,
   Reaction,
   profileLink,
+  findTag,
 } from "SnortUtils";
 import NoteFooter from "Element/NoteFooter";
 import NoteTime from "Element/NoteTime";
@@ -302,14 +303,23 @@ export default function Note(props: NoteProps) {
 
   const canRenderAsTextNote = [EventKind.TextNote, EventKind.Polls];
   if (!canRenderAsTextNote.includes(ev.kind)) {
-    return (
-      <>
-        <h4>
-          <FormattedMessage {...messages.UnknownEventKind} values={{ kind: ev.kind }} />
-        </h4>
-        <pre>{JSON.stringify(ev, undefined, "  ")}</pre>
-      </>
-    );
+    const alt = findTag(ev, "alt");
+    if (alt) {
+      return (
+        <div className="note-quote">
+          <Text content={alt} tags={[]} creator={ev.pubkey} />
+        </div>
+      );
+    } else {
+      return (
+        <>
+          <h4>
+            <FormattedMessage {...messages.UnknownEventKind} values={{ kind: ev.kind }} />
+          </h4>
+          <pre>{JSON.stringify(ev, undefined, "  ")}</pre>
+        </>
+      );
+    }
   }
 
   function translation() {
