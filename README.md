@@ -1,37 +1,77 @@
-<h1 align="center">snort-docker<br />
-<div align="center">
-<img src="https://raw.githubusercontent.com/dockur/snort/master/packages/app/public/nostrich_256.png" title="Logo" style="max-width:100%;" width="128" heigth="128"/>
-</div>
-<div align="center">
-  
-[![Build]][build_url]
-[![Version]][tag_url]
-[![Size]][tag_url]
-[![Pulls]][hub_url]
+## Snort
 
-</div></h1>
+Snort is a nostr UI built with React aiming for speed and efficiency.
 
-Docker image of [snort](https://github.com/v0l/snort), an UI for the [nostr](https://github.com/nostr-protocol/nostr) protocol.
+Snort supports the following NIP's:
 
-## How to use
+- [x] NIP-01: Basic protocol flow description
+- [x] NIP-02: Contact List and Petnames (No petname support)
+- [ ] NIP-03: OpenTimestamps Attestations for Events
+- [x] NIP-04: Encrypted Direct Message
+- [x] NIP-05: Mapping Nostr keys to DNS-based internet identifiers
+- [x] NIP-06: Basic key derivation from mnemonic seed phrase
+- [x] NIP-07: `window.nostr` capability for web browsers
+- [x] NIP-08: Handling Mentions
+- [x] NIP-09: Event Deletion
+- [x] NIP-10: Conventions for clients' use of `e` and `p` tags in text events
+- [x] NIP-11: Relay Information Document
+- [x] NIP-12: Generic Tag Queries
+- [x] NIP-13: Proof of Work
+- [ ] NIP-14: Subject tag in text events
+- [x] NIP-15: End of Stored Events Notice
+- [x] NIP-18: Reposts
+- [x] NIP-19: bech32-encoded entities
+- [x] NIP-20: Command Results
+- [x] NIP-21: `nostr:` Protocol handler (`web+nostr`)
+- [x] NIP-25: Reactions
+- [x] NIP-26: Delegated Event Signing (Display delegated signings only)
+- [x] NIP-27: Text note references
+- [ ] NIP-28: Public Chat
+- [x] NIP-30: Custom Emoji
+- [x] NIP-31: Alt tag for unknown events
+- [x] NIP-36: Sensitive Content
+- [ ] NIP-40: Expiration Timestamp
+- [x] NIP-42: Authentication of clients to relays
+- [x] NIP-44: Versioned encryption
+- [x] NIP-46: Nostr connect (+bunker)
+- [x] NIP-47: Nostr wallet connect
+- [x] NIP-50: Search
+- [x] NIP-51: Lists
+- [x] NIP-53: Live Events
+- [x] NIP-58: Badges
+- [x] NIP-59: Gift Wrap
+- [x] NIP-65: Relay List Metadata
+- [ ] NIP-78: App specific data
+- [x] NIP-94: File header
+- [x] NIP-98: HTTP Auth
 
-Via `docker-compose`
+### Running
 
-```yaml
-version: "3"
-services:
-  snort:
-    container_name: snort
-    image: dockurr/snort:latest
-    ports:
-        - 80:80
+This repository is a yarn workspace. To install dependencies, run `yarn` from the project root.
+
+To run the application, use
+
+```
+$ yarn start
 ```
 
-[build_url]: https://github.com/dockur/snort/
-[hub_url]: https://hub.docker.com/r/dockurr/snort/
-[tag_url]: https://hub.docker.com/r/dockurr/snort/tags
+To build the application and nostr package, use
 
-[Build]: https://github.com/dockur/snort/actions/workflows/build.yml/badge.svg
-[Size]: https://img.shields.io/docker/image-size/dockurr/snort/latest?color=066da5&label=size
-[Pulls]: https://img.shields.io/docker/pulls/dockurr/snort.svg?style=flat&label=pulls&logo=docker
-[Version]: https://img.shields.io/docker/v/dockurr/snort?arch=amd64&sort=date&color=066da5
+```
+$ yarn build
+```
+
+### Translations
+
+[![Crowdin](https://badges.crowdin.net/snort/localized.svg)](https://crowdin.com/project/snort)
+
+Translations are managed on [Crowdin](https://crowdin.com/project/snort)
+
+To extract translations run:
+
+```bash
+yarn workspace @snort/app intl-extract
+yarn workspace @snort/app intl-compile
+```
+
+This will create the source file `packages/app/src/translations/en.json`
