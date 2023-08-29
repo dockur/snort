@@ -14,7 +14,7 @@ FROM nginx:mainline-alpine
 
 ARG DATE_ARG=""
 ARG BUILD_ARG=0
-ARG VERSION_ARG="v0.1.12"
+ARG VERSION_ARG="v0.1.13"
 ENV VERSION=$VERSION_ARG
 
 LABEL org.opencontainers.image.created=${DATE_ARG}
