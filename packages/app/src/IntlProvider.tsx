@@ -59,6 +59,12 @@ const getMessages = (locale: string) => {
       case "th-TH":
       case "th":
         return (await import("translations/th_TH.json")).default;
+      case "pt-BR":
+      case "pt":
+        return (await import("translations/pt_BR.json")).default;
+      case "sw-KE":
+      case "sw":
+        return (await import("translations/sw_KE.json")).default;
       case DefaultLocale:
       case "en":
         return enMessages;
