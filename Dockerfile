@@ -1,4 +1,4 @@
-FROM node:20 as build
+FROM --platform=$BUILDPLATFORM node:20 as build
 ENV NODE_ENV=production
 
 WORKDIR /app
