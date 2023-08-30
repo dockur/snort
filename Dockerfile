@@ -1,16 +1,19 @@
 FROM node:20 as build
+ENV NODE_ENV=production
+
 WORKDIR /app
 
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn .yarn
 COPY packages packages
 
-RUN yarn install --immutable --silent --network-timeout 1000000
+RUN yarn install --immutable --network-timeout 1000000
 
 COPY . .
-RUN yarn build:production
+RUN yarn build
 
 FROM nginx:mainline-alpine
+ENV NODE_ENV=production
 
 ARG DATE_ARG=""
 ARG BUILD_ARG=0
