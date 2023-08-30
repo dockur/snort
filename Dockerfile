@@ -13,7 +13,6 @@ COPY . .
 RUN yarn build
 
 FROM nginx:mainline-alpine
-ENV NODE_ENV=production
 
 ARG DATE_ARG=""
 ARG BUILD_ARG=0
