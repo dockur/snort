@@ -34,4 +34,4 @@ services:
 [Build]: https://github.com/dockur/snort/actions/workflows/build.yml/badge.svg
 [Size]: https://img.shields.io/docker/image-size/dockurr/snort/latest?color=066da5&label=size
 [Pulls]: https://img.shields.io/docker/pulls/dockurr/snort.svg?style=flat&label=pulls&logo=docker
-[Version]: https://img.shields.io/docker/v/dockurr/snort?arch=amd64&sort=date&color=066da5
+[Version]: https://img.shields.io/docker/v/dockurr/snort/latest?arch=amd64&sort=semver&color=066da5
