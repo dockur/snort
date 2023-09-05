@@ -1,7 +1,7 @@
 import "./NoteReaction.css";
 import { Link } from "react-router-dom";
 import { useMemo } from "react";
-import { EventKind, NostrEvent, TaggedNostrEvent, NostrPrefix } from "@snort/system";
+import { EventKind, NostrEvent, TaggedNostrEvent, NostrPrefix, EventExt } from "@snort/system";
 
 import Note from "Element/Note";
 import { getDisplayName } from "Element/ProfileImage";
@@ -14,6 +14,7 @@ import { useUserProfile } from "@snort/system-react";
 export interface NoteReactionProps {
   data: TaggedNostrEvent;
   root?: TaggedNostrEvent;
+  depth?: number;
 }
 export default function NoteReaction(props: NoteReactionProps) {
   const { data: ev } = props;
@@ -46,6 +47,11 @@ export default function NoteReaction(props: NoteReactionProps) {
     if (ev?.kind === EventKind.Repost && ev.content.length > 0 && ev.content !== "#[0]") {
       try {
         const r: NostrEvent = JSON.parse(ev.content);
+        EventExt.fixupEvent(r);
+        if (!EventExt.verify(r)) {
+          console.debug("Event in repost is invalid");
+          return undefined;
+        }
         return r as TaggedNostrEvent;
       } catch (e) {
         console.error("Could not load reposted content", e);
@@ -73,7 +79,7 @@ export default function NoteReaction(props: NoteReactionProps) {
           }}
         />
       </div>
-      {root ? <Note data={root} options={opt} related={[]} /> : null}
+      {root ? <Note data={root} options={opt} related={[]} depth={props.depth} /> : null}
       {!root && refEvent ? (
         <p>
           <Link to={eventLink(refEvent[1] ?? "", refEvent[2])}>
