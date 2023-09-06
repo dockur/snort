@@ -7,7 +7,7 @@ COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn .yarn
 COPY packages packages
 
-RUN yarn install --immutable --network-timeout 1000000
+RUN yarn install --network-timeout 1000000
 
 COPY . .
 RUN yarn build
