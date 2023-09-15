@@ -11,6 +11,33 @@ export interface NostrLink {
   encode(): string;
 }
 
+export function linkToEventTag(link: NostrLink) {
+  const relayEntry = link.relays ? [link.relays[0]] : [];
+  if (link.type === NostrPrefix.PublicKey) {
+    return ["p", link.id];
+  } else if (link.type === NostrPrefix.Note || link.type === NostrPrefix.Event) {
+    return ["e", link.id];
+  } else if (link.type === NostrPrefix.Address) {
+    return ["a", `${link.kind}:${link.author}:${link.id}`, ...relayEntry];
+  }
+}
+
+export function tagToNostrLink(tag: Array<string>) {
+  switch (tag[0]) {
+    case "e": {
+      return createNostrLink(NostrPrefix.Event, tag[1], tag.slice(2));
+    }
+    case "p": {
+      return createNostrLink(NostrPrefix.Profile, tag[1], tag.slice(2));
+    }
+    case "a": {
+      const [kind, author, dTag] = tag[1].split(":");
+      return createNostrLink(NostrPrefix.Address, dTag, tag.slice(2), Number(kind), author);
+    }
+  }
+  throw new Error(`Unknown tag kind ${tag[0]}`);
+}
+
 export function createNostrLinkToEvent(ev: TaggedNostrEvent | NostrEvent) {
   const relays = "relays" in ev ? ev.relays : undefined;
 

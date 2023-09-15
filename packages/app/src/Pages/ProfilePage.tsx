@@ -54,6 +54,7 @@ import useHorizontalScroll from "Hooks/useHorizontalScroll";
 import { EmailRegex } from "Const";
 import { getNip05PubKey } from "Pages/LoginPage";
 import useLogin from "Hooks/useLogin";
+import { ZapTarget } from "Zapper";
 
 import messages from "./messages";
 
@@ -291,11 +292,21 @@ export default function ProfilePage() {
         )}
 
         <SendSats
-          lnurl={lnurl?.lnurl}
+          targets={
+            lnurl?.lnurl && id
+              ? [
+                  {
+                    type: "lnurl",
+                    value: lnurl?.lnurl,
+                    weight: 1,
+                    name: user?.display_name || user?.name,
+                    zap: { pubkey: id },
+                  } as ZapTarget,
+                ]
+              : undefined
+          }
           show={showLnQr}
           onClose={() => setShowLnQr(false)}
-          author={id}
-          target={user?.display_name || user?.name}
         />
       </>
     );
@@ -471,7 +482,7 @@ export default function ProfilePage() {
         </div>
       </div>
       <div className="main-content">
-        <div className="tabs" ref={horizontalScroll}>
+        <div className="tabs p" ref={horizontalScroll}>
           {[ProfileTab.Notes, ProfileTab.Followers, ProfileTab.Follows].map(renderTab)}
           {optionalTabs.map(renderTab)}
           {isMe && blocked.length > 0 && renderTab(ProfileTab.Blocked)}

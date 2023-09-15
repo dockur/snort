@@ -261,6 +261,10 @@ button.icon:hover {
   display: inline-flex;
 }
 
+.light .btn {
+  color: #64748b;
+}
+
 .btn-warn {
   border-color: var(--error);
 }
@@ -353,6 +357,7 @@ input:disabled {
 
 .f-center {
   justify-content: center;
+  align-items: center;
 }
 
 .f-1 {
@@ -361,6 +366,14 @@ input:disabled {
 
 .f-2 {
   flex: 2;
+}
+
+.f-3 {
+  flex: 3;
+}
+
+.f-4 {
+  flex: 4;
 }
 
 .f-grow {
@@ -419,6 +432,10 @@ input:disabled {
 
 .g24 {
   gap: 24px;
+}
+
+.txt-center {
+  text-align: center;
 }
 
 .w-max {
