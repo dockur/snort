@@ -216,7 +216,7 @@ export function ThreadRoute() {
   );
 }
 
-export function Thread() {
+export function Thread(props: { onBack?: () => void }) {
   const thread = useContext(ThreadContext);
 
   const navigate = useNavigate();
@@ -283,6 +283,8 @@ export function Thread() {
   function goBack() {
     if (parent) {
       thread.setCurrent(parent);
+    } else if (props.onBack) {
+      props.onBack();
     } else {
       navigate(-1);
     }
@@ -296,6 +298,7 @@ export function Thread() {
     defaultMessage: "Back",
     description: "Navigate back button on threads view",
   });
+
   return (
     <>
       <div className="main-content p">
