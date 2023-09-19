@@ -1,12 +1,5 @@
 import { LNURL } from "@snort/shared";
-import {
-  EventPublisher,
-  NostrEvent,
-  NostrLink,
-  SystemInterface,
-  createNostrLinkToEvent,
-  linkToEventTag,
-} from "@snort/system";
+import { EventPublisher, NostrEvent, NostrLink, SystemInterface } from "@snort/system";
 import { generateRandomKey } from "Login";
 import { isHex } from "SnortUtils";
 import { LNWallet, WalletInvoiceState } from "Wallet";
@@ -63,7 +56,7 @@ export class Zapper {
             weight: Number(v[3] ?? 0),
             zap: {
               pubkey: v[1],
-              event: createNostrLinkToEvent(ev),
+              event: NostrLink.fromEvent(ev),
             },
           } as ZapTarget;
         } else {
@@ -74,7 +67,7 @@ export class Zapper {
             weight: 1,
             zap: {
               pubkey: ev.pubkey,
-              event: createNostrLinkToEvent(ev),
+              event: NostrLink.fromEvent(ev),
             },
           } as ZapTarget;
         }
@@ -103,7 +96,7 @@ export class Zapper {
           t.zap && svc.canZap
             ? await pub?.zap(toSend * 1000, t.zap.pubkey, relays, undefined, t.memo, eb => {
                 if (t.zap?.event) {
-                  const tag = linkToEventTag(t.zap.event);
+                  const tag = t.zap.event.toEventTag();
                   if (tag) {
                     eb.tag(tag);
                   }
@@ -192,17 +185,21 @@ export class Zapper {
   }
 
   async #getService(t: ZapTarget) {
-    if (t.type === "lnurl") {
-      const svc = new LNURL(t.value);
-      await svc.load();
-      return svc;
-    } else if (t.type === "pubkey") {
-      const profile = await this.system.ProfileLoader.fetchProfile(t.value);
-      if (profile) {
-        const svc = new LNURL(profile.lud16 ?? profile.lud06 ?? "");
+    try {
+      if (t.type === "lnurl") {
+        const svc = new LNURL(t.value);
         await svc.load();
         return svc;
+      } else if (t.type === "pubkey") {
+        const profile = await this.system.ProfileLoader.fetchProfile(t.value);
+        if (profile) {
+          const svc = new LNURL(profile.lud16 ?? profile.lud06 ?? "");
+          await svc.load();
+          return svc;
+        }
       }
+    } catch {
+      // nothing
     }
   }
 }
