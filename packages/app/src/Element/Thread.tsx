@@ -1,10 +1,10 @@
 import "./Thread.css";
 import { useMemo, useState, ReactNode, useContext } from "react";
 import { useIntl } from "react-intl";
-import { useNavigate, Link, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { TaggedNostrEvent, u256, NostrPrefix, EventExt, parseNostrLink } from "@snort/system";
 
-import { eventLink, getReactions, getAllReactions } from "SnortUtils";
+import { getReactions, getAllReactions } from "SnortUtils";
 import BackButton from "Element/BackButton";
 import Note from "Element/Note";
 import NoteGhost from "Element/NoteGhost";
@@ -225,7 +225,7 @@ export function Thread(props: { onBack?: () => void }) {
 
   function navigateThread(e: TaggedNostrEvent) {
     thread.setCurrent(e.id);
-    //const link = encodeTLV(e.id, NostrPrefix.Event, e.relays);
+    //router.navigate(`/e/${NostrLink.fromEvent(e).encode()}`, { replace: true })
   }
 
   const parent = useMemo(() => {
@@ -238,8 +238,6 @@ export function Thread(props: { onBack?: () => void }) {
       );
     }
   }, [thread.root]);
-
-  const brokenChains = Array.from(thread.chains?.keys()).filter(a => !thread.data?.some(b => b.id === a));
 
   function renderRoot(note: TaggedNostrEvent) {
     const className = `thread-root${isSingleNote ? " thread-root-single" : ""}`;
@@ -307,18 +305,6 @@ export function Thread(props: { onBack?: () => void }) {
       <div className="main-content">
         {thread.root && renderRoot(thread.root)}
         {thread.root && renderChain(thread.root.id)}
-
-        {brokenChains.length > 0 && <h3>Other replies</h3>}
-        {brokenChains.map(a => {
-          return (
-            <div className="mb10">
-              <NoteGhost className={`thread-note thread-root ghost-root`} key={a}>
-                Missing event <Link to={eventLink(a)}>{a.substring(0, 8)}</Link>
-              </NoteGhost>
-              {renderChain(a)}
-            </div>
-          );
-        })}
       </div>
     </>
   );
