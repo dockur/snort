@@ -2,7 +2,7 @@
   min-height: 110px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .note:hover {
@@ -65,6 +65,7 @@
   border: 1px solid var(--gray-superdark);
   border-radius: 12px;
   padding: 8px 16px 16px 16px;
+  margin-top: 16px;
 }
 
 .note .footer .footer-reactions {

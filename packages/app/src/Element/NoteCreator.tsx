@@ -397,7 +397,7 @@ export function NoteCreator() {
               <button className="secondary" onClick={cancel}>
                 <FormattedMessage defaultMessage="Cancel" />
               </button>
-              <AsyncButton onClick={onSubmit}>
+              <AsyncButton className="primary" onClick={onSubmit}>
                 {replyTo ? <FormattedMessage defaultMessage="Reply" /> : <FormattedMessage defaultMessage="Send" />}
               </AsyncButton>
             </div>

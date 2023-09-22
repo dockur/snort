@@ -431,7 +431,7 @@ export default function ProfilePage() {
         <Avatar pubkey={id ?? ""} user={user} />
         <div className="profile-actions">
           {renderIcons()}
-          {!isMe && id && <FollowButton pubkey={id} />}
+          {!isMe && id && <FollowButton className="primary" pubkey={id} />}
         </div>
       </div>
     );

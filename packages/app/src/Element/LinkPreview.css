@@ -40,12 +40,23 @@
   margin: 0 0 15px 0 !important;
   border-radius: 0 !important;
   background-image: var(--img-url);
-  min-height: 250px;
+  min-height: 220px;
   max-height: 500px;
   background-size: cover;
   background-position: center;
 }
 
 .light .link-preview-container {
-  background: #ddd;
+  background: #fff;
+  border: 1px solid var(--border-color);
+}
+
+.light .link-preview-container:hover {
+  box-shadow: rgba(0, 0, 0, 0.08) 0 1px 3px;
+}
+
+@media (min-width: 1025px) {
+  .link-preview-image {
+    min-height: 342px;
+  }
 }
