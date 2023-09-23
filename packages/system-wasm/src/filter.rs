@@ -29,8 +29,12 @@ pub struct ReqFilter {
     pub d_tag: Option<HashSet<String>>,
     #[serde(rename = "#r", skip_serializing_if = "Option::is_none")]
     pub r_tag: Option<HashSet<String>>,
+    #[serde(rename = "#a", skip_serializing_if = "Option::is_none")]
+    pub a_tag: Option<HashSet<String>>,
+    #[serde(rename = "#g", skip_serializing_if = "Option::is_none")]
+    pub g_tag: Option<HashSet<String>>,
     #[serde(rename = "search", skip_serializing_if = "Option::is_none")]
-    pub search: Option<HashSet<String>>,
+    pub search: Option<String>,
     #[serde(rename = "since", skip_serializing_if = "Option::is_none")]
     pub since: Option<i32>,
     #[serde(rename = "until", skip_serializing_if = "Option::is_none")]
@@ -64,6 +68,10 @@ pub struct FlatReqFilter {
     pub d_tag: Option<String>,
     #[serde(rename = "#r", skip_serializing_if = "Option::is_none")]
     pub r_tag: Option<String>,
+    #[serde(rename = "#a", skip_serializing_if = "Option::is_none")]
+    pub a_tag: Option<String>,
+    #[serde(rename = "#g", skip_serializing_if = "Option::is_none")]
+    pub g_tag: Option<String>,
     #[serde(rename = "search", skip_serializing_if = "Option::is_none")]
     pub search: Option<String>,
     #[serde(rename = "since", skip_serializing_if = "Option::is_none")]
@@ -114,7 +122,6 @@ impl Distance for FlatReqFilter {
         ret += prop_dist(&self.d_tag, &b.d_tag);
         ret += prop_dist(&self.r_tag, &b.r_tag);
         ret += prop_dist(&self.t_tag, &b.t_tag);
-        ret += prop_dist(&self.search, &b.search);
 
         ret
     }
@@ -145,6 +152,8 @@ impl From<Vec<&FlatReqFilter>> for ReqFilter {
             t_tag: None,
             d_tag: None,
             r_tag: None,
+            a_tag: None,
+            g_tag: None,
             search: None,
             since: None,
             until: None,
@@ -159,7 +168,9 @@ impl From<Vec<&FlatReqFilter>> for ReqFilter {
             array_prop_append(&x.t_tag, &mut acc.t_tag);
             array_prop_append(&x.d_tag, &mut acc.d_tag);
             array_prop_append(&x.r_tag, &mut acc.r_tag);
-            array_prop_append(&x.search, &mut acc.search);
+            array_prop_append(&x.a_tag, &mut acc.a_tag);
+            array_prop_append(&x.g_tag, &mut acc.g_tag);
+            acc.search = x.search.to_owned();
             acc.since = x.since;
             acc.until = x.until;
             acc.limit = x.limit;
@@ -180,6 +191,8 @@ impl From<Vec<&ReqFilter>> for ReqFilter {
             t_tag: None,
             d_tag: None,
             r_tag: None,
+            a_tag: None,
+            g_tag: None,
             search: None,
             since: None,
             until: None,
@@ -194,7 +207,9 @@ impl From<Vec<&ReqFilter>> for ReqFilter {
             array_prop_append_vec(&x.t_tag, &mut acc.t_tag);
             array_prop_append_vec(&x.d_tag, &mut acc.d_tag);
             array_prop_append_vec(&x.r_tag, &mut acc.r_tag);
-            array_prop_append_vec(&x.search, &mut acc.search);
+            array_prop_append_vec(&x.a_tag, &mut acc.a_tag);
+            array_prop_append_vec(&x.g_tag, &mut acc.g_tag);
+            acc.search = x.search.to_owned();
             acc.since = x.since;
             acc.until = x.until;
             acc.limit = x.limit;
@@ -265,10 +280,17 @@ impl Into<Vec<FlatReqFilter>> for &ReqFilter {
                 .collect();
             inputs.push(t_ids);
         }
-        if let Some(search) = &self.search {
-            let t_ids = search
+        if let Some(a_tags) = &self.a_tag {
+            let t_ids = a_tags
                 .iter()
-                .map(|z| StringOrNumberEntry::String(("search", z)))
+                .map(|z| StringOrNumberEntry::String(("a_tag", z)))
+                .collect();
+            inputs.push(t_ids);
+        }
+        if let Some(g_tags) = &self.g_tag {
+            let t_ids = g_tags
+                .iter()
+                .map(|z| StringOrNumberEntry::String(("g_tag", z)))
                 .collect();
             inputs.push(t_ids);
         }
@@ -339,14 +361,23 @@ impl Into<Vec<FlatReqFilter>> for &ReqFilter {
                     }
                     None
                 }),
-                search: p.iter().find_map(|q| {
+                a_tag: p.iter().find_map(|q| {
                     if let StringOrNumberEntry::String((k, v)) = q {
-                        if (*k).eq("search") {
+                        if (*k).eq("a_tag") {
                             return Some((*v).to_string());
                         }
                     }
                     None
                 }),
+                g_tag: p.iter().find_map(|q| {
+                    if let StringOrNumberEntry::String((k, v)) = q {
+                        if (*k).eq("g_tag") {
+                            return Some((*v).to_string());
+                        }
+                    }
+                    None
+                }),
+                search: self.search.to_owned(),
                 since: self.since,
                 until: self.until,
                 limit: self.limit,
@@ -355,6 +386,7 @@ impl Into<Vec<FlatReqFilter>> for &ReqFilter {
         ret
     }
 }
+
 impl Distance for ReqFilter {
     fn distance(&self, b: &Self) -> u32 {
         let mut ret = 0u32;
@@ -367,7 +399,7 @@ impl Distance for ReqFilter {
         ret += prop_dist_vec(&self.d_tag, &b.d_tag);
         ret += prop_dist_vec(&self.r_tag, &b.r_tag);
         ret += prop_dist_vec(&self.t_tag, &b.t_tag);
-        ret += prop_dist_vec(&self.search, &b.search);
+        ret += prop_dist_vec(&self.a_tag, &b.a_tag);
 
         ret
     }
@@ -464,6 +496,8 @@ mod tests {
             t_tag: None,
             d_tag: None,
             r_tag: None,
+            a_tag: None,
+            g_tag: None,
             search: None,
             since: Some(99),
             until: None,
@@ -471,7 +505,7 @@ mod tests {
             e_tag: None,
         };
 
-        let output : Vec<FlatReqFilter> = (&input).into();
+        let output: Vec<FlatReqFilter> = (&input).into();
         let expected = vec![
             FlatReqFilter {
                 author: Some("a".to_owned()),
@@ -481,6 +515,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -495,6 +531,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -509,6 +547,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -523,6 +563,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -537,6 +579,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -551,6 +595,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -565,6 +611,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -579,6 +627,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -593,6 +643,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -607,6 +659,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -621,6 +675,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -635,6 +691,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -649,6 +707,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -663,6 +723,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -677,6 +739,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -691,6 +755,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -705,6 +771,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
@@ -719,6 +787,8 @@ mod tests {
                 t_tag: None,
                 d_tag: None,
                 r_tag: None,
+                a_tag: None,
+                g_tag: None,
                 search: None,
                 since: Some(99),
                 until: None,
