@@ -52,6 +52,7 @@ const LoggedOut = {
     },
     timestamp: 0,
   },
+  extraChats: [],
 } as LoginSession;
 
 export class MultiAccountStore extends ExternalStore<LoginSession> {
@@ -77,6 +78,13 @@ export class MultiAccountStore extends ExternalStore<LoginSession> {
       if (v.type === LoginSessionType.PrivateKey && v.readonly) {
         v.readonly = false;
       }
+      v.appData ??= {
+        item: {
+          mutedWords: [],
+        },
+        timestamp: 0,
+      };
+      v.extraChats ??= [];
     }
   }
 
