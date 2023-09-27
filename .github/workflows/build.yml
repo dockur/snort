@@ -66,7 +66,7 @@ jobs:
           cp .dockerignore snort/
           cp .yarnrc.yml snort/
           cp docker/nginx.conf snort/docker/nginx.conf
-          cp packages/app/config/default.json snort/packages/app/config/default.json
+          cp packages/app/config/soloco.json snort/packages/app/config/default.json
           cp packages/app/src/Const.ts snort/packages/app/src/Const.ts
       -
         name: Login into Docker Hub
