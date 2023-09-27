@@ -66,8 +66,6 @@ jobs:
           cp .dockerignore snort/
           cp .yarnrc.yml snort/
           cp docker/nginx.conf snort/docker/nginx.conf
-          cp packages/app/config/soloco.json snort/packages/app/config/default.json
-          cp packages/app/src/Const.ts snort/packages/app/src/Const.ts
       -
         name: Login into Docker Hub
         if: env.exists == 'false'
@@ -92,7 +90,34 @@ jobs:
 
           echo "Build date: ${{ steps.prepare.outputs.build_date }}"
           echo "Docker platform: ${{ steps.prepare.outputs.docker_platforms }}"
-          echo "Tags: ${{ steps.prepare.outputs.tags }}"
+          echo "Tags: ${TAGS}"
+          
+          docker buildx build --platform ${{ steps.prepare.outputs.docker_platforms }} \
+            --output "type=image,push=true" \
+            --progress=plain \
+            --build-arg "BUILD_ARG=${GITHUB_RUN_ID}" \
+            --build-arg "VERSION_ARG=${{ steps.prepare.outputs.version }}" \
+            --build-arg "DATE_ARG=${{ steps.prepare.outputs.build_date }}" \
+            --build-arg "VCS_REF=${GITHUB_SHA::8}" \
+            $(printf "%s" "${TAGS[@]/#/ --tag }" ) snort/.      
+      - 
+        name: Add custom code
+        if: env.exists == 'false'
+        run: |
+          cp packages/app/config/soloco.json snort/packages/app/config/default.json
+          cp packages/app/src/Const.ts snort/packages/app/src/Const.ts
+      - 
+        name: Build custom image
+        if: env.exists == 'false'
+        run: |
+        
+          TAGS=()
+          TAGS=("${{ secrets.CUSTOM_REPO }}:latest")
+          TAGS+=("${{ secrets.CUSTOM_REPO }}:${{ env.latest_tag }}")
+          
+          echo "Build date: ${{ steps.prepare.outputs.build_date }}"
+          echo "Docker platform: ${{ steps.prepare.outputs.docker_platforms }}"
+          echo "Tags: ${TAGS}"
           
           docker buildx build --platform ${{ steps.prepare.outputs.docker_platforms }} \
             --output "type=image,push=true" \
