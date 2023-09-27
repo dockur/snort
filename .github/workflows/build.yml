@@ -91,7 +91,7 @@ jobs:
           echo "Build date: ${{ steps.prepare.outputs.build_date }}"
           echo "Docker platform: ${{ steps.prepare.outputs.docker_platforms }}"
           echo "Tags: ${TAGS}"
-          
+
           docker buildx build --platform ${{ steps.prepare.outputs.docker_platforms }} \
             --output "type=image,push=true" \
             --progress=plain \
@@ -104,8 +104,8 @@ jobs:
         name: Add custom code
         if: env.exists == 'false'
         run: |
-          cp packages/app/config/soloco.json snort/packages/app/config/default.json
           cp packages/app/src/Const.ts snort/packages/app/src/Const.ts
+          cp packages/app/config/soloco.json snort/packages/app/config/default.json
       - 
         name: Build custom image
         if: env.exists == 'false'
