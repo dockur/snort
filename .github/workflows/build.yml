@@ -66,11 +66,8 @@ jobs:
           cp .dockerignore snort/
           cp .yarnrc.yml snort/
           cp docker/nginx.conf snort/docker/nginx.conf
-          cp packages/app/public/index.html snort/packages/app/public/index.html
+          cp packages/app/config/default.json snort/packages/app/config/default.json
           cp packages/app/src/Const.ts snort/packages/app/src/Const.ts
-          cp packages/app/src/Element/Logo.tsx snort/packages/app/src/Element/Logo.tsx
-          cp packages/app/src/Pages/Layout.tsx snort/packages/app/src/Pages/Layout.tsx
-          cp packages/app/src/Pages/LoginPage.tsx snort/packages/app/src/Pages/LoginPage.tsx
       -
         name: Login into Docker Hub
         if: env.exists == 'false'
