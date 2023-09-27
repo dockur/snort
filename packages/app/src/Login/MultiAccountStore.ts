@@ -86,6 +86,7 @@ export class MultiAccountStore extends ExternalStore<LoginSession> {
       };
       v.extraChats ??= [];
     }
+    this.#loadIrisKeyIfExists();
   }
 
   getSessions() {
@@ -215,6 +216,22 @@ export class MultiAccountStore extends ExternalStore<LoginSession> {
     if (!s) return LoggedOut;
 
     return { ...s };
+  }
+
+  async #loadIrisKeyIfExists() {
+    try {
+      const irisKeyJSON = window.localStorage.getItem("iris.myKey");
+      if (irisKeyJSON) {
+        const irisKeyObj = JSON.parse(irisKeyJSON);
+        if (irisKeyObj.priv) {
+          const privateKey = await PinEncrypted.create(irisKeyObj.priv, "1234");
+          this.loginWithPrivateKey(privateKey);
+          window.localStorage.removeItem("iris.myKey");
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load iris key", e);
+    }
   }
 
   #migrate() {
