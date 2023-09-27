@@ -104,6 +104,7 @@ jobs:
         name: Add custom code
         if: env.exists == 'false'
         run: |
+          mkdir -p snort/packages/app/config
           cp packages/app/src/Const.ts snort/packages/app/src/Const.ts
           cp packages/app/config/soloco.json snort/packages/app/config/default.json
       - 
