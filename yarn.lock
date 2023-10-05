@@ -3605,14 +3605,14 @@ __metadata:
   linkType: hard
 
 "@types/webtorrent@npm:^0.109.3":
-  version: 0.109.3
-  resolution: "@types/webtorrent@npm:0.109.3"
+  version: 0.109.4
+  resolution: "@types/webtorrent@npm:0.109.4"
   dependencies:
     "@types/bittorrent-protocol": "*"
     "@types/node": "*"
     "@types/parse-torrent": "*"
     "@types/simple-peer": "*"
-  checksum: 140cf5fb75e0b6f0a5fd875eee746ddc45425760e9c84d038d619c336908d3bf19e931b07c858f5345ab4a87babcb90551ff3ccc2a763402ff8d020ad9c2067a
+  checksum: 39dc3114b908c870610d22923a55f24d31817eb59230ff5f5753458c2b42d41d1aa9282e09ce23bdf464030bffe99ec61d1899bbe2b343b2022f9496966c3049
   languageName: node
   linkType: hard
 
