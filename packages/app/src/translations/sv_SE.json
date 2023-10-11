@@ -232,7 +232,7 @@
   "P7FD0F": "System (standard)",
   "P7nJT9": "Totalt idag (UTC): {amount} sats",
   "PCSt5T": "Inställningar",
-  "PJeJFc": "Summary",
+  "PJeJFc": "Sammanfattning",
   "PLSbmL": "Din mnemoniska lösenfras",
   "PaN7t3": "Förhandsgranska på {site}",
   "PamNxw": "Okänd filrubrik: {name}",
@@ -443,6 +443,7 @@
   "rrfdTe": "Detta är samma teknik som används av Bitcoin och har visat sig vara extremt säker.",
   "rudscU": "Det gick inte att ladda följande, försök igen senare",
   "rx1i0i": "Kort länk",
+  "s5yJ8G": "Read full story",
   "sKDn4e": "Visa emblem",
   "sUNhQE": "användare",
   "sZQzjQ": "Misslyckades att tolka zapsplit: {input}",
@@ -496,5 +497,5 @@
   "zonsdq": "Det gick inte att ladda LNURL-tjänsten",
   "zvCDao": "Visa automatiskt de senaste anteckningarna",
   "zwb6LR": "<b>Mint:</b> {url}",
-  "zxvhnE": "Daily"
+  "zxvhnE": "Dagligen"
 }
