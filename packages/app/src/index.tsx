@@ -17,8 +17,10 @@ import {
   PowMiner,
   NostrEvent,
   mapEventToProfile,
+  PowWorker,
 } from "@snort/system";
 import { SnortContext } from "@snort/system-react";
+import { removeUndefined } from "@snort/shared";
 
 import * as serviceWorkerRegistration from "serviceWorkerRegistration";
 import { IntlProvider } from "IntlProvider";
@@ -47,7 +49,7 @@ import { preload, RelayMetrics, SystemDb, UserCache, UserRelays } from "Cache";
 import { LoginStore } from "Login";
 import { SnortDeckLayout } from "Pages/DeckLayout";
 import FreeNostrAddressPage from "./Pages/FreeNostrAddressPage";
-import { removeUndefined } from "@snort/shared";
+import { ListFeedPage } from "Pages/ListFeedPage";
 
 const WasmQueryOptimizer = {
   expandFilter: (f: ReqFilter) => {
@@ -71,6 +73,10 @@ export class WasmPowWorker implements PowMiner {
   }
 }
 
+const hasWasm = "WebAssembly" in globalThis;
+const DefaultPowWorker = hasWasm ? undefined : new PowWorker("/pow.js");
+export const GetPowWorker = () => (hasWasm ? new WasmPowWorker() : unwrap(DefaultPowWorker));
+
 /**
  * Singleton nostr system
  */
@@ -78,7 +84,7 @@ export const System = new NostrSystem({
   relayCache: UserRelays,
   profileCache: UserCache,
   relayMetrics: RelayMetrics,
-  queryOptimizer: WasmQueryOptimizer,
+  queryOptimizer: hasWasm ? WasmQueryOptimizer : undefined,
   db: SystemDb,
   authHandler: async (c, r) => {
     const { id } = LoginStore.snapshot();
@@ -120,7 +126,9 @@ export const ProfileLoader = new ProfileLoaderService(System, UserCache);
 serviceWorkerRegistration.register();
 
 async function initSite() {
-  await wasmInit(WasmPath);
+  if (hasWasm) {
+    await wasmInit(WasmPath);
+  }
   const login = LoginStore.takeSnapshot();
   db.ready = await db.isAvailable();
   if (db.ready) {
@@ -145,7 +153,7 @@ async function initSite() {
     const sc = document.createElement("script");
     sc.src = "https://analytics.v0l.io/js/script.js";
     sc.defer = true;
-    sc.setAttribute("data-domain", "snort.social");
+    sc.setAttribute("data-domain", CONFIG.hostname);
     document.head.appendChild(sc);
   }
   return null;
@@ -213,6 +221,10 @@ export const router = createBrowserRouter([
       {
         path: "/zap-pool",
         element: <ZapPoolPage />,
+      },
+      {
+        path: "/list-feed/:id",
+        element: <ListFeedPage />,
       },
       ...NewUserRoutes,
       ...WalletRoutes,
