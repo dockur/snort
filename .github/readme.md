@@ -25,6 +25,7 @@ services:
     image: dockurr/snort:latest
     ports:
         - 80:80
+    restart: on-failure
 ```
 
 [build_url]: https://github.com/dockur/snort/
