@@ -20,6 +20,7 @@ import { fetchNip05Pubkey } from "@snort/shared";
 import { ZapTarget } from "Zapper";
 import { useNoteCreator } from "State/NoteCreator";
 import { NoteBroadcaster } from "./NoteBroadcaster";
+import FileUploadProgress from "./FileUpload";
 
 export function NoteCreator() {
   const { formatMessage } = useIntl();
@@ -114,6 +115,7 @@ export function NoteCreator() {
         }
         const hk = (eb: EventBuilder) => {
           extraTags?.forEach(t => eb.tag(t));
+          note.extraTags?.forEach(t => eb.tag(t));
           eb.kind(kind);
           return eb;
         };
@@ -170,6 +172,17 @@ export function NoteCreator() {
             v.otherEvents = [...(v.otherEvents ?? []), rx.header];
           } else if (rx.url) {
             v.note = `${v.note ? `${v.note}\n` : ""}${rx.url}`;
+            if (rx.metadata) {
+              v.extraTags ??= [];
+              const imeta = ["imeta", `url ${rx.url}`];
+              if (rx.metadata.blurhash) {
+                imeta.push(`blurhash ${rx.metadata.blurhash}`);
+              }
+              if (rx.metadata.width && rx.metadata.height) {
+                imeta.push(`dim ${rx.metadata.width}x${rx.metadata.height}`);
+              }
+              v.extraTags.push(imeta);
+            }
           } else if (rx?.error) {
             v.error = rx.error;
           }
@@ -536,6 +549,7 @@ export function NoteCreator() {
             {renderPollOptions()}
           </div>
         )}
+        {uploader.progress.length > 0 && <FileUploadProgress progress={uploader.progress} />}
         {noteCreatorFooter()}
         {note.error && <span className="error">{note.error}</span>}
         {note.advanced && noteCreatorAdvanced()}

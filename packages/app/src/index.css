@@ -125,8 +125,7 @@ a:hover {
 }
 
 a.ext {
-  word-break: break-all;
-  white-space: initial;
+  overflow-wrap: break-word;
 }
 
 #root {
@@ -365,12 +364,9 @@ button.icon:hover {
   padding: 5px;
 }
 
-.btn-rnd {
+.circle {
   border-radius: 100%;
   aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 textarea {
