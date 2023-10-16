@@ -17,6 +17,7 @@ ARG VERSION_ARG=0
 ENV VERSION=$VERSION_ARG
 
 LABEL org.opencontainers.image.title=Snort
+LABEL org.opencontainers.image.licenses=MIT
 LABEL org.opencontainers.image.created=${DATE_ARG}
 LABEL org.opencontainers.image.revision=${BUILD_ARG}
 LABEL org.opencontainers.image.version=${VERSION_ARG}
