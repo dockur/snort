@@ -120,9 +120,6 @@
   "3KNMbJ": {
     "defaultMessage": "Articles"
   },
-  "3Rx6Qo": {
-    "defaultMessage": "Advanced"
-  },
   "3cc4Ct": {
     "defaultMessage": "Light"
   },
@@ -818,6 +815,9 @@
   },
   "TDR5ge": {
     "defaultMessage": "Media in notes will automatically be shown for selected people, otherwise only the link will show"
+  },
+  "TJo5E6": {
+    "defaultMessage": "Preview"
   },
   "TP/cMX": {
     "defaultMessage": "Ended"
