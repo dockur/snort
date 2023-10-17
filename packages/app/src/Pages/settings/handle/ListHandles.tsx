@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import FormattedMessage from "Element/FormattedMessage";
+import { FormattedMessage } from "react-intl";
 import { Link, useNavigate } from "react-router-dom";
 
 import { ApiHost } from "Const";
@@ -37,7 +37,7 @@ export default function ListHandles() {
         />
       )}
       {handles.map(a => (
-        <div className="flex f-space" key={a.id}>
+        <div className="flex items-center justify-between" key={a.id}>
           <h4 className="nip05">
             {a.handle}@
             <span className="domain" data-domain={a.domain?.toLowerCase()}>
@@ -45,6 +45,7 @@ export default function ListHandles() {
             </span>
           </h4>
           <button
+            type="button"
             onClick={() =>
               navigate("manage", {
                 state: a,
@@ -55,7 +56,7 @@ export default function ListHandles() {
         </div>
       ))}
       {handles.length > 0 && (
-        <button onClick={() => navigate("/nostr-address")}>
+        <button type="button" onClick={() => navigate("/nostr-address")}>
           <FormattedMessage defaultMessage="Buy Handle" />
         </button>
       )}
