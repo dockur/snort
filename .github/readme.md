@@ -11,7 +11,7 @@
 
 </div></h1>
 
-Docker image of [snort](https://github.com/v0l/snort), an UI for the [nostr](https://github.com/nostr-protocol/nostr) protocol. See of [snort.social](https://snort.social) for a demo.
+Docker image of [snort](https://github.com/v0l/snort), an UI for the [nostr](https://github.com/nostr-protocol/nostr) protocol. See [snort.social](https://snort.social) for a demo.
 
 ## How to use
 
