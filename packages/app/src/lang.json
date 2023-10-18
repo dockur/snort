@@ -84,9 +84,6 @@
   "1c4YST": {
     "defaultMessage": "Connected to: {node} 🎉"
   },
-  "1iQ8GN": {
-    "defaultMessage": "Toggle Preview"
-  },
   "1nYUGC": {
     "defaultMessage": "{n} Following"
   },
@@ -347,9 +344,6 @@
   "C1LjMx": {
     "defaultMessage": "Lightning Donation"
   },
-  "C5xzTC": {
-    "defaultMessage": "Premium"
-  },
   "C7642/": {
     "defaultMessage": "Quote Repost"
   },
@@ -403,6 +397,9 @@
   },
   "E8a4yq": {
     "defaultMessage": "Follow some popular accounts"
+  },
+  "EJbFi7": {
+    "defaultMessage": "Search notes"
   },
   "ELbg9p": {
     "defaultMessage": "Data Providers"
@@ -1112,6 +1109,9 @@
   "hMzcSq": {
     "defaultMessage": "Messages"
   },
+  "hRTfTR": {
+    "defaultMessage": "PRO"
+  },
   "hY4lzx": {
     "defaultMessage": "Supports"
   },
@@ -1156,6 +1156,9 @@
   },
   "jA3OE/": {
     "defaultMessage": "{n,plural,=1{{n} sat} other{{n} sats}}"
+  },
+  "jAmfGl": {
+    "defaultMessage": "Your {site_name} subscription is expired"
   },
   "jMzO1S": {
     "defaultMessage": "Internal error: {msg}"
@@ -1267,9 +1270,6 @@
   "nOaArs": {
     "defaultMessage": "Setup Profile"
   },
-  "nWQFic": {
-    "defaultMessage": "Renew"
-  },
   "ncbgUU": {
     "defaultMessage": "{site} is a Nostr UI, nostr is a decentralised protocol for saving and distributing \"notes\"."
   },
@@ -1334,6 +1334,9 @@
   },
   "qUJTsT": {
     "defaultMessage": "Blocked"
+  },
+  "qZsKBR": {
+    "defaultMessage": "Renew {tier}"
   },
   "qdGuQo": {
     "defaultMessage": "Your Private Key Is (do not share this with anyone)"

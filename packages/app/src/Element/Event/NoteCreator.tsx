@@ -22,6 +22,7 @@ import { ZapTarget } from "Zapper";
 import { useNoteCreator } from "State/NoteCreator";
 import { NoteBroadcaster } from "./NoteBroadcaster";
 import FileUploadProgress from "./FileUpload";
+import { ToggleSwitch } from "Icons/Toggle";
 
 export function NoteCreator() {
   const { formatMessage } = useIntl();
@@ -168,7 +169,9 @@ export function NoteCreator() {
         const rx = await uploader.upload(file, file.name);
         note.update(v => {
           if (rx.header) {
-            const link = `nostr:${new NostrLink(CONFIG.eventLinkPrefix, rx.header.id, rx.header.kind).encode()}`;
+            const link = `nostr:${new NostrLink(NostrPrefix.Event, rx.header.id, rx.header.kind).encode(
+              CONFIG.eventLinkPrefix,
+            )}`;
             v.note = `${v.note ? `${v.note}\n` : ""}${link}`;
             v.otherEvents = [...(v.otherEvents ?? []), rx.header];
           } else if (rx.url) {
@@ -341,9 +344,6 @@ export function NoteCreator() {
   function noteCreatorAdvanced() {
     return (
       <>
-        <button className="secondary" onClick={loadPreview}>
-          <FormattedMessage defaultMessage="Toggle Preview" />
-        </button>
         <div>
           <h4>
             <FormattedMessage defaultMessage="Custom Relays" />
@@ -452,7 +452,7 @@ export function NoteCreator() {
           />
           {note.pollOptions === undefined && !note.replyTo && (
             <AsyncIcon
-              iconName="pie-chart"
+              iconName="list"
               iconSize={24}
               onClick={() => note.update(v => (v.pollOptions = ["A", "B"]))}
               className={classNames("note-creator-icon", { active: note.pollOptions !== undefined })}
@@ -466,12 +466,17 @@ export function NoteCreator() {
             className={classNames("note-creator-icon", { active: note.advanced })}
           />
           <FormattedMessage defaultMessage="Preview" />
+          <ToggleSwitch
+            onClick={() => loadPreview()}
+            size={40}
+            className={classNames({ active: Boolean(note.preview) })}
+          />
         </div>
         <div className="flex g8">
           <button className="secondary" onClick={cancel}>
             <FormattedMessage defaultMessage="Cancel" />
           </button>
-          <AsyncButton onClick={onSubmit}>
+          <AsyncButton onClick={onSubmit} className="primary">
             {note.replyTo ? <FormattedMessage defaultMessage="Reply" /> : <FormattedMessage defaultMessage="Send" />}
           </AsyncButton>
         </div>

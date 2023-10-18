@@ -15,6 +15,7 @@ import {
   MetadataCache,
   NostrLink,
 } from "@snort/system";
+import { Day } from "Const";
 
 export const sha256 = (str: string | Uint8Array): u256 => {
   return utils.bytesToHex(hash(str));
@@ -74,13 +75,9 @@ export function parseId(id: string) {
 }
 
 export function bech32ToHex(str: string) {
-  try {
-    const nKey = bech32.decode(str, 1_000);
-    const buff = bech32.fromWords(nKey.words);
-    return utils.bytesToHex(Uint8Array.from(buff));
-  } catch (e) {
-    return str;
-  }
+  const nKey = bech32.decode(str, 10_000);
+  const buff = bech32.fromWords(nKey.words);
+  return bytesToHex(buff);
 }
 
 /**
@@ -89,13 +86,9 @@ export function bech32ToHex(str: string) {
  * @returns
  */
 export function bech32ToText(str: string) {
-  try {
-    const decoded = bech32.decode(str, 1000);
-    const buf = bech32.fromWords(decoded.words);
-    return new TextDecoder().decode(Uint8Array.from(buf));
-  } catch {
-    return "";
-  }
+  const nKey = bech32.decode(str, 10_000);
+  const buff = bech32.fromWords(nKey.words);
+  return new TextDecoder().decode(buff);
 }
 
 /**
@@ -469,7 +462,7 @@ export function kvToObject<T>(o: string, sep?: string) {
 }
 
 export function defaultAvatar(input?: string) {
-  return `https://robohash.v0l.io/${input ?? "missing"}.png${IsHalloween() ? "?set=set2" : ""}`;
+  return `https://robohash.v0l.io/${input ?? "missing"}.png${isHalloween() ? "?set=set2" : ""}`;
 }
 
 export function isFormElement(target: HTMLElement): boolean {
@@ -480,7 +473,25 @@ export function isFormElement(target: HTMLElement): boolean {
   return false;
 }
 
-export const IsHalloween = () => {
+const ThisYear = new Date().getFullYear();
+const SeasonalEventsWindow = 7; // n days before
+const IsTheSeason = (target: Date) => {
   const now = new Date();
-  return now.getMonth() === 9 && now.getDate() >= 17;
+  const days = (target.getTime() - now.getTime()) / (Day * 1000);
+  return days > 0 && days <= SeasonalEventsWindow;
+};
+
+export const isHalloween = () => {
+  const event = new Date(ThisYear, 9, 31);
+  return IsTheSeason(event);
+};
+
+export const isStPatricksDay = () => {
+  const event = new Date(ThisYear, 2, 17);
+  return IsTheSeason(event);
+};
+
+export const isChristmas = () => {
+  const event = new Date(ThisYear, 11, 25);
+  return IsTheSeason(event);
 };
