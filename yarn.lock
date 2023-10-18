@@ -4090,11 +4090,11 @@ __metadata:
   linkType: hard
 
 "@types/webscopeio__react-textarea-autocomplete@npm:^4.7.2":
-  version: 4.7.2
-  resolution: "@types/webscopeio__react-textarea-autocomplete@npm:4.7.2"
+  version: 4.7.4
+  resolution: "@types/webscopeio__react-textarea-autocomplete@npm:4.7.4"
   dependencies:
     "@types/react": "*"
-  checksum: 1b843bd2c52849ccc2f4e01a287f5a4e4e17d46826e4b58e9ace0ec98b9e9696a29a1c65cc5071b8a0b01b959f791ec7e53ec0937719466446d501c5651db4cf
+  checksum: 3a35acb39b9a4fde2db450c4b02c99488a3e0f7e258c91a6ab8a55354fd3ac4ca78340a1a175b2dc3549407060637c21bb99b233902a17bdfc0734256948beca
   languageName: node
   linkType: hard
 
