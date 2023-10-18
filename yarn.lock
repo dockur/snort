@@ -3658,11 +3658,11 @@ __metadata:
   linkType: hard
 
 "@types/debug@npm:^4.1.8":
-  version: 4.1.8
-  resolution: "@types/debug@npm:4.1.8"
+  version: 4.1.10
+  resolution: "@types/debug@npm:4.1.10"
   dependencies:
     "@types/ms": "*"
-  checksum: a9a9bb40a199e9724aa944e139a7659173a9b274798ea7efbc277cb084bc37d32fc4c00877c3496fac4fed70a23243d284adb75c00b5fdabb38a22154d18e5df
+  checksum: 938f79c5b610f851da9c67ecd8641a09b33ce9cb38fe4c9f4d20ee743d6bccb5d8e9a833a4cd23e0684a316622af67a0634fa706baea5a01f5219961d1976314
   languageName: node
   linkType: hard
 
