@@ -21,7 +21,7 @@ jobs:
         name: Check for new tags in v0l/snort
         run: |
           #!/bin/bash
-          latest_tag=$(curl -s https://api.github.com/repos/v0l/snort/tags | jq -r '.[0].name')
+          latest_tag=$(curl -s https://api.github.com/repos/v0l/snort/tags | jq -r '.[0].name' | tail -c+2)
           echo "latest_tag=$latest_tag" >> $GITHUB_ENV
       - 
         name: Check if the new tag exists in DockerHub
@@ -61,7 +61,7 @@ jobs:
         if: env.exists == 'false'
         run: |
           git config --global url.https://github.com/.insteadOf git://github.com/
-          git clone https://github.com/v0l/snort.git --single-branch --branch ${{ steps.prepare.outputs.version }}
+          git clone https://github.com/v0l/snort.git --single-branch --branch v${{ steps.prepare.outputs.version }}
           cp Dockerfile snort/
           cp .dockerignore snort/
           cp .yarnrc.yml snort/
@@ -164,5 +164,5 @@ jobs:
         uses: action-pack/set-variable@v1
         with:
           name: 'TAG'
-          value: "v${{ steps.prepare.outputs.version }}"
+          value: "${{ steps.prepare.outputs.version }}"
           token: ${{ secrets.REPO_ACCESS_TOKEN }}
