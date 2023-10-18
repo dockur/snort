@@ -27,3 +27,5 @@ LABEL org.opencontainers.image.description="Nostr web UI (snort.social)"
 
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/packages/app/build /usr/share/nginx/html
+
+EXPOSE 8080
