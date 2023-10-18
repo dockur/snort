@@ -24,7 +24,7 @@ services:
     container_name: snort
     image: dockurr/snort:latest
     ports:
-        - 80:80
+        - 80:8080
     restart: on-failure
 ```
 
