@@ -133,14 +133,6 @@ jobs:
         run: |
           rm -f ${HOME}/.docker/config.json
       -
-        name: Get previous tag
-        if: env.exists == 'false'
-        id: previousTag
-        run: |
-          name=$(git --no-pager tag --sort=creatordate --merged ${{ github.ref_name }} | tail -1)
-          echo "previousTag: $name"
-          echo "previousTag=$name" >> $GITHUB_ENV
-      -
         name: Generate changelog
         if: env.exists == 'false'
         id: changelog
@@ -148,7 +140,7 @@ jobs:
         with:
           token: ${{ github.token }}
           fromTag: ${{ github.ref_name }}
-          toTag: ${{ env.previousTag }}
+          toTag: ${{ vars.TAG }}
           writeToFile: false
           reverseOrder: true
           includeInvalidCommits: true
@@ -166,3 +158,10 @@ jobs:
             ${{ steps.changelog.outputs.changes }}
 
             **Full Changelog**: https://github.com/${{ github.repository }}/compare//${{ env.previousTag }}...v${{ steps.prepare.outputs.version }}
+      -
+        name: Store tag
+        uses: action-pack/set-variable@v1
+        with:
+          name: 'TAG'
+          value: "v${{ steps.prepare.outputs.version }}"
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
