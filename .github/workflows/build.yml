@@ -157,9 +157,10 @@ jobs:
           body: |
             ${{ steps.changelog.outputs.changes }}
 
-            **Full Changelog**: https://github.com/${{ github.repository }}/compare//${{ env.previousTag }}...v${{ steps.prepare.outputs.version }}
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare//${{ vars.TAG }}...v${{ steps.prepare.outputs.version }}
       -
         name: Store tag
+        if: env.exists == 'false'
         uses: action-pack/set-variable@v1
         with:
           name: 'TAG'
