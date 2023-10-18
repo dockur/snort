@@ -133,19 +133,6 @@ jobs:
         run: |
           rm -f ${HOME}/.docker/config.json
       -
-        name: Generate changelog
-        if: env.exists == 'false'
-        id: changelog
-        uses: requarks/changelog-action@v1
-        with:
-          token: ${{ github.token }}
-          fromTag: ${{ github.ref_name }}
-          toTag: ${{ vars.TAG }}
-          writeToFile: false
-          reverseOrder: true
-          includeInvalidCommits: true
-          excludeTypes: "docs,build,chore"
-      -
         name: Create a release
         if: env.exists == 'false'
         uses: action-pack/github-release@v2
@@ -154,15 +141,3 @@ jobs:
         with:
           tag: "v${{ steps.prepare.outputs.version }}"
           title: "v${{ steps.prepare.outputs.version }}"
-          body: |
-            ${{ steps.changelog.outputs.changes }}
-
-            **Full Changelog**: https://github.com/${{ github.repository }}/compare//${{ vars.TAG }}...v${{ steps.prepare.outputs.version }}
-      -
-        name: Store tag
-        if: env.exists == 'false'
-        uses: action-pack/set-variable@v1
-        with:
-          name: 'TAG'
-          value: "${{ steps.prepare.outputs.version }}"
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
