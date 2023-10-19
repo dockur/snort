@@ -4099,14 +4099,14 @@ __metadata:
   linkType: hard
 
 "@types/webtorrent@npm:^0.109.3":
-  version: 0.109.3
-  resolution: "@types/webtorrent@npm:0.109.3"
+  version: 0.109.5
+  resolution: "@types/webtorrent@npm:0.109.5"
   dependencies:
     "@types/bittorrent-protocol": "*"
     "@types/node": "*"
     "@types/parse-torrent": "*"
     "@types/simple-peer": "*"
-  checksum: 140cf5fb75e0b6f0a5fd875eee746ddc45425760e9c84d038d619c336908d3bf19e931b07c858f5345ab4a87babcb90551ff3ccc2a763402ff8d020ad9c2067a
+  checksum: 431cac9e6f194195c63da473d08c4811b73228e74ff705ebdc3d476aa4810df81593a38c13927115a57d9fa6c1835098fa0c52184cb8ffd2fea6d4be70f47b8b
   languageName: node
   linkType: hard
 
