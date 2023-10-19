@@ -15,7 +15,7 @@
     "arrowParens": "avoid",
     "trailingComma": "all"
   },
-  "packageManager": "yarn@3.6.3",
+  "packageManager": "yarn@3.6.4",
   "dependencies": {
     "@cloudflare/workers-types": "^4.20230307.0",
     "@tauri-apps/cli": "^1.2.3",
