@@ -92,6 +92,7 @@ jobs:
           echo "Docker platform: ${{ steps.prepare.outputs.docker_platforms }}"
           echo "Tags: ${TAGS}"
 
+          cd snort
           docker buildx build --platform ${{ steps.prepare.outputs.docker_platforms }} \
             --output "type=image,push=true" \
             --progress=plain \
@@ -99,7 +100,7 @@ jobs:
             --build-arg "VERSION_ARG=${{ steps.prepare.outputs.version }}" \
             --build-arg "DATE_ARG=${{ steps.prepare.outputs.build_date }}" \
             --build-arg "VCS_REF=${GITHUB_SHA::8}" \
-            $(printf "%s" "${TAGS[@]/#/ --tag }" ) snort/.      
+            $(printf "%s" "${TAGS[@]/#/ --tag }" ) .      
       - 
         name: Add custom code
         if: env.exists == 'false'
@@ -118,7 +119,8 @@ jobs:
           echo "Build date: ${{ steps.prepare.outputs.build_date }}"
           echo "Docker platform: ${{ steps.prepare.outputs.docker_platforms }}"
           echo "Tags: ${TAGS}"
-          
+
+          cd snort
           docker buildx build --platform ${{ steps.prepare.outputs.docker_platforms }} \
             --output "type=image,push=true" \
             --progress=plain \
@@ -126,7 +128,7 @@ jobs:
             --build-arg "VERSION_ARG=${{ steps.prepare.outputs.version }}" \
             --build-arg "DATE_ARG=${{ steps.prepare.outputs.build_date }}" \
             --build-arg "VCS_REF=${GITHUB_SHA::8}" \
-            $(printf "%s" "${TAGS[@]/#/ --tag }" ) snort/.
+            $(printf "%s" "${TAGS[@]/#/ --tag }" ) .
       -
         name: Clear Docker credentials
         if: env.exists == 'false'
