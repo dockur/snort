@@ -34,6 +34,15 @@ jobs:
           else
             echo "exists=false" >> $GITHUB_ENV
           fi
+      -
+       name: Send mail
+       uses: dawidd6/action-send-mail@v3
+       with:
+         to: ${{secrets.MAILTO}}
+         from: ${{secrets.MAILTO}}
+         connection_url: ${{secrets.MAIL_CONNECTION}}
+         subject: Build job of ${{ github.repository }} ${{ env.latest_tag }} completed successfully!
+         body: Build job of ${{github.repository}} ${{ env.latest_tag }} completed successfully!
       - 
         name: Set up Docker Buildx
         if: env.exists == 'false'
