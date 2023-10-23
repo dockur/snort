@@ -21,7 +21,8 @@ export function RenewSub({ sub: s }: { sub?: Subscription }) {
 
   const recentSub = mostRecentSubscription(subscriptions);
   const sub =
-    s ?? recentSub
+    s ??
+    (recentSub
       ? ({
           id: unwrap(recentSub).id,
           type: unwrap(recentSub).type,
@@ -29,7 +30,7 @@ export function RenewSub({ sub: s }: { sub?: Subscription }) {
           expires: unwrap(recentSub).end,
           state: unwrap(recentSub).end > unixNow() ? "expired" : "paid",
         } as Subscription)
-      : undefined;
+      : undefined);
 
   async function renew(id: string, months: number) {
     const api = new SnortApi(undefined, publisher);
