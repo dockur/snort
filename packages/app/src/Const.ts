@@ -1,5 +1,3 @@
-import { RelaySettings } from "@snort/system";
-
 /**
  * 1 Hour in seconds
  */
@@ -36,21 +34,9 @@ export const KieranPubKey = "npub1v0lxxxxutpvrelsksy8cdhgfux9l6a42hsj2qzquu2zk7v
 export const SnortPubKey = "npub1sn0rtcjcf543gj4wsg7fa59s700d5ztys5ctj0g69g2x6802npjqhjjtws";
 
 /**
- * Websocket re-connect timeout
- */
-export const DefaultConnectTimeout = 2000;
-
-/**
- * How long profile cache should be considered valid for
- */
-export const ProfileCacheExpire = 1_000 * 60 * 60 * 6;
-
-/**
  * Default bootstrap relays
  */
-export const DefaultRelays = new Map<string, RelaySettings>([
-  ["wss://soloco.nl/", { read: true, write: false }],
-]);
+export const DefaultRelays = new Map(Object.entries(CONFIG.defaultRelays));
 
 /**
  * Default search relays
