@@ -8,6 +8,14 @@
   "httpCache": "",
   "animalNamePlaceholders": false,
   "features": {
-    "subscriptions": true
-  }  
+    "analytics": true,
+    "subscriptions": true,
+    "deck": true,
+    "zapPool": true
+  },
+  "eventLinkPrefix": "nevent",
+  "profileLinkPrefix": "nprofile",
+  "defaultRelays": {
+    "wss://soloco.nl/": { "read": true, "write": false }
+  }
 }
