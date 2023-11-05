@@ -14,7 +14,7 @@ import * as utils from "@noble/curves/abstract/utils";
 import { DefaultRelays, SnortPubKey } from "Const";
 import { LoginStore, UserPreferences, LoginSession, LoginSessionType, SnortAppData } from "Login";
 import { generateBip39Entropy, entropyToPrivateKey } from "nip6";
-import { bech32ToHex, dedupeById, randomSample, sanitizeRelayUrl, unwrap } from "SnortUtils";
+import { bech32ToHex, dedupeById, sanitizeRelayUrl, unwrap } from "SnortUtils";
 import { SubscriptionEvent } from "Subscription";
 import { Chats, FollowsFeed, GiftsCache, Notifications } from "Cache";
 import { Nip7OsSigner } from "./Nip7OsSigner";
@@ -83,22 +83,7 @@ export async function generateNewLogin(system: SystemInterface, pin: (key: strin
   const ent = generateBip39Entropy();
   const entropy = utils.bytesToHex(ent);
   const privateKey = entropyToPrivateKey(ent);
-  let newRelays: Record<string, RelaySettings> = {};
-
-  try {
-    const rsp = await fetch("https://api.nostr.watch/v1/online");
-    if (rsp.ok) {
-      const online: string[] = await rsp.json();
-      const pickRandom = randomSample(online, 4);
-      const relayObjects = pickRandom.map(a => [unwrap(sanitizeRelayUrl(a)), { read: true, write: true }]);
-      newRelays = {
-        ...Object.fromEntries(relayObjects),
-        ...Object.fromEntries(DefaultRelays.entries()),
-      };
-    }
-  } catch (e) {
-    console.warn(e);
-  }
+  const newRelays = Object.fromEntries(DefaultRelays.entries());
 
   // connect to new relays
   await Promise.all(Object.entries(newRelays).map(([k, v]) => system.ConnectToRelay(k, v)));
