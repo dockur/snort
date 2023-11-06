@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { HexKey, Lists, NostrLink, TaggedNostrEvent } from "@snort/system";
 import { Menu, MenuItem } from "@szhsin/react-menu";
@@ -11,6 +11,7 @@ import useModeration from "Hooks/useModeration";
 import useEventPublisher from "Hooks/useEventPublisher";
 import { ReBroadcaster } from "../ReBroadcaster";
 import SnortApi from "External/SnortApi";
+import { SubscriptionType, getCurrentSubscription } from "Subscription";
 
 export interface NoteTranslation {
   text: string;
@@ -59,19 +60,33 @@ export function NoteContextMenu({ ev, ...props }: NosteContextMenuProps) {
 
   async function translate() {
     const api = new SnortApi();
+    const targetLang = lang.split("-")[0].toUpperCase();
     const result = await api.translate({
       text: [ev.content],
-      target_lang: lang.split("-")[0].toUpperCase(),
+      target_lang: targetLang,
     });
 
-    if (typeof props.onTranslated === "function" && result.translations.length > 0) {
-      props.onTranslated({
-        text: result.translations[0].text,
-        fromLanguage: langNames.of(result.translations[0].detected_source_language),
-        confidence: 1,
-      } as NoteTranslation);
+    if ("translations" in result) {
+      if (
+        typeof props.onTranslated === "function" &&
+        result.translations.length > 0 &&
+        targetLang != result.translations[0].detected_source_language
+      ) {
+        props.onTranslated({
+          text: result.translations[0].text,
+          fromLanguage: langNames.of(result.translations[0].detected_source_language),
+          confidence: 1,
+        } as NoteTranslation);
+      }
     }
   }
+
+  useEffect(() => {
+    const sub = getCurrentSubscription(login.subscriptions);
+    if (sub?.type === SubscriptionType.Premium && (login.preferences.autoTranslate ?? true)) {
+      translate();
+    }
+  }, []);
 
   async function copyId() {
     const link = NostrLink.fromEvent(ev).encode(CONFIG.eventLinkPrefix);
