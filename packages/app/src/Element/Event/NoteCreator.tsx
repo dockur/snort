@@ -2,17 +2,18 @@ import "./NoteCreator.css";
 import { FormattedMessage, useIntl } from "react-intl";
 import { EventKind, NostrPrefix, TaggedNostrEvent, EventBuilder, tryParseNostrLink, NostrLink } from "@snort/system";
 import classNames from "classnames";
+import { TagsInput } from "react-tag-input-component";
 
 import Icon from "Icons/Icon";
 import useEventPublisher from "Hooks/useEventPublisher";
-import { openFile } from "SnortUtils";
+import { appendDedupe, openFile } from "SnortUtils";
 import Textarea from "Element/Textarea";
 import Modal from "Element/Modal";
 import ProfileImage from "Element/User/ProfileImage";
 import useFileUpload from "Upload";
 import Note from "Element/Event/Note";
 
-import { ClipboardEventHandler, DragEvent } from "react";
+import { ClipboardEventHandler, DragEvent, useEffect, useState } from "react";
 import useLogin from "Hooks/useLogin";
 import { GetPowWorker } from "index";
 import AsyncButton from "Element/AsyncButton";
@@ -23,6 +24,8 @@ import { useNoteCreator } from "State/NoteCreator";
 import { NoteBroadcaster } from "./NoteBroadcaster";
 import FileUploadProgress from "./FileUpload";
 import { ToggleSwitch } from "Icons/Toggle";
+import NostrBandApi from "External/NostrBand";
+import { useLocale } from "IntlProvider";
 
 export function NoteCreator() {
   const { formatMessage } = useIntl();
@@ -98,6 +101,10 @@ export function NoteCreator() {
         if (note.pollOptions) {
           extraTags ??= [];
           extraTags.push(...note.pollOptions.map((a, i) => ["poll_option", i.toString(), a]));
+        }
+        if (note.hashTags.length > 0) {
+          extraTags ??= [];
+          extraTags.push(...note.hashTags.map(a => ["t", a.toLowerCase()]));
         }
         // add quote repost
         if (note.quote) {
@@ -566,24 +573,42 @@ export function NoteCreator() {
         )}
         {note.preview && getPreviewNote()}
         {!note.preview && (
-          <div onPaste={handlePaste} className={classNames("note-creator", { poll: Boolean(note.pollOptions) })}>
-            <Textarea
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              autoFocus
-              className={classNames("textarea", { "textarea--focused": note.active })}
-              onChange={c => onChange(c)}
-              value={note.note}
-              onFocus={() => note.update(v => (v.active = true))}
-              onKeyDown={e => {
-                if (e.key === "Enter" && e.metaKey) {
-                  sendNote().catch(console.warn);
-                }
-              }}
-            />
-            {renderPollOptions()}
-          </div>
+          <>
+            <div onPaste={handlePaste} className={classNames("note-creator", { poll: Boolean(note.pollOptions) })}>
+              <Textarea
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                autoFocus
+                className={classNames("textarea", { "textarea--focused": note.active })}
+                onChange={c => onChange(c)}
+                value={note.note}
+                onFocus={() => note.update(v => (v.active = true))}
+                onKeyDown={e => {
+                  if (e.key === "Enter" && e.metaKey) {
+                    sendNote().catch(console.warn);
+                  }
+                }}
+              />
+              {renderPollOptions()}
+            </div>
+            <div className="flex flex-col g4">
+              <TagsInput
+                value={note.hashTags}
+                onChange={e => note.update(s => (s.hashTags = e))}
+                placeHolder={formatMessage({
+                  defaultMessage: "Add up to 4 hashtags",
+                })}
+                separators={["Enter", ","]}
+              />
+              {note.hashTags.length > 4 && (
+                <small className="warning">
+                  <FormattedMessage defaultMessage="Try to use less than 5 hashtags to stay on topic 🙏" />
+                </small>
+              )}
+              <TrendingHashTagsLine onClick={t => note.update(s => (s.hashTags = appendDedupe(s.hashTags, [t])))} />
+            </div>
+          </>
         )}
         {uploader.progress.length > 0 && <FileUploadProgress progress={uploader.progress} />}
         {noteCreatorFooter()}
@@ -606,5 +631,36 @@ export function NoteCreator() {
       {note.sending && <NoteBroadcaster evs={note.sending} onClose={reset} customRelays={note.selectedCustomRelays} />}
       {!note.sending && noteCreatorForm()}
     </Modal>
+  );
+}
+
+function TrendingHashTagsLine(props: { onClick: (tag: string) => void }) {
+  const [hashtags, setHashtags] = useState<Array<{ hashtag: string; posts: number }>>();
+  const { lang } = useLocale();
+
+  async function loadTrendingHashtags() {
+    const api = new NostrBandApi();
+    const rsp = await api.trendingHashtags(lang);
+    setHashtags(rsp.hashtags);
+  }
+
+  useEffect(() => {
+    loadTrendingHashtags().catch(console.error);
+  }, []);
+
+  if (!hashtags || hashtags.length === 0) return;
+  return (
+    <div className="flex flex-col g4">
+      <small>
+        <FormattedMessage defaultMessage="Popular Hashtags" />
+      </small>
+      <div className="flex g4 flex-wrap">
+        {hashtags.slice(0, 5).map(a => (
+          <span className="px-2 py-1 bg-dark rounded-full pointer nowrap" onClick={() => props.onClick(a.hashtag)}>
+            #{a.hashtag}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }

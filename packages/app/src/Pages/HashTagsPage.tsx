@@ -11,6 +11,8 @@ import useLogin from "Hooks/useLogin";
 import { setTags } from "Login";
 import AsyncButton from "Element/AsyncButton";
 import ProfileImage from "Element/User/ProfileImage";
+import classNames from "classnames";
+import { formatShort } from "Number";
 
 const HashTagsPage = () => {
   const params = useParams();
@@ -33,7 +35,7 @@ const HashTagsPage = () => {
 
 export default HashTagsPage;
 
-export function HashTagHeader({ tag }: { tag: string }) {
+export function HashTagHeader({ tag, events, className }: { tag: string; events?: number; className?: string }) {
   const login = useLogin();
   const isFollowing = useMemo(() => {
     return login.tags.item.includes(tag);
@@ -60,29 +62,41 @@ export function HashTagHeader({ tag }: { tag: string }) {
   const pubkeys = dedupe((followsTag.data ?? []).map(a => a.pubkey));
 
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex flex-col g8">
-        <h2>#{tag}</h2>
-        <div className="flex">
-          {pubkeys.slice(0, 5).map(a => (
-            <ProfileImage pubkey={a} showUsername={false} link={""} showFollowDistance={false} size={40} />
-          ))}
-          {pubkeys.length > 5 && (
-            <span>
-              +<FormattedNumber value={pubkeys.length - 5} />
-            </span>
+    <div className={classNames("flex flex-col", className)}>
+      <div className="flex items-center justify-between">
+        <div className="flex g8 items-center">
+          <b className="text-xl">#{tag}</b>
+          {events && (
+            <small>
+              <FormattedMessage
+                defaultMessage="{n} notes"
+                values={{
+                  n: formatShort(events),
+                }}
+              />
+            </small>
           )}
         </div>
+        {isFollowing ? (
+          <AsyncButton className="secondary" onClick={() => followTags(login.tags.item.filter(t => t !== tag))}>
+            <FormattedMessage defaultMessage="Unfollow" />
+          </AsyncButton>
+        ) : (
+          <AsyncButton onClick={() => followTags(login.tags.item.concat([tag]))}>
+            <FormattedMessage defaultMessage="Follow" />
+          </AsyncButton>
+        )}
       </div>
-      {isFollowing ? (
-        <AsyncButton className="secondary" onClick={() => followTags(login.tags.item.filter(t => t !== tag))}>
-          <FormattedMessage defaultMessage="Unfollow" />
-        </AsyncButton>
-      ) : (
-        <AsyncButton onClick={() => followTags(login.tags.item.concat([tag]))}>
-          <FormattedMessage defaultMessage="Follow" />
-        </AsyncButton>
-      )}
+      <div className="flex">
+        {pubkeys.slice(0, 5).map(a => (
+          <ProfileImage pubkey={a} showUsername={false} link={""} showFollowDistance={false} size={40} />
+        ))}
+        {pubkeys.length > 5 && (
+          <span>
+            +<FormattedNumber value={pubkeys.length - 5} />
+          </span>
+        )}
+      </div>
     </div>
   );
 }
