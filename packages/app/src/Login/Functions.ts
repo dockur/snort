@@ -12,13 +12,14 @@ import { unixNowMs } from "@snort/shared";
 import * as secp from "@noble/curves/secp256k1";
 import * as utils from "@noble/curves/abstract/utils";
 
-import { DefaultRelays, SnortPubKey } from "Const";
+import { Blasters, SnortPubKey } from "Const";
 import { LoginStore, UserPreferences, LoginSession, LoginSessionType, SnortAppData, Newest } from "Login";
 import { generateBip39Entropy, entropyToPrivateKey } from "nip6";
-import { bech32ToHex, dedupeById, sanitizeRelayUrl, unwrap } from "SnortUtils";
+import { bech32ToHex, dedupeById, getCountry, sanitizeRelayUrl, unwrap } from "SnortUtils";
 import { SubscriptionEvent } from "Subscription";
 import { Chats, FollowsFeed, GiftsCache, Notifications } from "Cache";
 import { Nip7OsSigner } from "./Nip7OsSigner";
+import SnortApi from "External/SnortApi";
 
 export function setRelays(state: LoginSession, relays: Record<string, RelaySettings>, createdAt: number) {
   if (SINGLE_RELAY) {
@@ -92,7 +93,22 @@ export async function generateNewLogin(
   const ent = generateBip39Entropy();
   const entropy = utils.bytesToHex(ent);
   const privateKey = entropyToPrivateKey(ent);
-  const newRelays = Object.fromEntries(DefaultRelays.entries());
+  const newRelays = {} as Record<string, RelaySettings>;
+
+  // Use current timezone info to determine approx location
+  // use closest 5 relays
+  const country = getCountry();
+  const api = new SnortApi();
+  const closeRelays = await api.closeRelays(country.lat, country.lon, 20);
+  for (const cr of closeRelays.sort((a, b) => (a.distance > b.distance ? 1 : -1)).filter(a => !a.is_paid)) {
+    const rr = sanitizeRelayUrl(cr.url);
+    if (rr) {
+      newRelays[rr] = { read: true, write: true };
+      if (Object.keys(newRelays).length >= 5) {
+        break;
+      }
+    }
+  }
 
   // connect to new relays
   await Promise.all(Object.entries(newRelays).map(([k, v]) => system.ConnectToRelay(k, v)));
@@ -107,10 +123,12 @@ export async function generateNewLogin(
   // Create relay metadata event
   const ev2 = await publisher.relayList(newRelays);
   await system.BroadcastEvent(ev2);
+  await Promise.all(Blasters.map(a => system.WriteOnceToRelay(a, ev2)));
 
   // Publish new profile
   const ev3 = await publisher.metadata(profile);
   await system.BroadcastEvent(ev3);
+  await Promise.all(Blasters.map(a => system.WriteOnceToRelay(a, ev3)));
 
   LoginStore.loginWithPrivateKey(await pin(privateKey), entropy, newRelays);
 }
