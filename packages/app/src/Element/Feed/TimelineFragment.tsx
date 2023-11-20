@@ -3,10 +3,10 @@ import { FormattedMessage } from "react-intl";
 import { useInView } from "react-intersection-observer";
 import { TaggedNostrEvent } from "@snort/system";
 
-import Note from "Element/Event/Note";
-import ProfileImage from "Element/User/ProfileImage";
-import Icon from "Icons/Icon";
-import { findTag } from "SnortUtils";
+import Note from "@/Element/Event/Note";
+import ProfileImage from "@/Element/User/ProfileImage";
+import Icon from "@/Icons/Icon";
+import { findTag } from "@/SnortUtils";
 
 export interface TimelineFragment {
   events: Array<TaggedNostrEvent>;
@@ -39,7 +39,7 @@ export function TimelineRenderer(props: TimelineRendererProps) {
               return <ProfileImage pubkey={p} showUsername={false} link={""} showFollowDistance={false} />;
             })}
             <FormattedMessage
-              defaultMessage="{n} new {n, plural, =1 {note} other {notes}}"
+              defaultMessage="{n} new {n, plural, =1 {note} other {notes}}" id="3t3kok"
               values={{ n: props.latest.length }}
             />
             <Icon name="arrowUp" />
@@ -52,7 +52,7 @@ export function TimelineRenderer(props: TimelineRendererProps) {
                 return <ProfileImage pubkey={p} showUsername={false} link={""} showFollowDistance={false} />;
               })}
               <FormattedMessage
-                defaultMessage="{n} new {n, plural, =1 {note} other {notes}}"
+                defaultMessage="{n} new {n, plural, =1 {note} other {notes}}" id="3t3kok"
                 values={{ n: props.latest.length }}
               />
               <Icon name="arrowUp" />

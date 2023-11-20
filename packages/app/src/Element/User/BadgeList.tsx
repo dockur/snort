@@ -5,11 +5,11 @@ import { FormattedMessage } from "react-intl";
 
 import { TaggedNostrEvent } from "@snort/system";
 
-import { ProxyImg } from "Element/ProxyImg";
-import Icon from "Icons/Icon";
-import Modal from "Element/Modal";
-import Username from "Element/User/Username";
-import { findTag } from "SnortUtils";
+import { ProxyImg } from "@/Element/ProxyImg";
+import Icon from "@/Icons/Icon";
+import Modal from "@/Element/Modal";
+import Username from "@/Element/User/Username";
+import { findTag } from "@/SnortUtils";
 
 export default function BadgeList({ badges }: { badges: TaggedNostrEvent[] }) {
   const [showModal, setShowModal] = useState(false);
@@ -42,7 +42,7 @@ export default function BadgeList({ badges }: { badges: TaggedNostrEvent[] }) {
             </div>
             <div className="reactions-header">
               <h2>
-                <FormattedMessage defaultMessage="Badges" />
+                <FormattedMessage defaultMessage="Badges" id="h8XMJL" />
               </h2>
             </div>
             <div className="body">
@@ -55,7 +55,7 @@ export default function BadgeList({ badges }: { badges: TaggedNostrEvent[] }) {
                       <p>{description}</p>
                       <p>
                         <FormattedMessage
-                          defaultMessage="By: {author}"
+                          defaultMessage="By: {author}" id="RfhLwC"
                           values={{ author: <Username pubkey={pubkey} onLinkVisit={() => setShowModal(false)} /> }}
                         />
                       </p>

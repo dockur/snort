@@ -3,15 +3,15 @@ import { FormattedMessage } from "react-intl";
 import { unixNowMs, unwrap } from "@snort/shared";
 import { EventPublisher, FullRelaySettings, RelaySettings, SystemInterface } from "@snort/system";
 
-import Relay from "Element/Relay/Relay";
-import useEventPublisher from "Hooks/useEventPublisher";
-import useLogin from "Hooks/useLogin";
-import { setRelays } from "Login";
-import AsyncButton from "Element/AsyncButton";
-import SnortApi, { RelayDistance } from "External/SnortApi";
-import { getCountry, getRelayName, sanitizeRelayUrl } from "SnortUtils";
-import { formatShort } from "Number";
-import { Blasters } from "Const";
+import Relay from "@/Element/Relay/Relay";
+import useEventPublisher from "@/Hooks/useEventPublisher";
+import useLogin from "@/Hooks/useLogin";
+import { setRelays } from "@/Login";
+import AsyncButton from "@/Element/AsyncButton";
+import SnortApi, { RelayDistance } from "@/External/SnortApi";
+import { getCountry, getRelayName, sanitizeRelayUrl } from "@/SnortUtils";
+import { formatShort } from "@/Number";
+import { Blasters } from "@/Const";
 
 import messages from "./messages";
 
@@ -92,7 +92,7 @@ const RelaySettingsPage = () => {
       {addRelay()}
       <CloseRelays />
       <h3>
-        <FormattedMessage defaultMessage="Other Connections" />
+        <FormattedMessage defaultMessage="Other Connections" id="LF5kYT" />
       </h3>
       <div className="flex flex-col g8">
         {otherConnections.map(a => (

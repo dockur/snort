@@ -1,9 +1,9 @@
 import { FormattedMessage } from "react-intl";
 
-import { FileExtensionRegex } from "Const";
-import Reveal from "Element/Event/Reveal";
-import useLogin from "Hooks/useLogin";
-import { MediaElement } from "Element/Embed/MediaElement";
+import { FileExtensionRegex } from "@/Const";
+import Reveal from "@/Element/Event/Reveal";
+import useLogin from "@/Hooks/useLogin";
+import { MediaElement } from "@/Element/Embed/MediaElement";
 import { Link } from "react-router-dom";
 
 interface RevealMediaProps {
@@ -57,7 +57,7 @@ export default function RevealMedia(props: RevealMediaProps) {
       <Reveal
         message={
           <FormattedMessage
-            defaultMessage="You don't follow this person, click here to load media from <i>{link}</i>, or update <a><i>your preferences</i></a> to always load media from everybody."
+            defaultMessage="You don't follow this person, click here to load media from <i>{link}</i>, or update <a><i>your preferences</i></a> to always load media from everybody." id="HhcAVH"
             values={{
               i: i => <i>{i}</i>,
               a: a => <Link to="/settings/preferences">{a}</Link>,

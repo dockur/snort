@@ -4,13 +4,13 @@ import { useState } from "react";
 import { FormattedMessage, FormattedNumber, useIntl } from "react-intl";
 import { useUserProfile } from "@snort/system-react";
 
-import useEventPublisher from "Hooks/useEventPublisher";
-import { useWallet } from "Wallet";
-import { unwrap } from "SnortUtils";
-import { formatShort } from "Number";
-import Spinner from "Icons/Spinner";
-import SendSats from "Element/SendSats";
-import useLogin from "Hooks/useLogin";
+import useEventPublisher from "@/Hooks/useEventPublisher";
+import { useWallet } from "@/Wallet";
+import { unwrap } from "@/SnortUtils";
+import { formatShort } from "@/Number";
+import Spinner from "@/Icons/Spinner";
+import SendSats from "@/Element/SendSats";
+import useLogin from "@/Hooks/useLogin";
 
 interface PollProps {
   ev: TaggedNostrEvent;
@@ -51,7 +51,7 @@ export default function Poll(props: PollProps) {
         throw new Error(
           formatMessage(
             {
-              defaultMessage: "Can't vote with {amount} sats, please set a different default zap amount",
+              defaultMessage: "Can't vote with {amount} sats, please set a different default zap amount", id: 'NepkXH',
             },
             {
               amount,
@@ -75,7 +75,7 @@ export default function Poll(props: PollProps) {
       if (!svc.canZap) {
         throw new Error(
           formatMessage({
-            defaultMessage: "Can't vote because LNURL service does not support zaps",
+            defaultMessage: "Can't vote because LNURL service does not support zaps", id: 'fOksnD',
           }),
         );
       }
@@ -92,7 +92,7 @@ export default function Poll(props: PollProps) {
       } else {
         setError(
           formatMessage({
-            defaultMessage: "Failed to send vote",
+            defaultMessage: "Failed to send vote", id: 'g985Wp',
           }),
         );
       }
@@ -115,7 +115,7 @@ export default function Poll(props: PollProps) {
       <div className="flex justify-between p">
         <small>
           <FormattedMessage
-            defaultMessage="You are voting with {amount} sats"
+            defaultMessage="You are voting with {amount} sats" id="3qnJlS"
             values={{
               amount: formatShort(prefs.defaultZapAmount),
             }}
@@ -123,13 +123,13 @@ export default function Poll(props: PollProps) {
         </small>
         <button type="button" onClick={() => setTallyBy(s => (s !== "zaps" ? "zaps" : "pubkeys"))}>
           <FormattedMessage
-            defaultMessage="Votes by {type}"
+            defaultMessage="Votes by {type}" id="xIcAOU"
             values={{
               type:
                 tallyBy === "zaps" ? (
-                  <FormattedMessage defaultMessage="zap" />
+                  <FormattedMessage defaultMessage="zap" id="5BVs2e" />
                 ) : (
-                  <FormattedMessage defaultMessage="user" />
+                  <FormattedMessage defaultMessage="user" id="sUNhQE" />
                 ),
             }}
           />

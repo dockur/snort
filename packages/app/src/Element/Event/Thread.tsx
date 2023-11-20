@@ -5,12 +5,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { TaggedNostrEvent, u256, NostrPrefix, EventExt, parseNostrLink, NostrLink } from "@snort/system";
 import classNames from "classnames";
 
-import { getAllLinkReactions, getLinkReactions } from "SnortUtils";
-import BackButton from "Element/BackButton";
-import Note from "Element/Event/Note";
-import NoteGhost from "Element/Event/NoteGhost";
-import Collapsed from "Element/Collapsed";
-import { ThreadContext, ThreadContextWrapper, chainKey } from "Hooks/useThreadContext";
+import { getAllLinkReactions, getLinkReactions } from "@/SnortUtils";
+import BackButton from "@/Element/BackButton";
+import Note from "@/Element/Event/Note";
+import NoteGhost from "@/Element/Event/NoteGhost";
+import Collapsed from "@/Element/Collapsed";
+import { ThreadContext, ThreadContextWrapper, chainKey } from "@/Hooks/useThreadContext";
 
 import messages from "../messages";
 
@@ -303,11 +303,11 @@ export function Thread(props: { onBack?: () => void; disableSpotlight?: boolean 
   }
 
   const parentText = formatMessage({
-    defaultMessage: "Parent",
+    defaultMessage: "Parent", id: 'ADmfQT',
     description: "Link to parent note in thread",
   });
   const backText = formatMessage({
-    defaultMessage: "Back",
+    defaultMessage: "Back", id: 'jfV8Wr',
     description: "Navigate back button on threads view",
   });
 
