@@ -3,7 +3,7 @@ import "@szhsin/react-menu/dist/index.css";
 import "./fonts/inter.css";
 
 import { compress, expand_filter, flat_merge, get_diff, pow, default as wasmInit } from "@snort/system-wasm";
-import WasmPath from "@snort/system-wasm/pkg/system_wasm_bg.wasm?init";
+import WasmPath from "@snort/system-wasm/pkg/system_wasm_bg.wasm";
 
 import { StrictMode } from "react";
 import * as ReactDOM from "react-dom/client";
@@ -21,11 +21,11 @@ import {
   encodeTLVEntries,
   socialGraphInstance,
 } from "@snort/system";
-import PowWorkerURL from '@snort/system/src/pow-worker.ts?worker&url';
+import PowWorkerURL from "@snort/system/src/pow-worker.ts?worker&url";
 import { SnortContext } from "@snort/system-react";
 import { removeUndefined, throwIfOffline } from "@snort/shared";
 
-import React, { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 
 const NetworkGraph = lazy(() => import("@/Pages/NetworkGraph"));
 
@@ -88,8 +88,7 @@ export class WasmPowWorker implements PowMiner {
   }
 }
 
-//const hasWasm = "WebAssembly" in globalThis;
-const hasWasm = false;
+const hasWasm = "WebAssembly" in globalThis;
 const DefaultPowWorker = hasWasm ? undefined : new PowWorker(PowWorkerURL);
 export const GetPowWorker = () => (hasWasm ? new WasmPowWorker() : unwrap(DefaultPowWorker));
 
@@ -313,4 +312,4 @@ window.encodeTLV = encodeTLVEntries;
 
 // Use react-helmet instead?
 document.title = CONFIG.appTitle;
-document.querySelector('link[rel="apple-touch-icon"]')?.setAttribute('href', CONFIG.appleTouchIconUrl);
+document.querySelector('link[rel="apple-touch-icon"]')?.setAttribute("href", CONFIG.appleTouchIconUrl);
