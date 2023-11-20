@@ -6,6 +6,7 @@
 .vscode
 Dockerfile
 Dockerfile.archive
+Dockerfile.prebuilt
 docker-compose.yml
   
 *.md
