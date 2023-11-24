@@ -125,7 +125,7 @@ jobs:
             --build-arg "VCS_REF=${GITHUB_SHA::8}" \
             $(printf "%s" "${TAGS[@]/#/ --tag }" ) .      
       - 
-        name: Add custom code
+        name: Add custom config
         if: env.exists == 'false'
         run: |
           cp packages/app/config/soloco.json snort/packages/app/config/default.json
