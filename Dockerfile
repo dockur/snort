@@ -5,6 +5,7 @@ WORKDIR /app
 COPY package.json yarn.lock .yarnrc.yml .
 COPY .yarn .yarn
 COPY packages packages
+COPY .git .git
 
 RUN yarn --network-timeout 1000000
 RUN yarn build
