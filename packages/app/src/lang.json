@@ -534,6 +534,9 @@
   "HhcAVH": {
     "defaultMessage": "You don't follow this person, click here to load media from <i>{link}</i>, or update <a><i>your preferences</i></a> to always load media from everybody."
   },
+  "HzfrYu": {
+    "defaultMessage": "Grid"
+  },
   "IEwZvs": {
     "defaultMessage": "Are you sure you want to unpin this note?"
   },
@@ -1059,6 +1062,9 @@
   "eSzf2G": {
     "defaultMessage": "A single zap of {nIn} sats will allocate {nOut} sats to the zap pool."
   },
+  "eW/Bj9": {
+    "defaultMessage": "Feed"
+  },
   "eXT2QQ": {
     "defaultMessage": "Group Chat"
   },
@@ -1073,6 +1079,9 @@
   },
   "fOksnD": {
     "defaultMessage": "Can't vote because LNURL service does not support zaps"
+  },
+  "fQN+tq": {
+    "defaultMessage": "Show posts that have a content warning tag"
   },
   "fWZYP5": {
     "defaultMessage": "Pinned"
@@ -1484,6 +1493,9 @@
   },
   "wih7iJ": {
     "defaultMessage": "name is blocked"
+  },
+  "wofVHy": {
+    "defaultMessage": "Moderation"
   },
   "wqyN/i": {
     "defaultMessage": "Find out more info about {service} at {link}"
