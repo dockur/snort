@@ -12,7 +12,8 @@ import { LiveStreams } from "@/Element/LiveStreams";
 import useLogin from "@/Hooks/useLogin";
 import useHashtagsFeed from "@/Feed/HashtagsFeed";
 import { ShowMoreInView } from "@/Element/Event/ShowMore";
-import { DisplayAs, DisplayAsSelector, TimelineRenderer } from "@/Element/Feed/TimelineRenderer";
+import { TimelineRenderer } from "@/Element/Feed/TimelineRenderer";
+import { DisplayAs, DisplayAsSelector } from "@/Element/Feed/DisplayAsSelector";
 
 export interface TimelineFollowsProps {
   postsOnly: boolean;
@@ -21,13 +22,14 @@ export interface TimelineFollowsProps {
   noteRenderer?: (ev: NostrEvent) => ReactNode;
   noteOnClick?: (ev: NostrEvent) => void;
   displayAs?: DisplayAs;
+  showDisplayAsSelector?: boolean;
 }
 
 /**
  * A list of notes by "subject"
  */
 const TimelineFollows = (props: TimelineFollowsProps) => {
-  const [displayAs, setDisplayAs] = useState<"feed" | "grid">("feed");
+  const [displayAs, setDisplayAs] = useState<"feed" | "grid">(props.displayAs ?? "feed");
   const [latest, setLatest] = useState(unixNow());
   const feed = useSyncExternalStore(
     cb => FollowsFeed.hook(cb, "*"),
@@ -107,7 +109,11 @@ const TimelineFollows = (props: TimelineFollowsProps) => {
   return (
     <>
       {(props.liveStreams ?? true) && <LiveStreams evs={liveStreams} />}
-      <DisplayAsSelector activeSelection={displayAs} onSelect={(displayAs: DisplayAs) => setDisplayAs(displayAs)} />
+      <DisplayAsSelector
+        show={props.showDisplayAsSelector}
+        activeSelection={displayAs}
+        onSelect={(displayAs: DisplayAs) => setDisplayAs(displayAs)}
+      />
       <TimelineRenderer
         frags={[{ events: orderDescending(mainFeed.concat(mixinFiltered)), refTime: latest }]}
         related={reactions.data ?? []}

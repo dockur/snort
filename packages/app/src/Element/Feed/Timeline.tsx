@@ -8,7 +8,8 @@ import useTimelineFeed, { TimelineFeed, TimelineSubject } from "@/Feed/TimelineF
 import useModeration from "@/Hooks/useModeration";
 import { LiveStreams } from "@/Element/LiveStreams";
 import { unixNow } from "@snort/shared";
-import { DisplayAs, DisplayAsSelector, TimelineRenderer } from "@/Element/Feed/TimelineRenderer";
+import { TimelineRenderer } from "@/Element/Feed/TimelineRenderer";
+import { DisplayAs, DisplayAsSelector } from "@/Element/Feed/DisplayAsSelector";
 
 export interface TimelineProps {
   postsOnly: boolean;
@@ -20,6 +21,7 @@ export interface TimelineProps {
   loadMore?: boolean;
   noSort?: boolean;
   displayAs?: DisplayAs;
+  showDisplayAsSelector?: boolean;
 }
 
 /**
@@ -34,7 +36,7 @@ const Timeline = (props: TimelineProps) => {
     };
   }, [props]);
   const feed: TimelineFeed = useTimelineFeed(props.subject, feedOptions);
-  const [displayAs, setDisplayAs] = useState<DisplayAs>("feed");
+  const [displayAs, setDisplayAs] = useState<DisplayAs>(props.displayAs ?? "feed");
 
   const { muted, isEventMuted } = useModeration();
   const filterPosts = useCallback(
@@ -72,7 +74,11 @@ const Timeline = (props: TimelineProps) => {
   return (
     <>
       <LiveStreams evs={liveStreams} />
-      <DisplayAsSelector activeSelection={displayAs} onSelect={(displayAs: DisplayAs) => setDisplayAs(displayAs)} />
+      <DisplayAsSelector
+        show={props.showDisplayAsSelector}
+        activeSelection={displayAs}
+        onSelect={(displayAs: DisplayAs) => setDisplayAs(displayAs)}
+      />
       <TimelineRenderer
         frags={[
           {
