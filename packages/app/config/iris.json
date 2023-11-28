@@ -10,17 +10,24 @@
   "publicDir": "public/iris",
   "httpCache": "https://api.iris.to",
   "animalNamePlaceholders": true,
+  "showNoteBroadcaster": false,
+  "defaultZapPoolFee": 0.5,
   "features": {
     "analytics": true,
     "subscriptions": false,
     "deck": true,
     "zapPool": true
   },
+  "signUp": {
+    "moderation": false
+  },
   "eventLinkPrefix": "note",
   "profileLinkPrefix": "npub",
   "defaultRelays": {
     "wss://relay.snort.social/": { "read": true, "write": true },
     "wss://nostr.wine/": { "read": true, "write": false },
-    "wss://eden.nostr.land/": { "read": true, "write": false }
+    "wss://eden.nostr.land/": { "read": true, "write": false },
+    "wss://relay.nostr.band/": { "read": true, "write": true },
+    "wss://relay.damus.io/": { "read": true, "write": true }
   }
 }

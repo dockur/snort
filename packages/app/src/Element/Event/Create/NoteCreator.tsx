@@ -1,6 +1,6 @@
 import "./NoteCreator.css";
 import { FormattedMessage, useIntl } from "react-intl";
-import { EventKind, NostrPrefix, TaggedNostrEvent, EventBuilder, tryParseNostrLink, NostrLink } from "@snort/system";
+import { EventBuilder, EventKind, NostrLink, NostrPrefix, TaggedNostrEvent, tryParseNostrLink } from "@snort/system";
 import classNames from "classnames";
 import { TagsInput } from "react-tag-input-component";
 
@@ -13,25 +13,25 @@ import ProfileImage from "@/Element/User/ProfileImage";
 import useFileUpload from "@/Upload";
 import Note from "@/Element/Event/Note";
 
-import { ClipboardEventHandler, DragEvent, useEffect, useState } from "react";
+import { ClipboardEventHandler, DragEvent } from "react";
 import useLogin from "@/Hooks/useLogin";
 import { GetPowWorker } from "@/index";
-import AsyncButton from "@/Element/AsyncButton";
-import { AsyncIcon } from "@/Element/AsyncIcon";
+import AsyncButton from "@/Element/Button/AsyncButton";
+import { AsyncIcon } from "@/Element/Button/AsyncIcon";
 import { fetchNip05Pubkey } from "@snort/shared";
 import { ZapTarget } from "@/Zapper";
 import { useNoteCreator } from "@/State/NoteCreator";
-import { NoteBroadcaster } from "./NoteBroadcaster";
-import FileUploadProgress from "./FileUpload";
+import { NoteBroadcaster } from "@/Element/Event/Create/NoteBroadcaster";
+import FileUploadProgress from "../FileUpload";
 import { ToggleSwitch } from "@/Icons/Toggle";
-import NostrBandApi from "@/External/NostrBand";
-import { useLocale } from "@/IntlProvider";
+import { sendEventToRelays } from "@/Element/Event/Create/util";
+import { TrendingHashTagsLine } from "@/Element/Event/Create/TrendingHashTagsLine";
 
 export function NoteCreator() {
   const { formatMessage } = useIntl();
   const uploader = useFileUpload();
   const login = useLogin(s => ({ relays: s.relays, publicKey: s.publicKey, pow: s.appData.item.preferences.pow }));
-  const { publisher: pub } = useEventPublisher();
+  const { system, publisher: pub } = useEventPublisher();
   const publisher = login.pow ? pub?.pow(login.pow, GetPowWorker()) : pub;
   const note = useNoteCreator();
   const relays = login.relays;
@@ -150,9 +150,16 @@ export function NoteCreator() {
   async function sendNote() {
     const ev = await buildNote();
     if (ev) {
+      const events = (note.otherEvents ?? []).concat(ev);
       note.update(n => {
-        n.sending = (note.otherEvents ?? []).concat(ev);
+        n.sending = events;
       });
+      if (!CONFIG.showNoteBroadcaster) {
+        Promise.all(events.map(a => sendEventToRelays(system, a, note.selectedCustomRelays)).flat()).catch(
+          console.error,
+        );
+        reset();
+      }
     }
   }
 
@@ -646,36 +653,5 @@ export function NoteCreator() {
       {note.sending && <NoteBroadcaster evs={note.sending} onClose={reset} customRelays={note.selectedCustomRelays} />}
       {!note.sending && noteCreatorForm()}
     </Modal>
-  );
-}
-
-function TrendingHashTagsLine(props: { onClick: (tag: string) => void }) {
-  const [hashtags, setHashtags] = useState<Array<{ hashtag: string; posts: number }>>();
-  const { lang } = useLocale();
-
-  async function loadTrendingHashtags() {
-    const api = new NostrBandApi();
-    const rsp = await api.trendingHashtags(lang);
-    setHashtags(rsp.hashtags);
-  }
-
-  useEffect(() => {
-    loadTrendingHashtags().catch(console.error);
-  }, []);
-
-  if (!hashtags || hashtags.length === 0) return;
-  return (
-    <div className="flex flex-col g4">
-      <small>
-        <FormattedMessage defaultMessage="Popular Hashtags" id="ddd3JX" />
-      </small>
-      <div className="flex g4 flex-wrap">
-        {hashtags.slice(0, 5).map(a => (
-          <span className="px-2 py-1 bg-dark rounded-full pointer nowrap" onClick={() => props.onClick(a.hashtag)}>
-            #{a.hashtag}
-          </span>
-        ))}
-      </div>
-    </div>
   );
 }

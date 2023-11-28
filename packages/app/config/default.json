@@ -10,12 +10,16 @@
   "publicDir": "public/snort",
   "httpCache": "",
   "animalNamePlaceholders": false,
+  "showNoteBroadcaster": true,
   "defaultZapPoolFee": 0.5,
   "features": {
     "analytics": true,
     "subscriptions": true,
     "deck": true,
     "zapPool": true
+  },
+  "signUp": {
+    "moderation": true
   },
   "eventLinkPrefix": "nevent",
   "profileLinkPrefix": "nprofile",

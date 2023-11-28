@@ -51,12 +51,16 @@ declare const CONFIG: {
   navLogo: string | null;
   httpCache: string;
   animalNamePlaceholders: boolean;
-  defaultZapPoolFee?: number;
+  showNoteBroadcaster: boolean;
+  defaultZapPoolFee: number;
   features: {
     analytics: boolean;
     subscriptions: boolean;
     deck: boolean;
     zapPool: boolean;
+  };
+  signUp: {
+    moderation: boolean;
   };
   eventLinkPrefix: NostrPrefix;
   profileLinkPrefix: NostrPrefix;
