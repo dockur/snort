@@ -63,9 +63,14 @@ declare const CONFIG: {
   signUp: {
     moderation: boolean;
   };
+  // Filter urls from nav sidebar
+  hideFromNavbar?: Array<string>;
+  // Limit deck to certain subscriber tier
+  deckSubKind?: number;
   eventLinkPrefix: NostrPrefix;
   profileLinkPrefix: NostrPrefix;
   defaultRelays: Record<string, RelaySettings>;
+  showNip05InNotes: boolean;
 };
 
 /**

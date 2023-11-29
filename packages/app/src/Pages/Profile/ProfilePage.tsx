@@ -9,7 +9,6 @@ import {
   MetadataCache,
   NostrLink,
   NostrPrefix,
-  socialGraphInstance,
   TLVEntryType,
   tryParseNostrLink,
 } from "@snort/system";
@@ -24,7 +23,7 @@ import useFollowsFeed from "@/Feed/FollowsFeed";
 import useProfileBadges from "@/Feed/BadgesFeed";
 import useModeration from "@/Hooks/useModeration";
 import FollowButton from "@/Element/User/FollowButton";
-import { parseId, hexToBech32 } from "@/SnortUtils";
+import { parseId } from "@/SnortUtils";
 import Avatar from "@/Element/User/Avatar";
 import Timeline from "@/Element/Feed/Timeline";
 import Text from "@/Element/Text";
@@ -60,7 +59,7 @@ import { UserWebsiteLink } from "@/Element/User/UserWebsiteLink";
 import { useMuteList, usePinList } from "@/Hooks/useLists";
 
 import messages from "../messages";
-import FollowDistanceIndicator from "@/Element/User/FollowDistanceIndicator";
+import FollowedBy from "@/Element/User/FollowedBy";
 
 interface ProfilePageProps {
   id?: string;
@@ -82,7 +81,6 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
   const [showProfileQr, setShowProfileQr] = useState<boolean>(false);
   const [modalImage, setModalImage] = useState<string>("");
   const aboutText = user?.about || "";
-  const npub = !id?.startsWith(NostrPrefix.PublicKey) ? hexToBech32(NostrPrefix.PublicKey, id || undefined) : id;
 
   const lnurl = (() => {
     try {
@@ -154,8 +152,6 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
   }
 
   function username() {
-    const followedByFriends = user?.pubkey ? socialGraphInstance.followedByFriends(user.pubkey) : new Set<string>();
-    const MAX_FOLLOWED_BY_FRIENDS = 3;
     return (
       <>
         <div className="flex flex-col g4">
@@ -164,41 +160,10 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
             <FollowsYou followsMe={follows.includes(loginPubKey ?? "")} />
           </h2>
           {user?.nip05 && <Nip05 nip05={user.nip05} pubkey={user.pubkey} />}
-          <div className="flex flex-row items-center">
-            {user?.pubkey && <FollowDistanceIndicator className="p-2" pubkey={user.pubkey} />}
-            {followedByFriends.size > 0 && (
-              <div className="text-gray-light">
-                <span className="mr-1">
-                  <FormattedMessage defaultMessage="Followed by" id="6mr8WU" />
-                </span>
-                {Array.from(followedByFriends)
-                  .slice(0, MAX_FOLLOWED_BY_FRIENDS)
-                  .map(a => {
-                    return (
-                      <span className="inline-block" key={a}>
-                        <ProfileImage showFollowDistance={false} pubkey={a} size={24} showUsername={false} />
-                      </span>
-                    );
-                  })}
-                {followedByFriends.size > MAX_FOLLOWED_BY_FRIENDS && (
-                  <span>
-                    <FormattedMessage
-                      defaultMessage="and {count} others you follow"
-                      id="CYkOCI"
-                      values={{ count: followedByFriends.size - MAX_FOLLOWED_BY_FRIENDS }}
-                    />
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
         </div>
         {showBadges && <BadgeList badges={badges} />}
         {showStatus && <>{musicStatus()}</>}
-        <div className="link-section">
-          <Copy text={npub} />
-          {links()}
-        </div>
+        <div className="link-section">{links()}</div>
       </>
     );
   }
@@ -208,7 +173,7 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
       <>
         <UserWebsiteLink user={user} />
         {lnurl && (
-          <div className="link lnurl f-ellipsis" onClick={() => setShowLnQr(true)}>
+          <div className="link lnurl f-ellipsis flex gap-2 items-center" onClick={() => setShowLnQr(true)}>
             <Icon name="zapCircle" size={16} />
             {lnurl.name}
           </div>
@@ -333,7 +298,7 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
   function renderIcons() {
     if (!id) return;
 
-    const link = encodeTLV(NostrPrefix.Profile, id);
+    const link = encodeTLV(CONFIG.profileLinkPrefix, id);
     return (
       <>
         <IconButton onClick={() => setShowProfileQr(true)} icon={{ name: "qr", size: 16 }} />
@@ -381,6 +346,7 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
       <div className="details-wrapper w-max">
         {username()}
         {bio()}
+        {user?.pubkey && <FollowedBy pubkey={user.pubkey} />}
       </div>
     );
   }
