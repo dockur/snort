@@ -23,7 +23,7 @@ jobs:
         id: latest_tag
         with:
           variables: |
-            repo: snort
+            repo: ${{ github.event.repository.name }}
             owner: v0l
           query: |
             query tag($owner: String!, $repo: String!) {
@@ -56,12 +56,27 @@ jobs:
           #!/bin/bash
           val="${{ steps.checkTag.outputs.exists }}"
           echo "exists=${val}" >> $GITHUB_ENV
-      - 
+      -
         name: Checkout
         if: env.exists == 'false'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      -
+        name: Docker metadata
+        id: meta
+        if: env.exists == 'false'
+        uses: docker/metadata-action@v5
+        with:
+          context: git
+          images: |
+            ${{ secrets.DOCKERHUB_REPO }}
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest,priority=100
+            type=raw,value=${{ env.latest_tag }}
+          labels: |
+            org.opencontainers.image.title=${{ vars.NAME }}
       - 
         name: Set up Docker Buildx
         if: env.exists == 'false'
@@ -86,70 +101,49 @@ jobs:
         if: env.exists == 'false'
         run: |
           git config --global url.https://github.com/.insteadOf git://github.com/
-          git clone --recurse-submodules -j8 https://github.com/v0l/snort.git --single-branch --branch v${{ env.latest_tag }}
-          cp Dockerfile snort/
-          cp Dockerfile.prebuilt snort/
-          cp .dockerignore snort/
-          cp .yarnrc.yml snort/
-          cp docker/nginx.conf snort/docker/nginx.conf
+          git clone --recurse-submodules -j8 https://github.com/v0l/${{ github.event.repository.name }}.git --single-branch --branch v${{ env.latest_tag }}
+          cp Dockerfile ${{ github.event.repository.name }}/
+          cp Dockerfile.prebuilt ${{ github.event.repository.name }}/
+          cp .dockerignore ${{ github.event.repository.name }}/
+          cp .yarnrc.yml ${{ github.event.repository.name }}/
+          cp docker/nginx.conf ${{ github.event.repository.name }}/docker/nginx.conf
       -
         name: Build Docker image
         if: env.exists == 'false'
-        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ github.event.repository.name }}
+          push: true
+          provenance: false
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VCS_REF=${GITHUB_SHA::8}
+            VERSION_ARG=${{ steps.meta.outputs.version }}
+      -
+        name: Copy custom config
+        if: env.exists == 'false'
         run: |
-          #!/bin/bash
-          
-          DIRECTORY="snort"
-          VERSION="${{ env.latest_tag }}"
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          PLATFORMS="linux/amd64,linux/arm64"
-          BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          TITLE="$(grep --only-matching --perl-regex "(?<=image.title\=).*" $DIRECTORY/Dockerfile | sed -e 's/ /\xc2\xa0/g')"
-          DESC="$(grep --only-matching --perl-regex "(?<=image.description\=).*" $DIRECTORY/Dockerfile | sed -e 's/ /\xc2\xa0/g')"
-
-          TAGS=()
-          TAGS=("${{ secrets.DOCKERHUB_REPO }}:latest")
-          TAGS+=("${{ secrets.DOCKERHUB_REPO }}:${VERSION}")
-          TAGS+=("ghcr.io/${{ github.repository }}:latest")
-          TAGS+=("ghcr.io/${{ github.repository }}:${VERSION}")
-
-          LABELS=()
-          LABELS=("org.opencontainers.image.licenses=MIT")
-          LABELS+=("org.opencontainers.image.title=${TITLE}")
-          LABELS+=("org.opencontainers.image.description=${DESC}")
-          LABELS+=("org.opencontainers.image.version=${VERSION}")
-          LABELS+=("org.opencontainers.image.created=${BUILD_DATE}")
-          LABELS+=("org.opencontainers.image.revision=${GITHUB_RUN_ID}")
-          LABELS+=("org.opencontainers.image.url=https://hub.docker.com/r/${{ secrets.DOCKERHUB_REPO }}")
-          LABELS+=("org.opencontainers.image.source=https://github.com/${{ github.repository }}")
-
-          cd "${DIRECTORY}"
-          docker buildx build --progress=plain \
-            --platform "${PLATFORMS}" \
-            --output "type=image,push=true" \
-            --build-arg "VERSION_ARG=${VERSION}" \
-            --build-arg "VCS_REF=${GITHUB_SHA::8}" \
-            $(printf '%s' "${LABELS[@]/#/ --label }" ) \
-            $(printf '%s' "${LABELS[@]/#/ --annotation }" ) \
-            $(printf '%s' "${TAGS[@]/#/ --tag }" ) .
-
-          # Copy custom config
-          cp packages/app/config/soloco.json snort/packages/app/config/default.json
-        
-          TAGS=()
-          TAGS=("${{ secrets.CUSTOM_REPO }}:latest")
-          TAGS+=("${{ secrets.CUSTOM_REPO }}:${VERSION}")
-          
-          docker buildx build --progress=plain \
-            --platform "${PLATFORMS}" \
-            --output "type=image,push=true" \
-            --build-arg "VERSION_ARG=${VERSION}" \
-            --build-arg "VCS_REF=${GITHUB_SHA::8}" \
-            $(printf '%s' "${LABELS[@]/#/ --label }" ) \
-            $(printf '%s' "${LABELS[@]/#/ --annotation }" ) \
-            $(printf '%s' "${TAGS[@]/#/ --tag }" ) .
-
-          rm -f ${HOME}/.docker/config.json
+          cp packages/app/config/soloco.json ${{ github.event.repository.name }}/packages/app/config/default.json
+      -
+        name: Build custom image
+        if: env.exists == 'false'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ github.event.repository.name }}
+          push: true
+          provenance: false
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ secrets.CUSTOM_REPO }}:latest
+            ${{ secrets.CUSTOM_REPO }}:${{ steps.meta.outputs.version }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VCS_REF=${GITHUB_SHA::8}
+            VERSION_ARG=${{ steps.meta.outputs.version }}
       -
         name: Create a release
         if: env.exists == 'false'
@@ -157,8 +151,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
         with:
-          tag: "v${{ steps.build.outputs.version }}"
-          title: "v${{ steps.build.outputs.version }}"
+          tag: "v${{ steps.meta.outputs.version }}"
+          title: "v${{ steps.meta.outputs.version }}"
       -
        name: Send mail
        if: env.exists == 'false'
@@ -167,8 +161,8 @@ jobs:
          to: ${{secrets.MAILTO}}
          from: Github Actions <${{secrets.MAILTO}}>
          connection_url: ${{secrets.MAIL_CONNECTION}}
-         subject: Build of ${{ github.event.repository.name }} v${{ steps.build.outputs.version }} completed
+         subject: Build of ${{ github.event.repository.name }} v${{ steps.meta.outputs.version }} completed
          body: |
-              The build job of ${{ github.event.repository.name }} v${{ steps.build.outputs.version }} was completed successfully! 
+              The build job of ${{ github.event.repository.name }} v${{ steps.meta.outputs.version }} was completed successfully! 
               
               See https://github.com/${{ github.repository }}/actions for more information.
