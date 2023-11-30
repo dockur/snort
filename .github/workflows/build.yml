@@ -137,7 +137,7 @@ jobs:
           context: ./${{ github.event.repository.name }}
           push: true
           provenance: false
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm
           tags: |
             ${{ secrets.CUSTOM_REPO }}:latest
             ${{ secrets.CUSTOM_REPO }}:${{ steps.meta.outputs.version }}
