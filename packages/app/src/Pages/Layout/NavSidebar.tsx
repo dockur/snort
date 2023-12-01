@@ -1,5 +1,5 @@
 import { LogoHeader } from "./LogoHeader";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Icon from "@/Icons/Icon";
 import { ProfileLink } from "../../Element/User/ProfileLink";
 import Avatar from "../../Element/User/Avatar";
@@ -8,8 +8,9 @@ import { useUserProfile } from "@snort/system-react";
 import { NoteCreatorButton } from "../../Element/Event/Create/NoteCreatorButton";
 import { FormattedMessage, useIntl } from "react-intl";
 import classNames from "classnames";
-import { HasNotificationsMarker } from "@/Pages/Layout/AccountHeader";
 import { getCurrentSubscription } from "@/Subscription";
+import { HasNotificationsMarker } from "@/Pages/Layout/HasNotificationsMarker";
+import NavLink from "@/Element/Button/NavLink";
 
 const MENU_ITEMS = [
   {

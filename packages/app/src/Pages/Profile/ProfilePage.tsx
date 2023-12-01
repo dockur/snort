@@ -157,7 +157,7 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
         <div className="flex flex-col g4">
           <h2 className="flex items-center g4">
             <DisplayName user={user} pubkey={user?.pubkey ?? ""} />
-            <FollowsYou followsMe={follows.includes(loginPubKey ?? "")} />
+            <FollowsYou followsMe={user?.pubkey !== loginPubKey && follows.includes(loginPubKey ?? "")} />
           </h2>
           {user?.nip05 && <Nip05 nip05={user.nip05} pubkey={user.pubkey} />}
         </div>
@@ -305,8 +305,10 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
         {showProfileQr && (
           <Modal id="profile-qr" className="qr-modal" onClose={() => setShowProfileQr(false)}>
             <ProfileImage pubkey={id} />
-            <QrCode data={link} className="m10 align-center" />
-            <Copy text={link} className="align-center" />
+            <div className="flex flex-col items-center">
+              <QrCode data={link} className="m10" />
+              <Copy text={link} className="py-3" />
+            </div>
           </Modal>
         )}
         {isMe ? (
@@ -355,7 +357,8 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
     return <TabElement key={v.value} t={v} tab={tab} setTab={setTab} />;
   }
 
-  const w = window.document.querySelector(".page")?.clientWidth;
+  const bannerWidth = Math.min(window.innerWidth, 940);
+
   return (
     <>
       <div className="profile">
@@ -364,7 +367,7 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
             alt="banner"
             className="banner pointer"
             src={user.banner}
-            size={w}
+            size={bannerWidth}
             onClick={() => setModalImage(user.banner || "")}
           />
         )}

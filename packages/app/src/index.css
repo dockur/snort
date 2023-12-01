@@ -767,12 +767,6 @@ button.tall {
   min-width: 98px;
 }
 
-.align-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .fade-in {
   opacity: 1;
   animation-name: fadeInOpacity;
@@ -931,4 +925,8 @@ svg.repeat {
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
+}
+
+.pb-safe-area {
+  padding-bottom: env(safe-area-inset-bottom);
 }
