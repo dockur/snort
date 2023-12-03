@@ -18,14 +18,15 @@ import useLogin from "@/Hooks/useLogin";
 import { GetPowWorker } from "@/index";
 import AsyncButton from "@/Element/Button/AsyncButton";
 import { AsyncIcon } from "@/Element/Button/AsyncIcon";
-import { fetchNip05Pubkey } from "@snort/shared";
+import { fetchNip05Pubkey, unixNow } from "@snort/shared";
 import { ZapTarget } from "@/Zapper";
 import { useNoteCreator } from "@/State/NoteCreator";
-import { NoteBroadcaster } from "@/Element/Event/Create/NoteBroadcaster";
 import FileUploadProgress from "../FileUpload";
 import { ToggleSwitch } from "@/Icons/Toggle";
 import { sendEventToRelays } from "@/Element/Event/Create/util";
 import { TrendingHashTagsLine } from "@/Element/Event/Create/TrendingHashTagsLine";
+import { Toastore } from "@/Toaster";
+import { OkResponseRow } from "./OkResponseRow";
 
 export function NoteCreator() {
   const { formatMessage } = useIntl();
@@ -151,15 +152,19 @@ export function NoteCreator() {
     const ev = await buildNote();
     if (ev) {
       const events = (note.otherEvents ?? []).concat(ev);
-      note.update(n => {
-        n.sending = events;
-      });
-      if (!CONFIG.showNoteBroadcaster) {
-        Promise.all(events.map(a => sendEventToRelays(system, a, note.selectedCustomRelays)).flat()).catch(
-          console.error,
-        );
-        reset();
-      }
+      events.map(a =>
+        sendEventToRelays(system, a, note.selectedCustomRelays, r => {
+          if (CONFIG.noteCreatorToast) {
+            r.forEach(rr => {
+              Toastore.push({
+                element: <OkResponseRow rsp={rr} />,
+                expire: unixNow() + (rr.ok ? 5 : 55555),
+              });
+            });
+          }
+        }),
+      );
+      note.update(n => n.reset());
     }
   }
 
@@ -650,8 +655,7 @@ export function NoteCreator() {
   if (!note.show) return null;
   return (
     <Modal id="note-creator" className="note-creator-modal" onClose={reset}>
-      {note.sending && <NoteBroadcaster evs={note.sending} onClose={reset} customRelays={note.selectedCustomRelays} />}
-      {!note.sending && noteCreatorForm()}
+      {noteCreatorForm()}
     </Modal>
   );
 }
