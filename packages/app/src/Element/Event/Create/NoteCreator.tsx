@@ -157,7 +157,7 @@ export function NoteCreator() {
           if (CONFIG.noteCreatorToast) {
             r.forEach(rr => {
               Toastore.push({
-                element: <OkResponseRow rsp={rr} />,
+                element: c => <OkResponseRow rsp={rr} close={c} />,
                 expire: unixNow() + (rr.ok ? 5 : 55555),
               });
             });
