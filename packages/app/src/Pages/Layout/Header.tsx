@@ -34,11 +34,22 @@ export function Header() {
   }, [pageName]);
 
   let title: React.ReactNode = <span className="capitalize">{pageName}</span>;
-  if (nostrLink) {
+  if (location.pathname.startsWith("/search/")) {
+    const searchTerm = location.pathname.split("/search/")[1];
+    title = (
+      <>
+        <FormattedMessage defaultMessage="Search" id="xmcVZ0" />: {searchTerm}
+      </>
+    );
+  } else if (nostrLink) {
     if (nostrLink.type === NostrPrefix.Event || nostrLink.type === NostrPrefix.Note) {
       title = <NoteTitle link={nostrLink} />;
     } else if (nostrLink.type === NostrPrefix.PublicKey || nostrLink.type === NostrPrefix.Profile) {
-      title = <DisplayName pubkey={bech32ToHex(pageName)} />;
+      try {
+        title = <DisplayName pubkey={bech32ToHex(pageName)} />;
+      } catch (e) {
+        console.error(e);
+      }
     }
   } else if (location.pathname.startsWith("/t/")) {
     title = <span>#{location.pathname.split("/").slice(-1)}</span>;
