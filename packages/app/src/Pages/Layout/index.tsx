@@ -12,12 +12,11 @@ import { LoginUnlock } from "@/Element/PinPrompt";
 import useKeyboardShortcut from "@/Hooks/useKeyboardShortcut";
 import { LoginStore } from "@/Login";
 import NavSidebar from "./NavSidebar";
-import NotificationsHeader from "./NotificationsHeader";
 import RightColumn from "./RightColumn";
-import { LogoHeader } from "./LogoHeader";
 import useLoginFeed from "@/Feed/LoginFeed";
 import ErrorBoundary from "@/Element/ErrorBoundary";
 import Footer from "@/Pages/Layout/Footer";
+import { Header } from "@/Pages/Layout/Header";
 
 export default function Index() {
   const location = useLocation();
@@ -45,10 +44,10 @@ export default function Index() {
   return (
     <div className="flex justify-center">
       <div className="w-full max-w-screen-xl">
-        {!shouldHideHeader && <Header />}
-        <div className="flex flex-row w-full">
+        <div className="flex flex-row">
           <NavSidebar />
-          <div className="flex flex-1 flex-col overflow-x-hidden pb-footer-height md:pb-0">
+          <div className="flex flex-1 flex-col pb-footer-height md:pb-0 w-full md:w-1/3">
+            {!shouldHideHeader && <Header />}
             <ErrorBoundary>
               <Outlet />
             </ErrorBoundary>
@@ -61,15 +60,6 @@ export default function Index() {
       {isStalker && <StalkerModal id={id} />}
       {!shouldHideFooter && <Footer />}
     </div>
-  );
-}
-
-function Header() {
-  return (
-    <header className="flex justify-between items-center self-stretch px-4 gap-6 sticky top-0 md:hidden z-10 bg-bg-color py-1">
-      <LogoHeader showText={true} />
-      <NotificationsHeader />
-    </header>
   );
 }
 

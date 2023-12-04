@@ -319,6 +319,9 @@
   "AIgmDy": {
     "defaultMessage": "Add up to 4 hashtags"
   },
+  "ALdW69": {
+    "defaultMessage": "Note by {name}"
+  },
   "AN0Z7Q": {
     "defaultMessage": "Muted Words"
   },
@@ -1361,6 +1364,9 @@
   "qDwvZ4": {
     "defaultMessage": "Unknown error"
   },
+  "qMePPG": {
+    "defaultMessage": "Note"
+  },
   "qMx1sA": {
     "defaultMessage": "Default Zap amount"
   },
@@ -1405,9 +1411,6 @@
   },
   "rT14Ow": {
     "defaultMessage": "Add Relays"
-  },
-  "rbrahO": {
-    "defaultMessage": "Close"
   },
   "rfuMjE": {
     "defaultMessage": "(Default)"
@@ -1465,9 +1468,6 @@
   },
   "uc0din": {
     "defaultMessage": "Send sats splits to"
-  },
-  "ugyJnE": {
-    "defaultMessage": "Sending notes and other stuff"
   },
   "un1nGw": {
     "defaultMessage": "{n} notes"
