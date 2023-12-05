@@ -647,10 +647,6 @@ div.form-col {
   gap: 10px;
 }
 
-.error {
-  color: var(--error);
-}
-
 .warning {
   color: var(--warning);
 }
@@ -945,4 +941,16 @@ svg.repeat {
 
 .pb-safe-area {
   padding-bottom: env(safe-area-inset-bottom);
+}
+
+.active > .icon-outline {
+  display: none;
+}
+
+.active > .icon-solid {
+  display: inline-block;
+}
+
+.icon-solid {
+  display: none;
 }

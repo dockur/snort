@@ -27,7 +27,7 @@ const MENU_ITEMS = [
   },
   {
     label: "Notifications",
-    icon: "bell-02",
+    icon: "bell",
     link: "/notifications",
   },
   {
@@ -59,10 +59,14 @@ const MENU_ITEMS = [
 ];
 
 const getNavLinkClass = (isActive: boolean, narrow: boolean) => {
-  const c = isActive
-    ? "py-4 hover:no-underline flex flex-row items-center text-nostr-purple"
-    : "py-4 hover:no-underline hover:text-nostr-purple flex flex-row items-center";
-  return classNames(c, { "xl:ml-1": !narrow });
+  const baseClasses =
+    "rounded-full p-3 flex flex-row items-center transition-colors duration-200 hover:bg-bg-secondary hover:no-underline";
+  const activeClasses = "active font-bold";
+
+  return classNames(baseClasses, {
+    [activeClasses]: isActive,
+    "xl:px-4": !narrow,
+  });
 };
 
 export default function NavSidebar({ narrow = false }) {
@@ -77,8 +81,8 @@ export default function NavSidebar({ narrow = false }) {
   const { formatMessage } = useIntl();
 
   const className = classNames(
-    { "xl:w-56 xl:gap-3 xl:items-start": !narrow },
-    "overflow-y-auto hide-scrollbar sticky items-center border-r border-border-color top-0 z-20 h-screen max-h-screen hidden md:flex flex-col px-2 py-4 flex-shrink-0 gap-2",
+    { "xl:w-56 xl:gap-2 xl:items-start": !narrow },
+    "overflow-y-auto hide-scrollbar sticky items-center border-r border-border-color top-0 z-20 h-screen max-h-screen hidden md:flex flex-col px-2 py-4 flex-shrink-0 gap-1",
   );
 
   const readOnlyIcon = readonly && (
@@ -90,8 +94,12 @@ export default function NavSidebar({ narrow = false }) {
   return (
     <div className={className}>
       <LogoHeader showText={!narrow} />
-      <div className="flex-grow flex flex-col justify-between">
-        <div className={classNames({ "xl:items-start": !narrow }, "flex flex-col items-center font-bold text-lg")}>
+      <div className="mt-1 flex-grow flex flex-col justify-between">
+        <div
+          className={classNames(
+            { "xl:items-start": !narrow, "xl:gap-2": !narrow },
+            "gap-1 flex flex-col items-center text-lg",
+          )}>
           {MENU_ITEMS.filter(a => {
             if ((CONFIG.hideFromNavbar ?? []).includes(a.link)) {
               return false;
@@ -106,7 +114,8 @@ export default function NavSidebar({ narrow = false }) {
             }
             return (
               <NavLink key={item.link} to={item.link} className={({ isActive }) => getNavLinkClass(isActive, narrow)}>
-                <Icon name={item.icon} size={24} />
+                <Icon name={`${item.icon}-outline`} className="icon-outline" size={24} />
+                <Icon name={`${item.icon}-solid`} className="icon-solid" size={24} />
                 {item.label === "Notifications" && <HasNotificationsMarker />}
                 {!narrow && <span className="hidden xl:inline ml-3">{item.label}</span>}
               </NavLink>
@@ -132,14 +141,14 @@ export default function NavSidebar({ narrow = false }) {
       </div>
       {publicKey && (
         <>
-          <ProfileLink pubkey={publicKey} user={profile}>
-            <div className="flex flex-row items-center font-bold text-md">
+          <ProfileLink pubkey={publicKey} user={profile} className="hover:no-underline">
+            <div className="mt-2 flex flex-row items-center justify-center font-bold text-md p-1 xl:px-4 xl:py-3 hover:bg-bg-secondary rounded-full cursor-pointer">
               <Avatar pubkey={publicKey} user={profile} size={40} icons={readOnlyIcon} />
               {!narrow && <span className="hidden xl:inline ml-3">{profile?.name}</span>}
             </div>
           </ProfileLink>
           {readonly && (
-            <div className="hidden xl:block text-nostr-red text-sm">
+            <div className="hidden xl:block text-nostr-red text-sm m-3">
               <FormattedMessage defaultMessage="Read-only" id="djNL6D" />
             </div>
           )}

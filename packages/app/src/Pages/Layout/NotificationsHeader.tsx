@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { base64 } from "@scure/base";
 import { unwrap } from "@snort/shared";
-import { FormattedMessage } from "react-intl";
 import Icon from "@/Icons/Icon";
 import useKeyboardShortcut from "@/Hooks/useKeyboardShortcut";
 import { isFormElement } from "@/SnortUtils";
@@ -10,6 +9,7 @@ import useEventPublisher from "@/Hooks/useEventPublisher";
 import SnortApi from "@/External/SnortApi";
 import { HasNotificationsMarker } from "@/Pages/Layout/HasNotificationsMarker";
 import NavLink from "@/Element/Button/NavLink";
+import classNames from "classnames";
 
 const NotificationsHeader = () => {
   const navigate = useNavigate();
@@ -63,19 +63,21 @@ const NotificationsHeader = () => {
 
   if (!publicKey) {
     return (
-      <button type="button" onClick={() => navigate("/login/sign-up")}>
-        <FormattedMessage defaultMessage="Sign Up" id="39AHJm" />
+      <button onClick={() => navigate("/login/sign-up")} className="mr-3 primary p-2">
+        <Icon name="sign-in" size={20} className="md:hidden" />
       </button>
     );
   }
 
   return (
-    <div className="flex justify-between">
-      <NavLink className="btn" to="/notifications" onClick={goToNotifications}>
-        <Icon name="bell-02" size={24} />
-        <HasNotificationsMarker />
-      </NavLink>
-    </div>
+    <NavLink
+      className={({ isActive }) => classNames({ active: isActive }, "px-2 py-3 flex")}
+      to="/notifications"
+      onClick={goToNotifications}>
+      <Icon name="bell-solid" className="icon-solid" size={24} />
+      <Icon name="bell-outline" className="icon-outline" size={24} />
+      <HasNotificationsMarker />
+    </NavLink>
   );
 };
 
