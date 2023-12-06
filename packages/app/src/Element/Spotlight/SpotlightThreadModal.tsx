@@ -9,15 +9,20 @@ import { NostrLink } from "@snort/system";
 export function SpotlightThreadModal(props: { thread: NostrLink; onClose?: () => void; onBack?: () => void }) {
   const onClose = () => props.onClose?.();
   const onBack = () => props.onBack?.();
+  const onClickBg = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
   return (
     <Modal id="thread-overlay" onClose={onClose} bodyClassName={"flex flex-1"}>
       <ThreadContextWrapper link={props.thread}>
         <div className="flex flex-row h-screen w-screen">
-          <div className="flex w-2/3 items-center justify-center overflow-hidden">
+          <div className="flex w-full md:w-2/3 items-center justify-center overflow-hidden" onClick={onClickBg}>
             <SpotlightFromThread onClose={onClose} />
           </div>
-          <div className="flex w-1/3 flex-shrink-0 overflow-y-auto bg-bg-color">
+          <div className="hidden md:flex w-1/3 min-w-[400px] flex-shrink-0 overflow-y-auto bg-bg-color">
             <Thread onBack={onBack} disableSpotlight={true} />
           </div>
         </div>
@@ -30,7 +35,9 @@ function SpotlightFromThread({ onClose }: { onClose: () => void }) {
   const thread = useContext(ThreadContext);
 
   const parsed = thread.root ? transformTextCached(thread.root.id, thread.root.content, thread.root.tags) : [];
-  const images = parsed.filter(a => a.type === "media" && a.mimeType?.startsWith("image/"));
+  const images = parsed.filter(
+    a => a.type === "media" && (a.mimeType?.startsWith("image/") || a.mimeType?.startsWith("video/")),
+  );
   if (images.length === 0) return;
   return <SpotlightMedia images={images.map(a => a.content)} idx={0} onClose={onClose} />;
 }

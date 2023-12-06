@@ -20,7 +20,7 @@ export function MediaElement(props: MediaElementProps) {
     return (
       // constant height container avoids layout shift when images load
       <div className="-mx-4 md:mx-0 my-3 md:h-80 flex items-center justify-center">
-        <ProxyImg key={props.url} src={props.url} onClick={props.onMediaClick} className="md:max-h-80" />
+        <ProxyImg key={props.url} src={props.url} onClick={props.onMediaClick} className="max-h-[80vh] md:max-h-80" />
       </div>
     );
   } else if (props.mime.startsWith("audio/")) {
@@ -30,12 +30,13 @@ export function MediaElement(props: MediaElementProps) {
       <div className="-mx-4 md:mx-0 my-3 md:h-80 flex items-center justify-center">
         <video
           autoPlay={autoplay}
+          loop={true}
           muted={autoplay}
           key={props.url}
           src={props.url}
           controls
           poster={proxy(props.url)}
-          className="md:max-h-80"
+          className="max-h-[80vh] md:max-h-80"
         />
       </div>
     );
