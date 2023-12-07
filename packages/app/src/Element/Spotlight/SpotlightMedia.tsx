@@ -83,8 +83,14 @@ export function SpotlightMedia(props: SpotlightMediaProps) {
     }
   }, [image, isVideo]);
 
+  const onClickBg = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      props.onClose();
+    }
+  };
+
   return (
-    <>
+    <div className="relative h-screen flex items-center flex-1 justify-center" onClick={onClickBg}>
       {mediaEl}
       <div className="select-none absolute flex flex-row items-center gap-4 left-0 top-0 p-4">
         <span
@@ -92,6 +98,8 @@ export function SpotlightMedia(props: SpotlightMediaProps) {
           onClick={props.onClose}>
           <Icon name="x-close" size={24} />
         </span>
+      </div>
+      <div className="select-none absolute flex flex-row items-center gap-4 right-0 top-0 p-4">
         {props.images.length > 1 && `${idx + 1}/${props.images.length}`}
       </div>
       {props.images.length > 1 && (
@@ -116,16 +124,20 @@ export function SpotlightMedia(props: SpotlightMediaProps) {
           />
         </>
       )}
-    </>
+    </div>
   );
 }
 
 export function SpotlightMediaModal(props: SpotlightMediaProps) {
+  const onClose = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    props.onClose();
+  };
   return (
     <Modal
       id="spotlight"
       onClick={props.onClose}
-      onClose={props.onClose}
+      onClose={onClose}
       className="spotlight"
       bodyClassName="h-screen w-screen flex items-center justify-center">
       <SpotlightMedia {...props} />
