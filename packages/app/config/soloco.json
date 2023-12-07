@@ -11,12 +11,19 @@
   "httpCache": "",
   "animalNamePlaceholders": false,
   "defaultZapPoolFee": 0.5,
+  "bypassImgProxyError": false,
   "features": {
     "analytics": true,
     "subscriptions": true,
     "deck": true,
     "zapPool": true
   },
+  "signUp": {
+    "moderation": true
+  },
+  "noteCreatorToast": true,
+  "hideFromNavbar": ["/graph"],
+  "deckSubKind": 1,
   "eventLinkPrefix": "nevent",
   "profileLinkPrefix": "nprofile",
   "defaultRelays": {
