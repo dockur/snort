@@ -335,7 +335,6 @@ export function NoteInner(props: NoteProps) {
               pubkey={ev.pubkey}
               subHeader={replyTag() ?? undefined}
               link={opt?.canClick === undefined ? undefined : ""}
-              showNip05={CONFIG.showNip05InNotes}
             />
             <div className="info">
               {props.context}
@@ -372,9 +371,9 @@ export function NoteInner(props: NoteProps) {
           {translation()}
           {pollOptions()}
           {options.showReactionsLink && (
-            <div className="reactions-link cursor-pointer" onClick={() => setShowReactions(true)}>
+            <span className="reactions-link cursor-pointer" onClick={() => setShowReactions(true)}>
               <FormattedMessage {...messages.ReactionsLink} values={{ n: totalReactions }} />
-            </div>
+            </span>
           )}
         </div>
         {options.showFooter && (
