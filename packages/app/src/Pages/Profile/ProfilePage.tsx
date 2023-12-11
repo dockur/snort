@@ -58,6 +58,7 @@ import { useMuteList, usePinList } from "@/Hooks/useLists";
 
 import messages from "../messages";
 import FollowedBy from "@/Element/User/FollowedBy";
+import AsyncButton from "@/Element/Button/AsyncButton";
 
 interface ProfilePageProps {
   id?: string;
@@ -299,6 +300,11 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
         <div className="profile-actions">
           {renderIcons()}
           {!isMe && id && <FollowButton pubkey={id} />}
+          {isMe && id && (
+            <AsyncButton className="secondary">
+              <FormattedMessage defaultMessage="Edit" id="wEQDC6" />
+            </AsyncButton>
+          )}
         </div>
       </div>
     );
