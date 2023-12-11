@@ -6,7 +6,7 @@ import { TagsInput } from "react-tag-input-component";
 
 import Icon from "@/Icons/Icon";
 import useEventPublisher from "@/Hooks/useEventPublisher";
-import { appendDedupe, openFile } from "@/SnortUtils";
+import { appendDedupe, openFile, trackEvent } from "@/SnortUtils";
 import Textarea from "@/Element/Textarea";
 import Modal from "@/Element/Modal";
 import ProfileImage from "@/Element/User/ProfileImage";
@@ -158,6 +158,21 @@ export function NoteCreator() {
   async function sendNote() {
     const ev = await buildNote();
     if (ev) {
+      let props: Record<string, boolean> | undefined = undefined;
+      if (ev.tags.find(a => a[0] === "content-warning")) {
+        props ??= {};
+        props["content-warning"] = true;
+      }
+      if (ev.tags.find(a => a[0] === "poll_option")) {
+        props ??= {};
+        props["poll"] = true;
+      }
+      if (ev.tags.find(a => a[0] === "zap")) {
+        props ??= {};
+        props["zap-split"] = true;
+      }
+      trackEvent("PostNote", props);
+
       const events = (note.otherEvents ?? []).concat(ev);
       events.map(a =>
         sendEventToRelays(system, a, note.selectedCustomRelays, r => {
@@ -193,7 +208,7 @@ export function NoteCreator() {
     }
   }
 
-  async function uploadFile(file: File | Blob) {
+  async function uploadFile(file: File) {
     try {
       if (file) {
         const rx = await uploader.upload(file, file.name);
@@ -214,6 +229,9 @@ export function NoteCreator() {
               }
               if (rx.metadata.width && rx.metadata.height) {
                 imeta.push(`dim ${rx.metadata.width}x${rx.metadata.height}`);
+              }
+              if (rx.metadata.hash) {
+                imeta.push(`x ${rx.metadata.hash}`);
               }
               v.extraTags.push(imeta);
             }
@@ -256,6 +274,7 @@ export function NoteCreator() {
       note.update(v => (v.preview = undefined));
     } else if (publisher) {
       const tmpNote = await buildNote();
+      trackEvent("PostNotePreview");
       note.update(v => (v.preview = tmpNote));
     }
   }
