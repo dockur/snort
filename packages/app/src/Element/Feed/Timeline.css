@@ -11,8 +11,6 @@
 .latest-notes-fixed {
   position: fixed;
   top: 50px;
-  left: 50%;
-  transform: translateX(-50%);
   width: auto;
   z-index: 42;
   opacity: 0.9;
@@ -21,16 +19,6 @@
   background: var(--highlight);
   border-radius: 100px;
   border: none;
-}
-
-@media (max-width: 520px) {
-  .latest-notes-fixed {
-    width: 200px;
-    padding: 6px 12px;
-    position: fixed;
-    top: 12px;
-    left: calc(50% - 110px);
-  }
 }
 
 .latest-notes .pfp:not(:last-of-type) {
