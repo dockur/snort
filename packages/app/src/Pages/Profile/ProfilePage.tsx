@@ -1,7 +1,7 @@
 import "./ProfilePage.css";
 import { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   encodeTLVEntries,
   EventKind,
@@ -55,10 +55,7 @@ import ProfileTab, {
 import DisplayName from "@/Element/User/DisplayName";
 import { UserWebsiteLink } from "@/Element/User/UserWebsiteLink";
 import { useMuteList, usePinList } from "@/Hooks/useLists";
-
-import messages from "../messages";
 import FollowedBy from "@/Element/User/FollowedBy";
-import AsyncButton from "@/Element/Button/AsyncButton";
 
 interface ProfilePageProps {
   id?: string;
@@ -300,11 +297,6 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
         <div className="profile-actions">
           {renderIcons()}
           {!isMe && id && <FollowButton pubkey={id} />}
-          {isMe && id && (
-            <AsyncButton className="secondary">
-              <FormattedMessage defaultMessage="Edit" id="wEQDC6" />
-            </AsyncButton>
-          )}
         </div>
       </div>
     );
@@ -329,9 +321,11 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
         )}
         {isMe ? (
           <>
-            <button className="md:hidden" type="button" onClick={() => navigate("/settings")}>
-              <FormattedMessage {...messages.Settings} />
-            </button>
+            <Link to="/settings">
+              <button>
+                <FormattedMessage defaultMessage="Edit" id="wEQDC6" />
+              </button>
+            </Link>
           </>
         ) : (
           <>

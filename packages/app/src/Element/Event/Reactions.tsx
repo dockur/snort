@@ -73,9 +73,8 @@ const Reactions = ({ show, setShow, positive, negative, reposts, zaps }: Reactio
 
   return show ? (
     <Modal id="reactions" className="reactions-modal" onClose={onClose}>
-      <div className="close" onClick={onClose}>
-        <Icon name="close" />
-      </div>
+      <div className="close-button close" onClick={onClose}></div>
+
       <div className="reactions-header">
         <h2>
           <FormattedMessage {...messages.ReactionsCount} values={{ n: total }} />
@@ -88,7 +87,7 @@ const Reactions = ({ show, setShow, positive, negative, reposts, zaps }: Reactio
             return (
               <div key={ev.id} className="reactions-item">
                 <div className="reaction-icon">{ev.content === "+" ? <Icon name="heart" /> : ev.content}</div>
-                <ProfileImage pubkey={ev.pubkey} />
+                <ProfileImage pubkey={ev.pubkey} showProfileCard={true} />
               </div>
             );
           })}
@@ -102,6 +101,7 @@ const Reactions = ({ show, setShow, positive, negative, reposts, zaps }: Reactio
                     <span className="zap-amount">{formatShort(z.amount)}</span>
                   </div>
                   <ProfileImage
+                    showProfileCard={true}
                     pubkey={z.anonZap ? "" : z.sender}
                     subHeader={<div title={z.content}>{z.content}</div>}
                     link={z.anonZap ? "" : undefined}
@@ -120,7 +120,7 @@ const Reactions = ({ show, setShow, positive, negative, reposts, zaps }: Reactio
                 <div className="reaction-icon">
                   <Icon name="repost" size={16} />
                 </div>
-                <ProfileImage pubkey={ev.pubkey} />
+                <ProfileImage pubkey={ev.pubkey} showProfileCard={true} />
               </div>
             );
           })}
@@ -131,7 +131,7 @@ const Reactions = ({ show, setShow, positive, negative, reposts, zaps }: Reactio
                 <div className="reaction-icon">
                   <Icon name="dislike" />
                 </div>
-                <ProfileImage pubkey={ev.pubkey} />
+                <ProfileImage pubkey={ev.pubkey} showProfileCard={true} />
               </div>
             );
           })}

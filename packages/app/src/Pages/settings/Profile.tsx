@@ -5,15 +5,18 @@ import { mapEventToProfile } from "@snort/system";
 import { useUserProfile } from "@snort/system-react";
 
 import useEventPublisher from "@/Hooks/useEventPublisher";
-import { openFile } from "@/SnortUtils";
+import { openFile, debounce } from "@/SnortUtils";
 import useFileUpload from "@/Upload";
 import AsyncButton from "@/Element/Button/AsyncButton";
 import { UserCache } from "@/Cache";
 import useLogin from "@/Hooks/useLogin";
 import Icon from "@/Icons/Icon";
 import Avatar from "@/Element/User/Avatar";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { ErrorOrOffline } from "@/Element/ErrorOrOffline";
+import { LNURL, fetchNip05Pubkey } from "@snort/shared";
+import messages from "@/Element/messages";
+import { MaxAboutLength, MaxUsernameLength } from "@/Const";
 
 export interface ProfileSettingsProps {
   avatar?: boolean;
@@ -22,6 +25,7 @@ export interface ProfileSettingsProps {
 
 export default function ProfileSettings(props: ProfileSettingsProps) {
   const navigate = useNavigate();
+  const { formatMessage } = useIntl();
   const { publicKey: id, readonly } = useLogin(s => ({ publicKey: s.publicKey, readonly: s.readonly }));
   const user = useUserProfile(id ?? "");
   const { publisher, system } = useEventPublisher();
@@ -35,6 +39,14 @@ export default function ProfileSettings(props: ProfileSettingsProps) {
   const [website, setWebsite] = useState<string>();
   const [nip05, setNip05] = useState<string>();
   const [lud16, setLud16] = useState<string>();
+  const [nip05AddressValid, setNip05AddressValid] = useState<boolean>();
+  const [invalidNip05AddressMessage, setInvalidNip05AddressMessage] = useState<string>();
+  const [usernameValid, setUsernameValid] = useState<boolean>();
+  const [invalidUsernameMessage, setInvalidUsernameMessage] = useState<string>();
+  const [aboutValid, setAboutValid] = useState<boolean>();
+  const [invalidAboutMessage, setInvalidAboutMessage] = useState<string>();
+  const [lud16Valid, setLud16Valid] = useState<boolean>();
+  const [invalidLud16Message, setInvalidLud16Message] = useState<string>();
 
   useEffect(() => {
     if (user) {
@@ -47,6 +59,40 @@ export default function ProfileSettings(props: ProfileSettingsProps) {
       setLud16(user.lud16);
     }
   }, [user]);
+
+  useEffect(() => {
+    return debounce(500, async () => {
+      if (lud16) {
+        try {
+          await new LNURL(lud16).load();
+          setLud16Valid(true);
+          setInvalidLud16Message("");
+        } catch (e) {
+          setLud16Valid(false);
+          setInvalidLud16Message(formatMessage(messages.InvalidLud16));
+        }
+      } else {
+        setInvalidLud16Message("");
+      }
+    });
+  }, [lud16]);
+
+  useEffect(() => {
+    return debounce(500, async () => {
+      const Nip05AddressElements = nip05?.split("@") ?? [];
+      if ((nip05?.length ?? 0) === 0) {
+        setNip05AddressValid(false);
+        setInvalidNip05AddressMessage("");
+      } else if (Nip05AddressElements.length < 2) {
+        setNip05AddressValid(false);
+        setInvalidNip05AddressMessage(formatMessage(messages.InvalidNip05Address));
+      } else if (Nip05AddressElements.length === 2) {
+        nip05NostrAddressVerification(Nip05AddressElements.pop(), Nip05AddressElements.pop());
+      } else {
+        setNip05AddressValid(false);
+      }
+    });
+  }, [nip05]);
 
   async function saveProfile() {
     // copy user object and delete internal fields
@@ -112,6 +158,66 @@ export default function ProfileSettings(props: ProfileSettingsProps) {
     }
   }
 
+  async function onNip05Change(e: React.ChangeEvent<HTMLInputElement>) {
+    const Nip05Address = e.target.value.toLowerCase();
+    setNip05(Nip05Address);
+  }
+
+  async function onLimitCheck(val: string, field: string) {
+    if (field === "username") {
+      setName(val);
+      if (val?.length >= MaxUsernameLength) {
+        setUsernameValid(false);
+        setInvalidUsernameMessage(
+          formatMessage(messages.UserNameLengthError, {
+            limit: MaxUsernameLength,
+          }),
+        );
+      } else {
+        setUsernameValid(true);
+        setInvalidUsernameMessage("");
+      }
+    } else if (field === "about") {
+      setAbout(val);
+      if (val?.length >= MaxAboutLength) {
+        setAboutValid(false);
+        setInvalidAboutMessage(
+          formatMessage(messages.AboutLengthError, {
+            limit: MaxAboutLength,
+          }),
+        );
+      } else {
+        setAboutValid(true);
+        setInvalidAboutMessage("");
+      }
+    }
+  }
+
+  async function nip05NostrAddressVerification(nip05Domain: string | undefined, nip05Name: string | undefined) {
+    try {
+      const result = await fetchNip05Pubkey(nip05Name!, nip05Domain!);
+      if (result) {
+        if (result === id) {
+          setNip05AddressValid(true);
+        } else {
+          setInvalidNip05AddressMessage(
+            formatMessage({ defaultMessage: "Nostr address does not belong to you", id: "01iNut" }),
+          );
+        }
+      } else {
+        setNip05AddressValid(false);
+        setInvalidNip05AddressMessage(formatMessage(messages.InvalidNip05Address));
+      }
+    } catch (e) {
+      setNip05AddressValid(false);
+      setInvalidNip05AddressMessage(formatMessage(messages.InvalidNip05Address));
+    }
+  }
+
+  async function onLud16Change(address: string) {
+    setLud16(address);
+  }
+
   function editor() {
     return (
       <div className="flex flex-col g24">
@@ -123,9 +229,11 @@ export default function ProfileSettings(props: ProfileSettingsProps) {
             className="w-max"
             type="text"
             value={name}
-            onChange={e => setName(e.target.value)}
+            onChange={e => onLimitCheck(e.target.value, "username")}
             disabled={readonly}
+            maxLength={MaxUsernameLength}
           />
+          <div>{usernameValid === false ? <span className="warning">{invalidUsernameMessage}</span> : <></>}</div>
         </div>
         <div className="flex flex-col w-max g8">
           <h4>
@@ -133,9 +241,11 @@ export default function ProfileSettings(props: ProfileSettingsProps) {
           </h4>
           <textarea
             className="w-max"
-            onChange={e => setAbout(e.target.value)}
+            onChange={e => onLimitCheck(e.target.value, "about")}
             value={about}
-            disabled={readonly}></textarea>
+            disabled={readonly}
+            maxLength={MaxAboutLength}></textarea>
+          <div>{aboutValid === false ? <span className="warning">{invalidAboutMessage}</span> : <></>}</div>
         </div>
         <div className="flex flex-col w-max g8">
           <h4>
@@ -154,13 +264,8 @@ export default function ProfileSettings(props: ProfileSettingsProps) {
             <FormattedMessage defaultMessage="Nostr Address" id="9pMqYs" />
           </h4>
           <div className="flex flex-col g8 w-max">
-            <input
-              type="text"
-              className="w-max"
-              value={nip05}
-              onChange={e => setNip05(e.target.value)}
-              disabled={readonly}
-            />
+            <input type="text" className="w-max" value={nip05} onChange={e => onNip05Change(e)} disabled={readonly} />
+            <div>{!nip05AddressValid && <span className="warning">{invalidNip05AddressMessage}</span>}</div>
             <small>
               <FormattedMessage
                 defaultMessage="Usernames are not unique on Nostr. The nostr address is your unique human-readable address that is unique to you upon registration."
@@ -188,9 +293,10 @@ export default function ProfileSettings(props: ProfileSettingsProps) {
             className="w-max"
             type="text"
             value={lud16}
-            onChange={e => setLud16(e.target.value)}
+            onChange={e => onLud16Change(e.target.value.toLowerCase())}
             disabled={readonly}
           />
+          <div>{lud16Valid === false ? <span className="warning">{invalidLud16Message}</span> : <></>}</div>
         </div>
         <AsyncButton className="primary" onClick={() => saveProfile()} disabled={readonly}>
           <FormattedMessage defaultMessage="Save" id="jvo0vs" />
