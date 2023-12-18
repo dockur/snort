@@ -7,7 +7,7 @@ import useLogin from "@/Hooks/useLogin";
 
 export default function RightColumn() {
   const { pubkey } = useLogin(s => ({ pubkey: s.publicKey }));
-  const hideRightColumnPaths = ["/login", "/new", "/messages", "/settings"];
+  const hideRightColumnPaths = ["/login", "/new", "/messages"];
   const show = !hideRightColumnPaths.some(path => location.pathname.startsWith(path));
 
   const getTitleMessage = () => {
@@ -33,7 +33,7 @@ export default function RightColumn() {
       <div>
         <SearchBox />
       </div>
-      <div className="font-bold text-lg mt-4 mb-2">{getTitleMessage()}</div>
+      <div className="font-bold text-xs mt-4 mb-2 uppercase tracking-wide">{getTitleMessage()}</div>
       <div className="overflow-y-auto hide-scrollbar flex-grow rounded-lg">{getContent()}</div>
     </div>
   );
