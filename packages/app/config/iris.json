@@ -18,16 +18,14 @@
     "zapPool": true
   },
   "signUp": {
-    "moderation": false
-  },
-  "defaultPreferences": {
-    "checkSigs": true,
-    "sentToRelayNotifications": "none"
+    "moderation": false,
+    "defaultFollows": ["npub1wnwwcv0a8wx0m9stck34ajlwhzuua68ts8mw3kjvspn42dcfyjxs4n95l8"]
   },
   "media": {
     "bypassImgProxyError": true,
     "preferLargeMedia": true
   },
+  "noteCreatorToast": false,
   "hideFromNavbar": [],
   "eventLinkPrefix": "note",
   "profileLinkPrefix": "npub",
