@@ -264,6 +264,9 @@
   "7UOvbT": {
     "defaultMessage": "Offline"
   },
+  "7YkSA2": {
+    "defaultMessage": "Community Leader"
+  },
   "7hp70g": {
     "defaultMessage": "NIP-05"
   },
@@ -540,6 +543,9 @@
   "H0JBH6": {
     "defaultMessage": "Log Out"
   },
+  "H0OG3T": {
+    "defaultMessage": "Leader Info"
+  },
   "H6/kLh": {
     "defaultMessage": "Order Paid!"
   },
@@ -682,6 +688,9 @@
   "M3Oirc": {
     "defaultMessage": "Debug Menus"
   },
+  "M6C/px": {
+    "defaultMessage": "Become a leader"
+  },
   "MBAYRO": {
     "defaultMessage": "Shows \"Copy ID\" and \"Copy Event JSON\" in the context menu on each message"
   },
@@ -730,6 +739,9 @@
   },
   "NndBJE": {
     "defaultMessage": "New users page"
+  },
+  "O3Jz4E": {
+    "defaultMessage": "Use your invite code to earn sats!"
   },
   "O8Z8t9": {
     "defaultMessage": "Show More"
@@ -866,6 +878,9 @@
   "TaeBqw": {
     "defaultMessage": "Sign in with Nostr Extension"
   },
+  "TdTXXf": {
+    "defaultMessage": "Learn more"
+  },
   "TdtZQ5": {
     "defaultMessage": "Crypto"
   },
@@ -902,6 +917,9 @@
   },
   "Up5U7K": {
     "defaultMessage": "Block"
+  },
+  "Ups2/p": {
+    "defaultMessage": "Your application is pending"
   },
   "UrKTqQ": {
     "defaultMessage": "You have an active iris.to account"
@@ -1024,6 +1042,9 @@
   "b5vAk0": {
     "defaultMessage": "Your handle will act like a lightning address and will redirect to your chosen LNURL or Lightning address"
   },
+  "bF1MYT": {
+    "defaultMessage": "You are a community leader and are earning <b>{percent}</b> of referred users subscriptions!"
+  },
   "bG00/W": {
     "defaultMessage": "Service Worker Running"
   },
@@ -1139,6 +1160,9 @@
   },
   "egib+2": {
     "defaultMessage": "{n,plural,=1{& {n} other} other{& {n} others}}"
+  },
+  "f1OxTe": {
+    "defaultMessage": "Community leaders are individuals who grow the nostr ecosystem by being active in their local communities and helping onboard new users. Anyone can become a community leader, but few hold the current honorary title."
   },
   "fBI91o": {
     "defaultMessage": "Zap"
@@ -1283,6 +1307,9 @@
   },
   "jzgQ2z": {
     "defaultMessage": "{n} Reactions"
+  },
+  "k0kCJp": {
+    "defaultMessage": "Apply Now"
   },
   "k2veDA": {
     "defaultMessage": "Write"
