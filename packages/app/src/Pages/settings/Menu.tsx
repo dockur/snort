@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { ReactNode, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { Link, useNavigate } from "react-router-dom";
 import Icon from "@/Icons/Icon";
@@ -6,6 +6,17 @@ import { LoginStore, logout } from "@/Login";
 import useLogin from "@/Hooks/useLogin";
 import classNames from "classnames";
 import { getCurrentSubscription } from "@/Subscription";
+
+export type SettingsMenuItems = Array<{
+  title: ReactNode;
+  items: Array<{
+    icon: string;
+    iconBg: string;
+    message: ReactNode;
+    path?: string;
+    action?: () => void;
+  }>;
+}>;
 
 const SettingsIndex = () => {
   const login = useLogin();
@@ -61,6 +72,12 @@ const SettingsIndex = () => {
               },
             ]
           : []),
+        {
+          icon: "tool",
+          iconBg: "bg-slate-800",
+          message: <FormattedMessage defaultMessage="Tools" id="nUT0Lv" />,
+          path: "tools",
+        },
       ],
     },
     {
@@ -140,11 +157,15 @@ const SettingsIndex = () => {
         },
       ],
     },
-  ];
+  ] as SettingsMenuItems;
 
+  return <SettingsMenuComponent menu={settingsGroups} />;
+};
+
+export function SettingsMenuComponent({ menu }: { menu: SettingsMenuItems }) {
   return (
     <div className="flex flex-col">
-      {settingsGroups.map((group, groupIndex) => (
+      {menu.map((group, groupIndex) => (
         <div key={groupIndex} className="mb-4">
           <div className="p-2 font-bold uppercase text-secondary text-xs tracking-wide">{group.title}</div>
           {group.items.map(({ icon, iconBg, message, path, action }, index) => (
@@ -152,7 +173,6 @@ const SettingsIndex = () => {
               to={path || "#"}
               onClick={action}
               key={path || index}
-              end
               className={classNames("px-2.5 py-1.5 flex justify-between items-center border border-border-color", {
                 "rounded-t-xl": index === 0,
                 "rounded-b-xl": index === group.items.length - 1,
@@ -160,7 +180,7 @@ const SettingsIndex = () => {
               })}>
               <div className="flex items-center gap-3">
                 <div className={`p-1 ${iconBg} rounded-lg flex justify-center items-center text-white`}>
-                  <Icon name={icon} size={16} className="w-4 h-4 relative" />
+                  <Icon name={icon} size={18} className="relative" />
                 </div>
                 <span className="text-base font-semibold flex-grow">{message}</span>
               </div>
@@ -171,6 +191,6 @@ const SettingsIndex = () => {
       ))}
     </div>
   );
-};
+}
 
 export default SettingsIndex;

@@ -2,7 +2,7 @@ import { useInView } from "react-intersection-observer";
 import ProfileImage from "@/Element/User/ProfileImage";
 import { FormattedMessage } from "react-intl";
 import Icon from "@/Icons/Icon";
-import { NostrLink, TaggedNostrEvent } from "@snort/system";
+import { TaggedNostrEvent } from "@snort/system";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { TimelineFragment } from "@/Element/Feed/TimelineFragment";
 import { DisplayAs } from "@/Element/Feed/DisplayAsSelector";
@@ -27,7 +27,7 @@ export interface TimelineRendererProps {
 
 // filter frags[0].events that have media
 function Grid({ frags }: { frags: Array<TimelineFragment> }) {
-  const [modalThreadIndex, setModalThreadIndex] = useState<number | undefined>(undefined);
+  const [modalEventIndex, setModalEventIndex] = useState<number | undefined>(undefined);
   const allEvents = useMemo(() => {
     return frags.flatMap(frag => frag.events);
   }, [frags]);
@@ -35,40 +35,32 @@ function Grid({ frags }: { frags: Array<TimelineFragment> }) {
     return allEvents.filter(event => getEventMedia(event).length > 0);
   }, [allEvents]);
 
-  const modalThread = modalThreadIndex !== undefined ? mediaEvents[modalThreadIndex] : undefined;
-  const nextModalThread = modalThreadIndex !== undefined ? mediaEvents[modalThreadIndex + 1] : undefined;
-  const prevModalThread = modalThreadIndex !== undefined ? mediaEvents[modalThreadIndex - 1] : undefined;
+  const modalEvent = modalEventIndex !== undefined ? mediaEvents[modalEventIndex] : undefined;
+  const nextModalEvent = modalEventIndex !== undefined ? mediaEvents[modalEventIndex + 1] : undefined;
+  const prevModalEvent = modalEventIndex !== undefined ? mediaEvents[modalEventIndex - 1] : undefined;
 
   return (
     <>
       <div className="grid grid-cols-3 gap-px md:gap-1">
         {mediaEvents.map((event, index) => (
-          <ImageGridItem key={event.id} event={event} onClick={() => setModalThreadIndex(index)} />
+          <ImageGridItem key={event.id} event={event} onClick={() => setModalEventIndex(index)} />
         ))}
       </div>
-      {modalThread && (
+      {modalEvent && (
         <SpotlightThreadModal
-          key={modalThread.id}
-          thread={NostrLink.fromEvent(modalThread)}
-          onClose={() => setModalThreadIndex(undefined)}
-          onBack={() => setModalThreadIndex(undefined)}
-          onNext={() => setModalThreadIndex(Math.min(modalThreadIndex + 1, mediaEvents.length - 1))}
-          onPrev={() => setModalThreadIndex(Math.max(modalThreadIndex - 1, 0))}
+          key={modalEvent.id}
+          event={modalEvent}
+          onClose={() => setModalEventIndex(undefined)}
+          onBack={() => setModalEventIndex(undefined)}
+          onNext={() => setModalEventIndex(Math.min((modalEventIndex ?? 0) + 1, mediaEvents.length - 1))}
+          onPrev={() => setModalEventIndex(Math.max((modalEventIndex ?? 0) - 1, 0))}
         />
       )}
-      {nextModalThread && ( // preload next
-        <SpotlightThreadModal
-          className="hidden"
-          key={`${nextModalThread.id}-next`}
-          thread={NostrLink.fromEvent(nextModalThread)}
-        />
+      {nextModalEvent && ( // preload next
+        <SpotlightThreadModal className="hidden" key={`${nextModalEvent.id}-next`} event={nextModalEvent} />
       )}
-      {prevModalThread && ( // preload previous
-        <SpotlightThreadModal
-          className="hidden"
-          key={`${prevModalThread.id}-prev`}
-          thread={NostrLink.fromEvent(prevModalThread)}
-        />
+      {prevModalEvent && ( // preload previous
+        <SpotlightThreadModal className="hidden" key={`${prevModalEvent.id}-prev`} event={prevModalEvent} />
       )}
     </>
   );
