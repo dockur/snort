@@ -9,29 +9,28 @@
   "navLogo": null,
   "publicDir": "public/snort",
   "httpCache": "",
-  "animalNamePlaceholders": false,
+  "animalNamePlaceholders": true,
   "defaultZapPoolFee": 1,
   "features": {
     "analytics": true,
     "subscriptions": false,
     "deck": true,
     "zapPool": false,
-    "notificationGraph": true,
+    "notificationGraph": false,
     "communityLeaders": false
   },
   "signUp": {
-    "moderation": true,
+    "moderation": false,
     "defaultFollows": ["npub1nezkuqq2hhcv5yv0n9m9vvn2e0lcwke95e9unsp5064j8ynpq74saxpxt7"]
   },
   "media": {
-    "bypassImgProxyError": false,
+    "bypassImgProxyError": true,
     "preferLargeMedia": true
   },
-  "noteCreatorToast": true,
-  "hideFromNavbar": ["/graph"],
-  "deckSubKind": 1,
-  "eventLinkPrefix": "nevent",
-  "profileLinkPrefix": "nprofile",
+  "noteCreatorToast": false,
+  "hideFromNavbar": [],
+  "eventLinkPrefix": "note",
+  "profileLinkPrefix": "npub",
   "defaultRelays": {
     "wss://soloco.nl/": { "read": true, "write": false }
   }
