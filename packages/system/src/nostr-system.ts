@@ -192,8 +192,7 @@ export class NostrSystem extends EventEmitter<NostrSystemEvents> implements Syst
   }
 
   #onEvent(sub: string, ev: TaggedNostrEvent) {
-    this.#relayMetrics.onEvent(ev.relays[0]);
-    this.emit("event", ev);
+    ev.relays?.length && this.#relayMetrics.onEvent(ev.relays[0]);
 
     if (!EventExt.isValid(ev)) {
       this.#log("Rejecting invalid event %O", ev);
@@ -206,6 +205,8 @@ export class NostrSystem extends EventEmitter<NostrSystemEvents> implements Syst
         return;
       }
     }
+
+    this.emit("event", ev);
 
     for (const [, v] of this.Queries) {
       v.handleEvent(sub, ev);
@@ -386,10 +387,15 @@ export class NostrSystem extends EventEmitter<NostrSystemEvents> implements Syst
     return [];
   }
 
+  HandleEvent(ev: TaggedNostrEvent) {
+    this.#onEvent("*", ev);
+  }
+
   /**
    * Send events to writable relays
    */
   async BroadcastEvent(ev: NostrEvent, cb?: (rsp: OkResponse) => void) {
+    this.HandleEvent({ ...ev, relays: [] });
     const socks = [...this.#sockets.values()].filter(a => !a.Ephemeral && a.Settings.write);
     const replyRelays = await pickRelaysForReply(ev, this);
     const oks = await Promise.all([

@@ -1,6 +1,7 @@
 import "./index.css";
 import "@szhsin/react-menu/dist/index.css";
 import "./fonts/inter.css";
+import "./webrtc";
 
 import {
   compress,
@@ -103,7 +104,7 @@ export const GetPowWorker = () => (hasWasm ? new WasmPowWorker() : unwrap(Defaul
 /**
  * Singleton nostr system
  */
-const System = new NostrSystem({
+export const System = new NostrSystem({
   relayCache: UserRelays,
   profileCache: UserCache,
   relayMetrics: RelayMetrics,
