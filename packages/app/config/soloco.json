@@ -15,7 +15,7 @@
     "analytics": true,
     "subscriptions": true,
     "deck": true,
-    "zapPool": true,
+    "zapPool": false,
     "notificationGraph": true,
     "communityLeaders": false
   },
