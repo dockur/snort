@@ -64,6 +64,7 @@ import { setupWebLNWalletConfig } from "@/Wallet/WebLN";
 import { Wallets } from "@/Wallet";
 import Fuse from "fuse.js";
 import NetworkGraph from "@/Pages/NetworkGraph";
+import WalletPage from "./Pages/WalletPage";
 
 declare global {
   interface Window {
@@ -135,7 +136,7 @@ export const fuzzySearch = new Fuse<FuzzySearchResult>([], {
 const profileTimestamps = new Map<string, number>();
 
 // how to also add entries from ProfileCache?
-System.on("event", ev => {
+System.on("event", (_, ev) => {
   if (ev.kind === 0) {
     const existing = profileTimestamps.get(ev.pubkey);
     if (existing) {
@@ -278,6 +279,14 @@ const mainRoutes = [
   {
     path: "/graph",
     element: <NetworkGraph />,
+  },
+  {
+    path: "/wallet",
+    element: (
+      <div className="p">
+        <WalletPage showHistory={true} />
+      </div>
+    ),
   },
   ...OnboardingRoutes,
   ...SettingsRoutes,
