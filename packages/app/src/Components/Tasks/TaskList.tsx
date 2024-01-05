@@ -1,0 +1,74 @@
+import "./TaskList.css";
+
+import { ExternalStore } from "@snort/shared";
+import { useUserProfile } from "@snort/system-react";
+import { Fragment, useSyncExternalStore } from "react";
+
+import CloseButton from "@/Components/Button/CloseButton";
+import Icon from "@/Components/Icons/Icon";
+import { UITask } from "@/Components/Tasks/index";
+import useLogin from "@/Hooks/useLogin";
+
+import { BackupKeyTask } from "./BackupKey";
+import { DonateTask } from "./DonateTask";
+import { Nip5Task } from "./Nip5Task";
+import { NoticeZapPoolDefault } from "./NoticeZapPool";
+import { RenewSubTask } from "./RenewSubscription";
+
+class TaskStore extends ExternalStore<Array<UITask>> {
+  #tasks: Array<UITask>;
+
+  constructor() {
+    super();
+    const AllTasks: Array<UITask> = [new BackupKeyTask(), new Nip5Task(), new DonateTask(), new NoticeZapPoolDefault()];
+    if (CONFIG.features.subscriptions) {
+      AllTasks.push(new RenewSubTask());
+    }
+    AllTasks.forEach(a =>
+      a.load(() => {
+        this.notifyChange();
+      }),
+    );
+    this.#tasks = AllTasks;
+  }
+
+  takeSnapshot(): UITask[] {
+    return [...this.#tasks];
+  }
+}
+
+const AllTasks = new TaskStore();
+export const TaskList = () => {
+  const session = useLogin();
+  const user = useUserProfile(session.publicKey);
+  const tasks = useSyncExternalStore(
+    c => AllTasks.hook(c),
+    () => AllTasks.snapshot(),
+  );
+
+  function muteTask(t: UITask) {
+    t.mute();
+  }
+
+  return (
+    <div className="task-list">
+      {tasks
+        .filter(a => (user ? a.check(user, session) : false))
+        .map(a => {
+          if (a.noBaseStyle) {
+            return <Fragment key={a.id}>{a.render()}</Fragment>;
+          } else {
+            return (
+              <div key={a.id} className="card">
+                <div className="header">
+                  <Icon name="lightbulb" />
+                  <CloseButton onClick={() => muteTask(a)} />
+                </div>
+                {a.render()}
+              </div>
+            );
+          }
+        })}
+    </div>
+  );
+};

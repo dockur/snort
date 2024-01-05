@@ -1,13 +1,13 @@
+import { unixNowMs } from "@snort/shared";
 import { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
-import { unixNowMs } from "@snort/shared";
 
-import AsyncButton from "@/Element/Button/AsyncButton";
-import { appendDedupe } from "@/SnortUtils";
-import { ToggleSwitch } from "@/Icons/Toggle";
-import { updateAppData } from "@/Login";
+import AsyncButton from "@/Components/Button/AsyncButton";
+import { ToggleSwitch } from "@/Components/Icons/Toggle";
 import useLogin from "@/Hooks/useLogin";
+import { appendDedupe } from "@/Utils";
+import { updateAppData } from "@/Utils/Login";
 
 export const FixedModeration = {
   /*hateSpeech: {

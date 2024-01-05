@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import { v4 as uuid } from "uuid";
 
-import AsyncButton from "@/Element/Button/AsyncButton";
-import { unwrap } from "@/SnortUtils";
-import LNDHubWallet from "@/Wallet/LNDHub";
+import AsyncButton from "@/Components/Button/AsyncButton";
+import { unwrap } from "@/Utils";
 import { WalletConfig, WalletKind, Wallets } from "@/Wallet";
-import { useNavigate } from "react-router-dom";
+import LNDHubWallet from "@/Wallet/LNDHub";
 
 const ConnectLNDHub = () => {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ const ConnectLNDHub = () => {
 
   async function tryConnect(config: string) {
     try {
-      const connection = new LNDHubWallet(config);
+      const connection = new LNDHubWallet(config, () => {});
       await connection.login();
       const info = await connection.getInfo();
 

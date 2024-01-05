@@ -1,18 +1,19 @@
+import { HexKey } from "@snort/system";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { FormattedMessage } from "react-intl";
-import { HexKey } from "@snort/system";
-
-import { ApiHost, DeveloperAccounts, SnortPubKey } from "@/Const";
-import ProfilePreview from "@/Element/User/ProfilePreview";
-import ZapButton from "@/Element/Event/ZapButton";
-import { bech32ToHex, unwrap } from "@/SnortUtils";
-import SnortApi, { RevenueSplit, RevenueToday } from "@/External/SnortApi";
-import Modal from "@/Element/Modal";
-import AsyncButton from "@/Element/Button/AsyncButton";
-import QrCode from "@/Element/QrCode";
-import Copy from "@/Element/Copy";
 import { Link } from "react-router-dom";
-import { ZapPoolController, ZapPoolRecipientType } from "@/ZapPoolController";
+
+import AsyncButton from "@/Components/Button/AsyncButton";
+import Copy from "@/Components/Copy/Copy";
+import ZapButton from "@/Components/Event/ZapButton";
+import Modal from "@/Components/Modal/Modal";
+import QrCode from "@/Components/QrCode";
+import ProfilePreview from "@/Components/User/ProfilePreview";
+import SnortApi, { RevenueSplit, RevenueToday } from "@/External/SnortApi";
+import { bech32ToHex, unwrap } from "@/Utils";
+import { ApiHost, DeveloperAccounts, SnortPubKey } from "@/Utils/Const";
+import { ZapPoolController, ZapPoolRecipientType } from "@/Utils/ZapPoolController";
+
 import { ZapPoolTarget } from "./ZapPool";
 
 const Contributors = [

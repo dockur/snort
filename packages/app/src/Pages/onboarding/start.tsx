@@ -1,16 +1,17 @@
-import { FormattedMessage, useIntl } from "react-intl";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { unwrap } from "@snort/shared";
-
-import AsyncButton from "@/Element/Button/AsyncButton";
-import Icon from "@/Icons/Icon";
-import { NewUserState } from ".";
-import { LoginSessionType, LoginStore } from "@/Login";
-import useLoginHandler from "@/Hooks/useLoginHandler";
 import { NotEncrypted } from "@snort/system";
 import classNames from "classnames";
-import { trackEvent } from "@/SnortUtils";
+import { useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import { Link, useNavigate } from "react-router-dom";
+
+import AsyncButton from "@/Components/Button/AsyncButton";
+import Icon from "@/Components/Icons/Icon";
+import useLoginHandler from "@/Hooks/useLoginHandler";
+import { trackEvent } from "@/Utils";
+import { LoginSessionType, LoginStore } from "@/Utils/Login";
+
+import { NewUserState } from ".";
 
 const NSEC_NPUB_REGEX = /(nsec1|npub1)[a-zA-Z0-9]{20,65}/gi;
 

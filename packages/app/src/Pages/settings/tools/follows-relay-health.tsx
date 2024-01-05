@@ -1,12 +1,13 @@
-import { CollapsedSection } from "@/Element/Collapsed";
-import ProfilePreview from "@/Element/User/ProfilePreview";
-import useLogin from "@/Hooks/useLogin";
-import { getRelayName } from "@/SnortUtils";
 import { dedupe } from "@snort/shared";
 import { pickTopRelays } from "@snort/system";
 import { SnortContext } from "@snort/system-react";
 import { ReactNode, useContext, useMemo } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
+
+import { CollapsedSection } from "@/Components/Collapsed";
+import ProfilePreview from "@/Components/User/ProfilePreview";
+import useLogin from "@/Hooks/useLogin";
+import { getRelayName } from "@/Utils";
 
 export function FollowsRelayHealth({
   withTitle,
@@ -62,6 +63,7 @@ export function FollowsRelayHealth({
           <div>
             {missingRelays.map(a => (
               <ProfilePreview
+                key={a}
                 pubkey={a}
                 options={{
                   about: false,
@@ -80,7 +82,7 @@ export function FollowsRelayHealth({
             .sort((a, b) => (a.count > b.count ? -1 : 1))
             .slice(0, 10)
             .map(a => (
-              <div className="flex justify-between">
+              <div key={a.relay} className="flex justify-between">
                 <div>{getRelayName(a.relay)}</div>
                 <div>
                   {a.count} (<FormattedNumber style="percent" value={a.count / uniqueFollows.length} />)

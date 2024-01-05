@@ -1,18 +1,18 @@
 import "./ZapPool.css";
 
+import { useUserProfile } from "@snort/system-react";
 import { useMemo, useSyncExternalStore } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
-import { useUserProfile } from "@snort/system-react";
 
-import { SnortPubKey } from "@/Const";
-import ProfilePreview from "@/Element/User/ProfilePreview";
-import useLogin from "@/Hooks/useLogin";
-import { UploaderServices } from "@/Upload";
-import { bech32ToHex, getRelayName, trackEvent, unwrap } from "@/SnortUtils";
-import { ZapPoolController, ZapPoolRecipient, ZapPoolRecipientType } from "@/ZapPoolController";
-import AsyncButton from "@/Element/Button/AsyncButton";
-import { useWallet } from "@/Wallet";
+import AsyncButton from "@/Components/Button/AsyncButton";
+import ProfilePreview from "@/Components/User/ProfilePreview";
 import useEventPublisher from "@/Hooks/useEventPublisher";
+import useLogin from "@/Hooks/useLogin";
+import { bech32ToHex, getRelayName, trackEvent, unwrap } from "@/Utils";
+import { SnortPubKey } from "@/Utils/Const";
+import { UploaderServices } from "@/Utils/Upload";
+import { ZapPoolController, ZapPoolRecipient, ZapPoolRecipientType } from "@/Utils/ZapPoolController";
+import { useWallet } from "@/Wallet";
 
 const DataProviders = [
   {
@@ -21,8 +21,7 @@ const DataProviders = [
   },
 ];
 
-export function ZapPoolTarget({ target }: { target: ZapPoolRecipient }) {
-  if (!ZapPoolController) return;
+function ZapPoolTargetInner({ target }: { target: ZapPoolRecipient }) {
   const login = useLogin();
   const profile = useUserProfile(target.pubkey);
   const hasAddress = profile?.lud16 || profile?.lud06;
@@ -59,8 +58,14 @@ export function ZapPoolTarget({ target }: { target: ZapPoolRecipient }) {
   );
 }
 
-export default function ZapPoolPage() {
-  if (!ZapPoolController) return;
+export function ZapPoolTarget({ target }: { target: ZapPoolRecipient }) {
+  if (!ZapPoolController) {
+    return null;
+  }
+  return <ZapPoolTargetInner target={target} />;
+}
+
+function ZapPoolPageInner() {
   const login = useLogin();
   const { system } = useEventPublisher();
   const zapPool = useSyncExternalStore(
@@ -173,7 +178,7 @@ export default function ZapPoolPage() {
         <FormattedMessage defaultMessage="Relays" id="RoOyAh" />
       </h3>
       {relayConnections.map(a => (
-        <div>
+        <div key={a.address}>
           <h4>{getRelayName(a.address)}</h4>
           <ZapPoolTarget
             target={
@@ -191,7 +196,7 @@ export default function ZapPoolPage() {
         <FormattedMessage defaultMessage="File hosts" id="XICsE8" />
       </h3>
       {UploaderServices.map(a => (
-        <div>
+        <div key={a.name}>
           <h4>{a.name}</h4>
           <ZapPoolTarget
             target={
@@ -209,7 +214,7 @@ export default function ZapPoolPage() {
         <FormattedMessage defaultMessage="Data Providers" id="ELbg9p" />
       </h3>
       {DataProviders.map(a => (
-        <div>
+        <div key={a.name}>
           <h4>{a.name}</h4>
           <ZapPoolTarget
             target={
@@ -225,4 +230,11 @@ export default function ZapPoolPage() {
       ))}
     </div>
   );
+}
+
+export default function ZapPoolPage() {
+  if (!ZapPoolController) {
+    return null;
+  }
+  return <ZapPoolPageInner />;
 }

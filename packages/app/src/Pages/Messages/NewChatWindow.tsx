@@ -1,19 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUserSearch } from "@snort/system-react";
-import useLogin from "@/Hooks/useLogin";
-import useEventPublisher from "@/Hooks/useEventPublisher";
-import { appendDedupe, debounce } from "@/SnortUtils";
-import { ChatType, createChatLink } from "@/chat";
-import Icon from "@/Icons/Icon";
-import Modal from "@/Element/Modal";
-import { FormattedMessage } from "react-intl";
-import ProfileImage from "@/Element/User/ProfileImage";
-import ProfilePreview from "@/Element/User/ProfilePreview";
-import { Nip28ChatSystem } from "@/chat/nip28";
-import { LoginSession, LoginStore } from "@/Login";
 import { decodeTLV, EventKind } from "@snort/system";
+import { useUserSearch } from "@snort/system-react";
+import React, { useEffect, useState } from "react";
+import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
+
+import { ChatType, createChatLink } from "@/chat";
+import { Nip28ChatSystem } from "@/chat/nip28";
+import Icon from "@/Components/Icons/Icon";
+import Modal from "@/Components/Modal/Modal";
+import ProfileImage from "@/Components/User/ProfileImage";
+import ProfilePreview from "@/Components/User/ProfilePreview";
+import useEventPublisher from "@/Hooks/useEventPublisher";
+import useLogin from "@/Hooks/useLogin";
 import Nip28ChatProfile from "@/Pages/Messages/Nip28ChatProfile";
+import { appendDedupe, debounce } from "@/Utils";
+import { LoginSession, LoginStore } from "@/Utils/Login";
 
 export default function NewChatWindow() {
   const [show, setShow] = useState(false);

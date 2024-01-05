@@ -1,11 +1,12 @@
 import "./Keys.css";
-import { FormattedMessage } from "react-intl";
-import { encodeTLV, KeyStorage, NostrPrefix } from "@snort/system";
 
-import Copy from "@/Element/Copy";
+import { encodeTLV, KeyStorage, NostrPrefix } from "@snort/system";
+import { FormattedMessage } from "react-intl";
+
+import Copy from "@/Components/Copy/Copy";
 import useLogin from "@/Hooks/useLogin";
-import { hexToMnemonic } from "@/nip6";
-import { hexToBech32 } from "@/SnortUtils";
+import { hexToBech32 } from "@/Utils";
+import { hexToMnemonic } from "@/Utils/nip6";
 
 export default function ExportKeys() {
   const { publicKey, privateKeyData, generatedEntropy } = useLogin();
@@ -33,7 +34,7 @@ export default function ExportKeys() {
             {hexToMnemonic(generatedEntropy ?? "")
               .split(" ")
               .map((a, i) => (
-                <div className="flex items-center word">
+                <div key={a} className="flex items-center word">
                   <div>{i + 1}</div>
                   <div>{a}</div>
                 </div>

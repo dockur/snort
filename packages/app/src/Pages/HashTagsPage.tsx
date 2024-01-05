@@ -1,18 +1,18 @@
-import { useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
-import { FormattedMessage, FormattedNumber } from "react-intl";
-import { EventKind, NoteCollection, RequestBuilder } from "@snort/system";
 import { dedupe } from "@snort/shared";
+import { EventKind, NoteCollection, RequestBuilder } from "@snort/system";
 import { useRequestBuilder } from "@snort/system-react";
+import classNames from "classnames";
+import { useMemo } from "react";
+import { FormattedMessage, FormattedNumber } from "react-intl";
+import { Link, useParams } from "react-router-dom";
 
-import Timeline from "@/Element/Feed/Timeline";
+import AsyncButton from "@/Components/Button/AsyncButton";
+import Timeline from "@/Components/Feed/Timeline";
+import ProfileImage from "@/Components/User/ProfileImage";
 import useEventPublisher from "@/Hooks/useEventPublisher";
 import useLogin from "@/Hooks/useLogin";
-import { setTags } from "@/Login";
-import AsyncButton from "@/Element/Button/AsyncButton";
-import ProfileImage from "@/Element/User/ProfileImage";
-import classNames from "classnames";
-import { formatShort } from "@/Number";
+import { setTags } from "@/Utils/Login";
+import { formatShort } from "@/Utils/Number";
 
 const HashTagsPage = () => {
   const params = useParams();
@@ -93,7 +93,7 @@ export function HashTagHeader({ tag, events, className }: { tag: string; events?
       </div>
       <div className="flex items-center">
         {pubkeys.slice(0, 5).map(a => (
-          <ProfileImage pubkey={a} showUsername={false} showFollowDistance={false} size={40} />
+          <ProfileImage key={a} pubkey={a} showUsername={false} showFollowDistance={false} size={40} />
         ))}
         {pubkeys.length > 5 && (
           <span>

@@ -1,11 +1,12 @@
 import "./Preferences.css";
 
 import { FormattedMessage, useIntl } from "react-intl";
+
 import useLogin from "@/Hooks/useLogin";
-import { updatePreferences, UserPreferences } from "@/Login";
-import { DefaultImgProxy } from "@/Const";
-import { unwrap } from "@/SnortUtils";
 import { useLocale } from "@/IntlProvider";
+import { unwrap } from "@/Utils";
+import { DefaultImgProxy } from "@/Utils/Const";
+import { updatePreferences, UserPreferences } from "@/Utils/Login";
 
 import messages from "./messages";
 
@@ -59,7 +60,7 @@ const PreferencesPage = () => {
             }
             style={{ textTransform: "capitalize" }}>
             {AllLanguageCodes.sort().map(a => (
-              <option value={a}>
+              <option key={a} value={a}>
                 {new Intl.DisplayNames([a], {
                   type: "language",
                 }).of(a)}

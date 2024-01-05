@@ -1,14 +1,16 @@
-import { Day } from "@/Const";
-import AsyncButton from "@/Element/Button/AsyncButton";
-import useLogin from "@/Hooks/useLogin";
 import { dedupe, unixNow } from "@snort/shared";
 import { RequestBuilder } from "@snort/system";
 import { useMemo, useState } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
-import { FollowsRelayHealth } from "./follows-relay-health";
-import ProfileImage from "@/Element/User/ProfileImage";
+
+import AsyncButton from "@/Components/Button/AsyncButton";
+import ProfileImage from "@/Components/User/ProfileImage";
 import useEventPublisher from "@/Hooks/useEventPublisher";
-import { setFollows } from "@/Login";
+import useLogin from "@/Hooks/useLogin";
+import { Day } from "@/Utils/Const";
+import { setFollows } from "@/Utils/Login";
+
+import { FollowsRelayHealth } from "./follows-relay-health";
 
 const enum PruneStage {
   FetchLastPostTimestamp,
@@ -141,7 +143,7 @@ export function PruneFollowList() {
             .sort(([, a], [, b]) => (a > b ? -1 : 1))
             .map(([k, v]) => {
               return (
-                <div className="flex justify-between">
+                <div key={k} className="flex justify-between">
                   <ProfileImage pubkey={k} />
                   <div className="flex flex-col gap-1">
                     <FormattedMessage

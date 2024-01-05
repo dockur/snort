@@ -1,9 +1,10 @@
 import { unixNowMs } from "@snort/shared";
-import useLogin from "@/Hooks/useLogin";
-import { SnortAppData, updateAppData } from "@/Login";
-import { appendDedupe } from "@/SnortUtils";
 import { useState } from "react";
 import { FormattedMessage } from "react-intl";
+
+import useLogin from "@/Hooks/useLogin";
+import { appendDedupe } from "@/Utils";
+import { SnortAppData, updateAppData } from "@/Utils/Login";
 
 export default function ModerationSettingsPage() {
   const login = useLogin();
@@ -80,7 +81,7 @@ export default function ModerationSettingsPage() {
           </button>
         </div>
         {appData.mutedWords.map(v => (
-          <div className="p br b flex items-center justify-between">
+          <div key={v} className="p br b flex items-center justify-between">
             <div>{v}</div>
             <button type="button" onClick={() => removeMutedWord(v)}>
               <FormattedMessage defaultMessage="Delete" id="K3r6DQ" />

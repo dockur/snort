@@ -1,13 +1,15 @@
-import AsyncButton from "@/Element/Button/AsyncButton";
-import AvatarEditor from "@/Element/User/AvatarEditor";
+import { NotEncrypted } from "@snort/system";
+import { SnortContext } from "@snort/system-react";
 import { useContext, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useLocation, useNavigate } from "react-router-dom";
-import { generateNewLogin } from "@/Login";
-import { SnortContext } from "@snort/system-react";
-import { NotEncrypted } from "@snort/system";
+
+import AsyncButton from "@/Components/Button/AsyncButton";
+import AvatarEditor from "@/Components/User/AvatarEditor";
+import { trackEvent } from "@/Utils";
+import { generateNewLogin } from "@/Utils/Login";
+
 import { NewUserState } from ".";
-import { trackEvent } from "@/SnortUtils";
 
 export function Profile() {
   const system = useContext(SnortContext);

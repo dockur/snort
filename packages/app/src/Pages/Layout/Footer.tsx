@@ -1,13 +1,14 @@
-import React, { useState } from "react";
-import NavLink from "@/Element/Button/NavLink";
-import useLogin from "@/Hooks/useLogin";
-import Icon from "@/Icons/Icon";
-import { ProfileLink } from "@/Element/User/ProfileLink";
-import { NoteCreatorButton } from "@/Element/Event/Create/NoteCreatorButton";
-import classNames from "classnames";
 import { useUserProfile } from "@snort/system-react";
-import Avatar from "@/Element/User/Avatar";
+import classNames from "classnames";
+import React, { useState } from "react";
 import { useIntl } from "react-intl";
+
+import NavLink from "@/Components/Button/NavLink";
+import { NoteCreatorButton } from "@/Components/Event/Create/NoteCreatorButton";
+import Icon from "@/Components/Icons/Icon";
+import Avatar from "@/Components/User/Avatar";
+import { ProfileLink } from "@/Components/User/ProfileLink";
+import useLogin from "@/Hooks/useLogin";
 
 type MenuItem = {
   label?: string;

@@ -5,7 +5,7 @@ import { Query } from "./query";
 import { NostrEvent, ReqFilter, TaggedNostrEvent } from "./nostr";
 import { ProfileLoaderService } from "./profile-cache";
 import { RelayCache } from "./outbox-model";
-import { QueryOptimizer } from "./query-optimizer";
+import { Optimizer } from "./query-optimizer";
 import { base64 } from "@scure/base";
 
 export { NostrSystem } from "./nostr-system";
@@ -33,6 +33,7 @@ export * from "./query-optimizer";
 export * from "./encrypted";
 export * from "./outbox-model";
 export { parseIMeta } from "./utils";
+export * from "./seen-events";
 
 export * from "./impl/nip4";
 export * from "./impl/nip44";
@@ -127,7 +128,7 @@ export interface SystemInterface {
   /**
    * Query optimizer
    */
-  get QueryOptimizer(): QueryOptimizer;
+  get Optimizer(): Optimizer;
 }
 
 export interface SystemSnapshot {

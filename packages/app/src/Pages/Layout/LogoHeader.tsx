@@ -1,11 +1,13 @@
-import useLogin from "../../Hooks/useLogin";
-import { getCurrentSubscription } from "../../Subscription";
-import { isBirthday, isChristmas, isHalloween, isStPatricksDay } from "../../SnortUtils";
-import { Link } from "react-router-dom";
-import { mapPlanName } from "../subscribe";
-import Icon from "@/Icons/Icon";
 import { unixNowMs } from "@snort/shared";
-import { Birthday, Day } from "@/Const";
+import { Link } from "react-router-dom";
+
+import Icon from "@/Components/Icons/Icon";
+import { Birthday, Day } from "@/Utils/Const";
+
+import useLogin from "../../Hooks/useLogin";
+import { isBirthday, isChristmas, isHalloween, isStPatricksDay } from "../../Utils";
+import { getCurrentSubscription } from "../../Utils/Subscription";
+import { mapPlanName } from "../subscribe";
 
 const getExtra = () => {
   if (isBirthday()) {
@@ -17,7 +19,7 @@ const getExtra = () => {
   if (isChristmas()) return <span title="Merry Christmas!">🎄</span>;
 };
 
-export function LogoHeader({ showText = false }) {
+export function LogoHeader({ showText = false }: { showText: boolean }) {
   const { subscriptions } = useLogin();
   const currentSubscription = getCurrentSubscription(subscriptions);
 

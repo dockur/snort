@@ -1,11 +1,12 @@
-import { FormattedMessage, FormattedDate, FormattedNumber } from "react-intl";
+import { FormattedDate, FormattedMessage, FormattedNumber } from "react-intl";
 
+import Icon from "@/Components/Icons/Icon";
+import Nip5Service from "@/Components/Nip5Service";
+import Nip05 from "@/Components/User/Nip05";
 import { Subscription } from "@/External/SnortApi";
-import { mapPlanName } from ".";
-import Icon from "@/Icons/Icon";
-import Nip5Service from "@/Element/Nip5Service";
 import { SnortNostrAddressService } from "@/Pages/NostrAddressPage";
-import Nip05 from "@/Element/User/Nip05";
+
+import { mapPlanName } from ".";
 import { RenewSub } from "./RenewSub";
 
 export default function SubscriptionCard({ sub }: { sub: Subscription }) {

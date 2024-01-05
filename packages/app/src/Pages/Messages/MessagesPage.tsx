@@ -1,19 +1,19 @@
+import classNames from "classnames";
 import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate, useParams } from "react-router-dom";
 
-import UnreadCount from "@/Pages/Messages/UnreadCount";
-import ProfileImage from "@/Element/User/ProfileImage";
-import { parseId } from "@/SnortUtils";
-import NoteToSelf from "@/Element/User/NoteToSelf";
+import { Chat, ChatType, useChatSystem } from "@/chat";
+import NoteTime from "@/Components/Event/NoteTime";
+import NoteToSelf from "@/Components/User/NoteToSelf";
+import ProfileImage from "@/Components/User/ProfileImage";
 import useLogin from "@/Hooks/useLogin";
 import usePageWidth from "@/Hooks/usePageWidth";
-import NoteTime from "@/Element/Event/NoteTime";
-import DmWindow from "@/Pages/Messages/DmWindow";
-import { Chat, ChatType, useChatSystem } from "@/chat";
 import { ChatParticipantProfile } from "@/Pages/Messages/ChatParticipant";
-import classNames from "classnames";
+import DmWindow from "@/Pages/Messages/DmWindow";
 import NewChatWindow from "@/Pages/Messages/NewChatWindow";
+import UnreadCount from "@/Pages/Messages/UnreadCount";
+import { parseId } from "@/Utils";
 
 const TwoCol = 768;
 
@@ -54,7 +54,7 @@ export default function MessagesPage() {
       return (
         <div className="flex items-center grow pfp-overlap">
           {cx.participants.map(v => (
-            <ProfileImage pubkey={v.id} link="" showUsername={false} profile={v.profile} />
+            <ProfileImage key={v.id} pubkey={v.id} link="" showUsername={false} profile={v.profile} />
           ))}
           {cx.title ?? <FormattedMessage defaultMessage="Group Chat" id="eXT2QQ" />}
         </div>

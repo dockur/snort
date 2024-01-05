@@ -1,27 +1,29 @@
 import "./Deck.css";
-import { createContext, useEffect, useState } from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
-import { FormattedMessage } from "react-intl";
-import { NostrLink, TaggedNostrEvent } from "@snort/system";
 
+import { NostrLink, TaggedNostrEvent } from "@snort/system";
+import { createContext, useEffect, useState } from "react";
+import { FormattedMessage } from "react-intl";
+import { Link, Outlet, useNavigate } from "react-router-dom";
+
+import ErrorBoundary from "@/Components/ErrorBoundary";
+import { LongFormText } from "@/Components/Event/LongFormText";
+import Articles from "@/Components/Feed/Articles";
+import { RootTabs } from "@/Components/Feed/RootTabs";
+import TimelineFollows from "@/Components/Feed/TimelineFollows";
+import Icon from "@/Components/Icons/Icon";
+import Modal from "@/Components/Modal/Modal";
+import { SpotlightThreadModal } from "@/Components/Spotlight/SpotlightThreadModal";
+import Toaster from "@/Components/Toaster/Toaster";
 import useLoginFeed from "@/Feed/LoginFeed";
-import { useLoginRelays } from "@/Hooks/useLoginRelays";
-import { useTheme } from "@/Hooks/useTheme";
-import Articles from "@/Element/Feed/Articles";
-import TimelineFollows from "@/Element/Feed/TimelineFollows";
-import { transformTextCached } from "@/Hooks/useTextTransformCache";
-import Icon from "@/Icons/Icon";
-import NotificationsPage from "./Notifications/Notifications";
-import Modal from "@/Element/Modal";
-import { RootTabs } from "@/Element/Feed/RootTabs";
-import Toaster from "@/Toaster";
 import useLogin from "@/Hooks/useLogin";
-import { LongFormText } from "@/Element/Event/LongFormText";
+import { useLoginRelays } from "@/Hooks/useLoginRelays";
+import { transformTextCached } from "@/Hooks/useTextTransformCache";
+import { useTheme } from "@/Hooks/useTheme";
 import NavSidebar from "@/Pages/Layout/NavSidebar";
-import ErrorBoundary from "@/Element/ErrorBoundary";
-import { getCurrentSubscription } from "@/Subscription";
+import { getCurrentSubscription } from "@/Utils/Subscription";
+
+import NotificationsPage from "./Notifications/Notifications";
 import { mapPlanName } from "./subscribe";
-import { SpotlightThreadModal } from "@/Element/Spotlight/SpotlightThreadModal";
 
 type Cols = "notes" | "articles" | "media" | "streams" | "notifications";
 

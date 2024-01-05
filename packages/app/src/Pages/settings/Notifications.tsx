@@ -1,12 +1,20 @@
-import { FormattedMessage } from "react-intl";
 import { useEffect, useState } from "react";
-import Icon from "@/Icons/Icon";
-import useLogin from "@/Hooks/useLogin";
-import { subscribeToNotifications } from "@/Notifications";
+import { FormattedMessage } from "react-intl";
+
+import Icon from "@/Components/Icons/Icon";
 import useEventPublisher from "@/Hooks/useEventPublisher";
+import useLogin from "@/Hooks/useLogin";
+import { subscribeToNotifications } from "@/Utils/Notifications";
+
 import messages from "./messages";
 
-const StatusIndicator = ({ status, enabledMessage, disabledMessage }) => {
+interface StatusIndicatorProps {
+  status: boolean;
+  enabledMessage: React.ComponentProps<typeof FormattedMessage>;
+  disabledMessage: React.ComponentProps<typeof FormattedMessage>;
+}
+
+const StatusIndicator = ({ status, enabledMessage, disabledMessage }: StatusIndicatorProps) => {
   return status ? (
     <div className="flex items-center">
       <Icon name="check" size={20} className="text-green-500 mr-2" />

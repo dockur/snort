@@ -1,5 +1,6 @@
 import { FormattedMessage } from "react-intl";
-import IrisAccount from "@/Element/IrisAccount/IrisAccount";
+
+import IrisAccount from "@/Components/IrisAccount/IrisAccount";
 
 import messages from "./messages";
 

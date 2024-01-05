@@ -1,13 +1,14 @@
 import { FormattedMessage } from "react-intl";
-import ProfilePreview from "@/Element/User/ProfilePreview";
-import useRelayState from "@/Feed/RelayState";
 import { useNavigate, useParams } from "react-router-dom";
-import { parseId, unwrap } from "@/SnortUtils";
-import { removeRelay } from "@/Login";
+
+import ProfilePreview from "@/Components/User/ProfilePreview";
+import useRelayState from "@/Feed/RelayState";
+import useEventPublisher from "@/Hooks/useEventPublisher";
 import useLogin from "@/Hooks/useLogin";
+import { parseId, unwrap } from "@/Utils";
+import { removeRelay } from "@/Utils/Login";
 
 import messages from "./messages";
-import useEventPublisher from "@/Hooks/useEventPublisher";
 
 const RelayInfo = () => {
   const params = useParams();
@@ -75,7 +76,7 @@ const RelayInfo = () => {
             </h4>
             <div className="grow">
               {stats.info.supported_nips.map(a => (
-                <a target="_blank" rel="noreferrer" href={`https://nips.be/${a}`} className="pill">
+                <a key={a} target="_blank" rel="noreferrer" href={`https://nips.be/${a}`} className="pill">
                   NIP-{a.toString().padStart(2, "0")}
                 </a>
               ))}

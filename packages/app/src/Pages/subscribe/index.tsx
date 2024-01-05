@@ -1,18 +1,18 @@
 import "./index.css";
 
+import classNames from "classnames";
 import { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { RouteObject } from "react-router-dom";
 
-import { formatShort } from "@/Number";
-import { LockedFeatures, Plans, SubscriptionType } from "@/Subscription";
-import ManageSubscriptionPage from "@/Pages/subscribe/ManageSubscription";
-import AsyncButton from "@/Element/Button/AsyncButton";
-import useEventPublisher from "@/Hooks/useEventPublisher";
+import AsyncButton from "@/Components/Button/AsyncButton";
+import SendSats from "@/Components/SendSats/SendSats";
 import SnortApi, { SubscriptionError, SubscriptionErrorCode } from "@/External/SnortApi";
-import SendSats from "@/Element/SendSats";
-import classNames from "classnames";
-import { getRefCode } from "@/SnortUtils";
+import useEventPublisher from "@/Hooks/useEventPublisher";
+import ManageSubscriptionPage from "@/Pages/subscribe/ManageSubscription";
+import { getRefCode } from "@/Utils";
+import { formatShort } from "@/Utils/Number";
+import { LockedFeatures, Plans, SubscriptionType } from "@/Utils/Subscription";
 
 export function mapPlanName(id: number) {
   switch (id) {
@@ -91,7 +91,7 @@ export function SubscribePage() {
         {Plans.map(a => {
           const lower = Plans.filter(b => b.id < a.id);
           return (
-            <div className={classNames("p flex flex-col g8", { disabled: a.disabled })}>
+            <div key={a.id} className={classNames("p flex flex-col g8", { disabled: a.disabled })}>
               <div className="grow">
                 <h2>{mapPlanName(a.id)}</h2>
                 <p>
@@ -108,10 +108,10 @@ export function SubscribePage() {
                 </p>
                 <ul className="list-disc">
                   {a.unlocks.map(b => (
-                    <li>{mapFeatureName(b)} </li>
+                    <li key={`unlocks-${b}`}>{mapFeatureName(b)} </li>
                   ))}
                   {lower.map(b => (
-                    <li>
+                    <li key={`lower-${b}`}>
                       <FormattedMessage
                         defaultMessage="Everything in {plan}"
                         id="l+ikU1"

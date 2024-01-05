@@ -1,11 +1,11 @@
-import { useCallback, useMemo } from "react";
+import { unixNow } from "@snort/shared";
 import { EventKind, NostrLink, NoteCollection, RequestBuilder } from "@snort/system";
 import { useReactions, useRequestBuilder } from "@snort/system-react";
-import { unixNow } from "@snort/shared";
+import { useCallback, useMemo } from "react";
 
-import useTimelineWindow from "@/Hooks/useTimelineWindow";
 import useLogin from "@/Hooks/useLogin";
-import { SearchRelays } from "@/Const";
+import useTimelineWindow from "@/Hooks/useTimelineWindow";
+import { SearchRelays } from "@/Utils/Const";
 
 export interface TimelineFeedOptions {
   method: "TIME_RANGE" | "LIMIT_UNTIL";

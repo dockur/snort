@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef } from "react";
-import ProfileImage from "@/Element/User/ProfileImage";
-import DM from "@/Pages/Messages/DM";
-import useLogin from "@/Hooks/useLogin";
-import WriteMessage from "@/Pages/Messages/WriteMessage";
-import { Chat, createEmptyChatObject, useChatSystem } from "@/chat";
 import { FormattedMessage } from "react-intl";
+
+import { Chat, createEmptyChatObject, useChatSystem } from "@/chat";
+import ProfileImage from "@/Components/User/ProfileImage";
+import useLogin from "@/Hooks/useLogin";
+import DM from "@/Pages/Messages/DM";
+import WriteMessage from "@/Pages/Messages/WriteMessage";
+
 import { ChatParticipantProfile } from "./ChatParticipant";
 
 export default function DmWindow({ id }: { id: string }) {
@@ -18,7 +20,7 @@ export default function DmWindow({ id }: { id: string }) {
       return (
         <div className="flex -space-x-5 mb-2.5">
           {chat.participants.map(v => (
-            <ProfileImage pubkey={v.id} showUsername={false} />
+            <ProfileImage key={v.id} pubkey={v.id} showUsername={false} />
           ))}
           {chat.title ?? <FormattedMessage defaultMessage="Secret Group Chat" id="+Vxixo" />}
         </div>

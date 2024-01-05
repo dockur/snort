@@ -2,7 +2,7 @@ import debug from "debug";
 import EventEmitter from "eventemitter3";
 
 import { unwrap, FeedCache } from "@snort/shared";
-import { NostrEvent, TaggedNostrEvent } from "./nostr";
+import { NostrEvent, ReqFilter, TaggedNostrEvent } from "./nostr";
 import { RelaySettings, ConnectionStateSnapshot, OkResponse } from "./connection";
 import { Query } from "./query";
 import { NoteCollection, NoteStore } from "./note-collection";
@@ -23,14 +23,15 @@ import {
 } from ".";
 import { EventsCache } from "./cache/events";
 import { RelayCache, RelayMetadataLoader } from "./outbox-model";
-import { QueryOptimizer, DefaultQueryOptimizer } from "./query-optimizer";
+import { Optimizer, DefaultOptimizer } from "./query-optimizer";
 import { trimFilters } from "./request-trim";
 import { NostrConnectionPool } from "./nostr-connection-pool";
 
 export interface NostrSystemEvents {
   change: (state: SystemSnapshot) => void;
   auth: (challenge: string, relay: string, cb: (ev: NostrEvent) => void) => void;
-  event: (id: string, ev: TaggedNostrEvent) => void;
+  event: (subId: string, ev: TaggedNostrEvent) => void;
+  request: (filter: ReqFilter) => void;
 }
 
 export interface NostrsystemProps {
@@ -38,7 +39,7 @@ export interface NostrsystemProps {
   profileCache?: FeedCache<MetadataCache>;
   relayMetrics?: FeedCache<RelayMetrics>;
   eventsCache?: FeedCache<NostrEvent>;
-  queryOptimizer?: QueryOptimizer;
+  optimizer?: Optimizer;
   db?: SnortSystemDb;
   checkSigs?: boolean;
 }
@@ -86,9 +87,9 @@ export class NostrSystem extends EventEmitter<NostrSystemEvents> implements Syst
   #eventsCache: FeedCache<NostrEvent>;
 
   /**
-   * Query optimizer instance
+   * Optimizer instance, contains optimized functions for processing data
    */
-  #queryOptimizer: QueryOptimizer;
+  #optimizer: Optimizer;
 
   /**
    * Check event signatures (reccomended)
@@ -103,7 +104,7 @@ export class NostrSystem extends EventEmitter<NostrSystemEvents> implements Syst
     this.#profileCache = props.profileCache ?? new UserProfileCache(props.db?.users);
     this.#relayMetricsCache = props.relayMetrics ?? new RelayMetricCache(props.db?.relayMetrics);
     this.#eventsCache = props.eventsCache ?? new EventsCache(props.db?.events);
-    this.#queryOptimizer = props.queryOptimizer ?? DefaultQueryOptimizer;
+    this.#optimizer = props.optimizer ?? DefaultOptimizer;
 
     this.#profileLoader = new ProfileLoaderService(this, this.#profileCache);
     this.#relayMetrics = new RelayMetricHandler(this.#relayMetricsCache);
@@ -134,8 +135,7 @@ export class NostrSystem extends EventEmitter<NostrSystemEvents> implements Syst
         return;
       }
       if (this.checkSigs) {
-        const id = EventExt.createId(ev);
-        if (!this.#queryOptimizer.schnorrVerify(id, ev.sig, ev.pubkey)) {
+        if (!this.#optimizer.schnorrVerify(ev)) {
           this.#log("Invalid sig %O", ev);
           return;
         }
@@ -185,8 +185,8 @@ export class NostrSystem extends EventEmitter<NostrSystemEvents> implements Syst
     return this.#relayCache;
   }
 
-  get QueryOptimizer(): QueryOptimizer {
-    return this.#queryOptimizer;
+  get Optimizer(): Optimizer {
+    return this.#optimizer;
   }
 
   async Init() {
@@ -315,6 +315,10 @@ export class NostrSystem extends EventEmitter<NostrSystemEvents> implements Syst
       return;
     }
     qSend.filters = fNew;
+
+    fNew.forEach(f => {
+      this.emit("request", f);
+    });
 
     if (qSend.relay) {
       this.#log("Sending query to %s %O", qSend.relay, qSend);

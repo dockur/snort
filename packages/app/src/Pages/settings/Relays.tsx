@@ -1,17 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
-import { FormattedMessage } from "react-intl";
 import { unixNowMs, unwrap } from "@snort/shared";
 import { EventPublisher, FullRelaySettings, RelaySettings, SystemInterface } from "@snort/system";
+import { useEffect, useMemo, useState } from "react";
+import { FormattedMessage } from "react-intl";
 
-import Relay from "@/Element/Relay/Relay";
+import AsyncButton from "@/Components/Button/AsyncButton";
+import Relay from "@/Components/Relay/Relay";
+import SnortApi, { RelayDistance } from "@/External/SnortApi";
 import useEventPublisher from "@/Hooks/useEventPublisher";
 import useLogin from "@/Hooks/useLogin";
-import { setRelays } from "@/Login";
-import AsyncButton from "@/Element/Button/AsyncButton";
-import SnortApi, { RelayDistance } from "@/External/SnortApi";
-import { getCountry, getRelayName, sanitizeRelayUrl } from "@/SnortUtils";
-import { formatShort } from "@/Number";
-import { Blasters } from "@/Const";
+import { getCountry, getRelayName, sanitizeRelayUrl } from "@/Utils";
+import { Blasters } from "@/Utils/Const";
+import { setRelays } from "@/Utils/Login";
+import { formatShort } from "@/Utils/Number";
 
 import messages from "./messages";
 
@@ -148,7 +148,7 @@ export function CloseRelays() {
         ?.filter(a => !relayUrls.includes(unwrap(sanitizeRelayUrl(a.url))) && !a.is_paid)
         .sort((a, b) => (a.distance > b.distance ? 1 : -1))
         .map(a => (
-          <div className="bg-dark p br flex flex-col g8">
+          <div key={a.url} className="bg-dark p br flex flex-col g8">
             <div className="flex justify-between items-center">
               <div className="bold">{getRelayName(a.url)}</div>
               <AsyncButton

@@ -1,4 +1,7 @@
 import { FeedCache } from "@snort/shared";
+import { ReactNode, useSyncExternalStore } from "react";
+import { FormattedMessage, FormattedNumber } from "react-intl";
+
 import {
   Chats,
   FollowLists,
@@ -11,9 +14,7 @@ import {
   UserCache,
   UserRelays,
 } from "@/Cache";
-import AsyncButton from "@/Element/Button/AsyncButton";
-import { ReactNode, useSyncExternalStore } from "react";
-import { FormattedMessage, FormattedNumber } from "react-intl";
+import AsyncButton from "@/Components/Button/AsyncButton";
 
 export function CacheSettings() {
   return (

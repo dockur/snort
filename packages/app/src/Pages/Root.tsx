@@ -1,27 +1,29 @@
-import { lazy, useContext, useEffect, useState } from "react";
-import { Link, Outlet, RouteObject, useParams } from "react-router-dom";
-import { FormattedMessage } from "react-intl";
 import { unixNow } from "@snort/shared";
 import { NostrLink } from "@snort/system";
 import { SnortContext } from "@snort/system-react";
+import { lazy, useContext, useEffect, useState } from "react";
+import { FormattedMessage } from "react-intl";
+import { Link, Outlet, RouteObject, useParams } from "react-router-dom";
 
-import Timeline from "@/Element/Feed/Timeline";
+import Timeline from "@/Components/Feed/Timeline";
+import TimelineFollows from "@/Components/Feed/TimelineFollows";
+import SuggestedProfiles from "@/Components/SuggestedProfiles";
+import { TaskList } from "@/Components/Tasks/TaskList";
+import TrendingHashtags from "@/Components/Trending/TrendingHashtags";
+import TrendingNotes from "@/Components/Trending/TrendingPosts";
 import { TimelineSubject } from "@/Feed/TimelineFeed";
-import { debounce, getCurrentRefCode, getRelayName, sha256 } from "@/SnortUtils";
 import useLogin from "@/Hooks/useLogin";
-import Discover from "@/Pages/Discover";
-import TrendingNotes from "@/Element/Trending/TrendingPosts";
-import HashTagsPage from "@/Pages/HashTagsPage";
-import SuggestedProfiles from "@/Element/SuggestedProfiles";
-import { TaskList } from "@/Tasks/TaskList";
-import TimelineFollows from "@/Element/Feed/TimelineFollows";
 import { DeckContext } from "@/Pages/DeckLayout";
+import Discover from "@/Pages/Discover";
+import HashTagsPage from "@/Pages/HashTagsPage";
+import { debounce, getCurrentRefCode, getRelayName, sha256 } from "@/Utils";
+
 import { TopicsPage } from "./TopicsPage";
-import TrendingHashtags from "@/Element/Trending/TrendingHashtags";
-const InviteModal = lazy(() => import("@/Element/Invite"));
+const InviteModal = lazy(() => import("@/Components/Invite"));
+
+import useHistoryState from "@/Hooks/useHistoryState";
 
 import messages from "./messages";
-import useHistoryState from "@/Hooks/useHistoryState";
 
 interface RelayOption {
   url: string;

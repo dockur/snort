@@ -1,9 +1,11 @@
 /* eslint-disable no-debugger */
 import { unwrap } from "@snort/shared";
 import { EventExt, NostrLink, TaggedNostrEvent, u256 } from "@snort/system";
-import useThreadFeed from "@/Feed/ThreadFeed";
-import { ReactNode, createContext, useMemo, useState } from "react";
+import { createContext, ReactNode, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
+
+import useThreadFeed from "@/Feed/ThreadFeed";
+
 import useModeration from "./useModeration";
 
 export interface ThreadContext {
@@ -43,8 +45,7 @@ export function ThreadContextWrapper({ link, children }: { link: NostrLink; chil
     const chains = new Map<u256, Array<TaggedNostrEvent>>();
     if (feed.thread) {
       feed.thread
-        ?.sort((a, b) => b.created_at - a.created_at)
-        .filter(a => !isBlocked(a.pubkey))
+        ?.filter(a => !isBlocked(a.pubkey))
         .forEach(v => {
           const replyTo = replyChainKey(v);
           if (replyTo) {

@@ -1,23 +1,25 @@
 import "./Layout.css";
+
 import { useCallback } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
-import useLogin from "@/Hooks/useLogin";
-import { isFormElement } from "@/SnortUtils";
-import Toaster from "@/Toaster";
-import { useTheme } from "@/Hooks/useTheme";
-import { useLoginRelays } from "@/Hooks/useLoginRelays";
-import { LoginUnlock } from "@/Element/PinPrompt";
-import useKeyboardShortcut from "@/Hooks/useKeyboardShortcut";
-import { LoginStore } from "@/Login";
-import NavSidebar from "./NavSidebar";
-import RightColumn from "./RightColumn";
+import CloseButton from "@/Components/Button/CloseButton";
+import ErrorBoundary from "@/Components/ErrorBoundary";
+import { LoginUnlock } from "@/Components/PinPrompt/PinPrompt";
+import Toaster from "@/Components/Toaster/Toaster";
 import useLoginFeed from "@/Feed/LoginFeed";
-import ErrorBoundary from "@/Element/ErrorBoundary";
+import { useCommunityLeaders } from "@/Hooks/useCommunityLeaders";
+import useKeyboardShortcut from "@/Hooks/useKeyboardShortcut";
+import useLogin from "@/Hooks/useLogin";
+import { useLoginRelays } from "@/Hooks/useLoginRelays";
+import { useTheme } from "@/Hooks/useTheme";
 import Footer from "@/Pages/Layout/Footer";
 import { Header } from "@/Pages/Layout/Header";
-import CloseButton from "@/Element/Button/CloseButton";
-import { useCommunityLeaders } from "@/Hooks/useCommunityLeaders";
+import { isFormElement } from "@/Utils";
+import { LoginStore } from "@/Utils/Login";
+
+import NavSidebar from "./NavSidebar";
+import RightColumn from "./RightColumn";
 
 export default function Index() {
   const location = useLocation();
@@ -26,9 +28,7 @@ export default function Index() {
   useTheme();
   useLoginRelays();
   useLoginFeed();
-  if (CONFIG.features.communityLeaders) {
-    useCommunityLeaders();
-  }
+  useCommunityLeaders();
 
   const hideHeaderPaths = ["/login", "/new"];
   const shouldHideFooter = location.pathname.startsWith("/messages/");
@@ -67,7 +67,7 @@ export default function Index() {
   );
 }
 
-function StalkerModal({ id }) {
+function StalkerModal({ id }: { id: string }) {
   return (
     <div className="stalker" onClick={() => LoginStore.removeSession(id)}>
       <CloseButton />
