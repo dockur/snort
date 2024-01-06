@@ -33,5 +33,6 @@
   "profileLinkPrefix": "npub",
   "defaultRelays": {
     "wss://soloco.nl/": { "read": true, "write": false }
-  }
+  },
+  "useIndexedDBEvents": false
 }
