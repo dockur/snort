@@ -2,10 +2,9 @@ import "./ProfilePage.css";
 
 import { fetchNip05Pubkey, LNURL } from "@snort/shared";
 import {
+  CachedMetadata,
   encodeTLVEntries,
   EventKind,
-  MetadataCache,
-  NostrLink,
   NostrPrefix,
   TLVEntryType,
   tryParseNostrLink,
@@ -17,7 +16,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import IconButton from "@/Components/Button/IconButton";
 import Copy from "@/Components/Copy/Copy";
-import Note from "@/Components/Event/Note";
+import Note from "@/Components/Event/EventComponent";
 import Timeline from "@/Components/Feed/Timeline";
 import Icon from "@/Components/Icons/Icon";
 import Modal from "@/Components/Modal/Modal";
@@ -54,19 +53,19 @@ import ProfileTab, {
   RelaysTab,
   ZapsProfileTab,
 } from "@/Pages/Profile/ProfileTab";
-import { findTag, getLinkReactions, hexToBech32, parseId, unwrap } from "@/Utils";
+import { findTag, hexToBech32, parseId, unwrap } from "@/Utils";
 import { EmailRegex } from "@/Utils/Const";
 import { ZapTarget } from "@/Utils/Zapper";
 
 interface ProfilePageProps {
   id?: string;
-  state?: MetadataCache;
+  state?: CachedMetadata;
 }
 
 export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
   const params = useParams();
   const location = useLocation();
-  const profileState = (location.state as MetadataCache | undefined) || state;
+  const profileState = (location.state as CachedMetadata | undefined) || state;
   const navigate = useNavigate();
   const [id, setId] = useState<string | undefined>(profileState?.pubkey);
   const [relays, setRelays] = useState<Array<string>>();
@@ -242,7 +241,6 @@ export default function ProfilePage({ id: propId, state }: ProfilePageProps) {
                   <Note
                     key={`pinned-${n.id}`}
                     data={n}
-                    related={getLinkReactions(pinned, NostrLink.fromEvent(n))}
                     options={{ showTime: false, showPinned: true, canUnpin: id === loginPubKey }}
                   />
                 );

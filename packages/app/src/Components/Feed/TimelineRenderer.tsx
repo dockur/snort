@@ -4,17 +4,16 @@ import { useInView } from "react-intersection-observer";
 import { FormattedMessage } from "react-intl";
 
 import ErrorBoundary from "@/Components/ErrorBoundary";
-import getEventMedia from "@/Components/Event/getEventMedia";
 import { DisplayAs } from "@/Components/Feed/DisplayAsSelector";
 import ImageGridItem from "@/Components/Feed/ImageGridItem";
 import { TimelineFragment } from "@/Components/Feed/TimelineFragment";
 import Icon from "@/Components/Icons/Icon";
 import { SpotlightThreadModal } from "@/Components/Spotlight/SpotlightThreadModal";
 import ProfileImage from "@/Components/User/ProfileImage";
+import getEventMedia from "@/Utils/getEventMedia";
 
 export interface TimelineRendererProps {
   frags: Array<TimelineFragment>;
-  related: Array<TaggedNostrEvent>;
   /**
    * List of pubkeys who have posted recently
    */
@@ -96,7 +95,6 @@ export function TimelineRenderer(props: TimelineRendererProps) {
       <ErrorBoundary key={frag.events[0]?.id + index}>
         <TimelineFragment
           frag={frag}
-          related={props.related}
           noteRenderer={props.noteRenderer}
           noteOnClick={props.noteOnClick}
           noteContext={props.noteContext}

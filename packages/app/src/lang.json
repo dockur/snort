@@ -168,9 +168,6 @@
   "3gOsZq": {
     "defaultMessage": "Translators"
   },
-  "3natuV": {
-    "defaultMessage": "Cashu mint wallet"
-  },
   "3qnJlS": {
     "defaultMessage": "You are voting with {amount} sats"
   },
@@ -1035,6 +1032,9 @@
   "XrSk2j": {
     "defaultMessage": "Redeem",
     "description": "Button: Redeem Cashu token"
+  },
+  "Y7FG5M": {
+    "defaultMessage": "Image not available"
   },
   "YDURw6": {
     "defaultMessage": "Service URL"

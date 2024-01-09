@@ -1,8 +1,7 @@
 import { TaggedNostrEvent } from "@snort/system";
-import { ReactNode, useCallback } from "react";
+import { ReactNode } from "react";
 
-import Note from "@/Components/Event/Note";
-import { findTag } from "@/Utils";
+import Note from "@/Components/Event/EventComponent";
 
 export interface TimelineFragment {
   events: Array<TaggedNostrEvent>;
@@ -12,20 +11,17 @@ export interface TimelineFragment {
 
 export interface TimelineFragProps {
   frag: TimelineFragment;
-  related: Array<TaggedNostrEvent>;
   index: number;
   noteRenderer?: (ev: TaggedNostrEvent) => ReactNode;
   noteOnClick?: (ev: TaggedNostrEvent) => void;
   noteContext?: (ev: TaggedNostrEvent) => ReactNode;
 }
 
+const options = {
+  truncate: true,
+};
+
 export function TimelineFragment(props: TimelineFragProps) {
-  const relatedFeed = useCallback(
-    (id: string) => {
-      return props.related.filter(a => findTag(a, "e") === id);
-    },
-    [props.related],
-  );
   return (
     <>
       {props.frag.title}
@@ -34,15 +30,12 @@ export function TimelineFragment(props: TimelineFragProps) {
           props.noteRenderer?.(e) ?? (
             <Note
               data={e}
-              related={relatedFeed(e.id)}
               key={e.id}
               depth={0}
               onClick={props.noteOnClick}
               context={props.noteContext?.(e)}
-              options={{
-                truncate: true,
-              }}
-              waitUntilInView={props.index > 10}
+              options={options}
+              waitUntilInView={props.index > 5}
             />
           ),
       )}

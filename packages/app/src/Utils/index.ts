@@ -6,10 +6,10 @@ import { bytesToHex } from "@noble/hashes/utils";
 import { base32hex, bech32 } from "@scure/base";
 import { isHex, isOffline } from "@snort/shared";
 import {
+  CachedMetadata,
   encodeTLV,
   EventKind,
   HexKey,
-  MetadataCache,
   NostrEvent,
   NostrLink,
   NostrPrefix,
@@ -214,8 +214,8 @@ export function getLatestByPubkey(events: TaggedNostrEvent[]): Map<HexKey, Tagge
   return deduped;
 }
 
-export function getLatestProfileByPubkey(profiles: MetadataCache[]): Map<HexKey, MetadataCache> {
-  const deduped = profiles.reduce((results: Map<HexKey, MetadataCache>, ev) => {
+export function getLatestProfileByPubkey(profiles: CachedMetadata[]): Map<HexKey, CachedMetadata> {
+  const deduped = profiles.reduce((results: Map<HexKey, CachedMetadata>, ev) => {
     if (!results.has(ev.pubkey)) {
       const latest = getNewestProfile(profiles.filter(a => a.pubkey === ev.pubkey));
       if (latest) {
@@ -223,7 +223,7 @@ export function getLatestProfileByPubkey(profiles: MetadataCache[]): Map<HexKey,
       }
     }
     return results;
-  }, new Map<HexKey, MetadataCache>());
+  }, new Map<HexKey, CachedMetadata>());
   return deduped;
 }
 
@@ -255,7 +255,7 @@ export function getNewest(rawNotes: readonly TaggedNostrEvent[]) {
   }
 }
 
-export function getNewestProfile(rawNotes: MetadataCache[]) {
+export function getNewestProfile(rawNotes: CachedMetadata[]) {
   const notes = [...rawNotes];
   notes.sort((a, b) => b.created - a.created);
   if (notes.length > 0) {
@@ -279,7 +279,7 @@ export function tagFilterOfTextRepost(note: TaggedNostrEvent, id?: u256): (tag: 
     tag[0] === "e" && tag[3] === "mention" && note.content === `#[${i}]` && (id ? tag[1] === id : true);
 }
 
-export function groupByPubkey(acc: Record<HexKey, MetadataCache>, user: MetadataCache) {
+export function groupByPubkey(acc: Record<HexKey, CachedMetadata>, user: CachedMetadata) {
   return { ...acc, [user.pubkey]: user };
 }
 
@@ -462,7 +462,8 @@ export function kvToObject<T>(o: string, sep?: string) {
 
 export function defaultAvatar(input?: string) {
   if (isOffline()) return Nostrich;
-  return `https://robohash.v0l.io/${input ?? "missing"}.png${isHalloween() ? "?set=set2" : ""}`;
+  const key = (input?.length ?? 0) === 0 ? "missing" : input;
+  return `https://robohash.v0l.io/${key}.png${isHalloween() ? "?set=set2" : ""}`;
 }
 
 export function isFormElement(target: HTMLElement): boolean {
@@ -505,19 +506,15 @@ export function getDisplayName(user: UserMetadata | undefined, pubkey: HexKey): 
 }
 
 export function getDisplayNameOrPlaceHolder(user: UserMetadata | undefined, pubkey: HexKey): [string, boolean] {
-  let name = hexToBech32(NostrPrefix.PublicKey, pubkey).substring(0, 12);
-  let isPlaceHolder = false;
-
   if (typeof user?.display_name === "string" && user.display_name.length > 0) {
-    name = user.display_name;
+    return [user.display_name.trim(), false];
   } else if (typeof user?.name === "string" && user.name.length > 0) {
-    name = user.name;
+    return [user.name.trim(), false];
   } else if (pubkey && CONFIG.animalNamePlaceholders) {
-    name = AnimalName(pubkey);
-    isPlaceHolder = true;
+    return [AnimalName(pubkey), true];
   }
 
-  return [name.trim(), isPlaceHolder];
+  return [hexToBech32(NostrPrefix.PublicKey, pubkey).substring(0, 12), false];
 }
 
 export function getCountry() {

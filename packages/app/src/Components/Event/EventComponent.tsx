@@ -1,7 +1,7 @@
-import "./Note.css";
+import "./EventComponent.css";
 
 import { EventKind, NostrEvent, TaggedNostrEvent } from "@snort/system";
-import { ReactNode } from "react";
+import { memo, ReactNode } from "react";
 
 import PubkeyList from "@/Components/Embed/PubkeyList";
 import ZapstrEmbed from "@/Components/Embed/ZapstrEmbed";
@@ -13,12 +13,30 @@ import { LiveEvent } from "@/Components/LiveStream/LiveEvent";
 import ProfilePreview from "@/Components/User/ProfilePreview";
 
 import { LongFormText } from "./LongFormText";
-import { NoteInner } from "./NoteInner";
+import { Note } from "./Note/Note";
+
+export interface NotePropsOptions {
+  isRoot?: boolean;
+  showHeader?: boolean;
+  showContextMenu?: boolean;
+  showProfileCard?: boolean;
+  showTime?: boolean;
+  showPinned?: boolean;
+  showBookmarked?: boolean;
+  showFooter?: boolean;
+  showReactionsLink?: boolean;
+  showMedia?: boolean;
+  canUnpin?: boolean;
+  canUnbookmark?: boolean;
+  canClick?: boolean;
+  showMediaSpotlight?: boolean;
+  longFormPreview?: boolean;
+  truncate?: boolean;
+}
 
 export interface NoteProps {
   data: TaggedNostrEvent;
   className?: string;
-  related: readonly TaggedNostrEvent[];
   highlight?: boolean;
   ignoreModeration?: boolean;
   onClick?: (e: TaggedNostrEvent) => void;
@@ -26,28 +44,11 @@ export interface NoteProps {
   searchedValue?: string;
   threadChains?: Map<string, Array<NostrEvent>>;
   context?: ReactNode;
-  options?: {
-    isRoot?: boolean;
-    showHeader?: boolean;
-    showContextMenu?: boolean;
-    showProfileCard?: boolean;
-    showTime?: boolean;
-    showPinned?: boolean;
-    showBookmarked?: boolean;
-    showFooter?: boolean;
-    showReactionsLink?: boolean;
-    showMedia?: boolean;
-    canUnpin?: boolean;
-    canUnbookmark?: boolean;
-    canClick?: boolean;
-    showMediaSpotlight?: boolean;
-    longFormPreview?: boolean;
-    truncate?: boolean;
-  };
+  options?: NotePropsOptions;
   waitUntilInView?: boolean;
 }
 
-export default function Note(props: NoteProps) {
+export default memo(function EventComponent(props: NoteProps) {
   const { data: ev, className } = props;
 
   let content;
@@ -78,7 +79,6 @@ export default function Note(props: NoteProps) {
       content = (
         <LongFormText
           ev={ev}
-          related={props.related}
           isPreview={props.options?.longFormPreview ?? false}
           onClick={() => props.onClick?.(ev)}
           truncate={props.options?.truncate}
@@ -86,8 +86,8 @@ export default function Note(props: NoteProps) {
       );
       break;
     default:
-      content = <NoteInner {...props} />;
+      content = <Note {...props} />;
   }
 
   return <ErrorBoundary>{content}</ErrorBoundary>;
-}
+});

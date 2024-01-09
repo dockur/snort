@@ -1,11 +1,10 @@
 import { removeUndefined } from "@snort/shared";
 import { NostrEvent, NostrLink, TaggedNostrEvent } from "@snort/system";
-import { useReactions } from "@snort/system-react";
 import classNames from "classnames";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { ErrorOrOffline } from "@/Components/ErrorOrOffline";
-import Note from "@/Components/Event/Note";
+import Note from "@/Components/Event/EventComponent";
 import { DisplayAs, DisplayAsSelector } from "@/Components/Feed/DisplayAsSelector";
 import ImageGridItem from "@/Components/Feed/ImageGridItem";
 import PageSpinner from "@/Components/PageSpinner";
@@ -42,11 +41,22 @@ export default function TrendingNotes({ count = Infinity, small = false }: { cou
     );
   });
 
+  const options = useMemo(
+    () => ({
+      showFooter: !small,
+      showReactionsLink: !small,
+      showMedia: !small,
+      longFormPreview: !small,
+      truncate: small,
+      showContextMenu: !small,
+    }),
+    [small],
+  );
+
   const login = useLogin();
   const displayAsInitial = small ? "list" : login.feedDisplayAs ?? "list";
   const [displayAs, setDisplayAs] = useState<DisplayAs>(displayAsInitial);
   const { isEventMuted } = useModeration();
-  const related = useReactions("trending", trendingNotesData?.map(a => NostrLink.fromEvent(a)) ?? [], undefined, true);
   const [modalThread, setModalThread] = useState<NostrLink | undefined>(undefined);
 
   if (error && !trendingNotesData) return <ErrorOrOffline error={error} className="p" />;
@@ -71,24 +81,11 @@ export default function TrendingNotes({ count = Infinity, small = false }: { cou
   };
 
   const renderList = () => {
-    return filteredAndLimitedPosts.map(e =>
+    return filteredAndLimitedPosts.map((e, index) =>
       small ? (
         <ShortNote key={e.id} event={e as TaggedNostrEvent} />
       ) : (
-        <Note
-          key={e.id}
-          data={e as TaggedNostrEvent}
-          related={related?.data ?? []}
-          depth={0}
-          options={{
-            showFooter: !small,
-            showReactionsLink: !small,
-            showMedia: !small,
-            longFormPreview: !small,
-            truncate: small,
-            showContextMenu: !small,
-          }}
-        />
+        <Note key={e.id} data={e as TaggedNostrEvent} depth={0} options={options} waitUntilInView={index > 5} />
       ),
     );
   };

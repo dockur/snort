@@ -1,8 +1,13 @@
 import { NostrLink } from "@snort/system";
 import { useEventFeed } from "@snort/system-react";
 
-import Note from "@/Components/Event/Note";
+import Note from "@/Components/Event/EventComponent";
 import PageSpinner from "@/Components/PageSpinner";
+
+const options = {
+  showFooter: false,
+  truncate: true,
+};
 
 export default function NoteQuote({ link, depth }: { link: NostrLink; depth?: number }) {
   const ev = useEventFeed(link);
@@ -12,16 +17,5 @@ export default function NoteQuote({ link, depth }: { link: NostrLink; depth?: nu
         <PageSpinner />
       </div>
     );
-  return (
-    <Note
-      data={ev.data}
-      related={[]}
-      className="note-quote"
-      depth={(depth ?? 0) + 1}
-      options={{
-        showFooter: false,
-        truncate: true,
-      }}
-    />
-  );
+  return <Note data={ev.data} className="note-quote" depth={(depth ?? 0) + 1} options={options} />;
 }

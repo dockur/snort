@@ -3,7 +3,7 @@ import { ChangeEvent, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { UserCache } from "@/Cache";
-import Note from "@/Components/Event/Note";
+import Note from "@/Components/Event/EventComponent";
 import useLogin from "@/Hooks/useLogin";
 
 import messages from "../messages";
@@ -11,15 +11,18 @@ import messages from "../messages";
 interface BookmarksProps {
   pubkey: HexKey;
   bookmarks: readonly TaggedNostrEvent[];
-  related: readonly TaggedNostrEvent[];
 }
 
-const Bookmarks = ({ pubkey, bookmarks, related }: BookmarksProps) => {
+const Bookmarks = ({ pubkey, bookmarks }: BookmarksProps) => {
   const [onlyPubkey, setOnlyPubkey] = useState<HexKey | "all">("all");
   const { publicKey } = useLogin(s => ({ publicKey: s.publicKey }));
   const ps = useMemo(() => {
     return [...new Set(bookmarks.map(ev => ev.pubkey))];
   }, [bookmarks]);
+  const options = useMemo(
+    () => ({ showTime: false, showBookmarked: true, canUnbookmark: publicKey === pubkey }),
+    [publicKey, pubkey],
+  );
 
   function renderOption(p: HexKey) {
     const profile = UserCache.getFromCache(p);
@@ -42,14 +45,7 @@ const Bookmarks = ({ pubkey, bookmarks, related }: BookmarksProps) => {
       {bookmarks
         .filter(b => (onlyPubkey === "all" ? true : b.pubkey === onlyPubkey))
         .map(n => {
-          return (
-            <Note
-              key={n.id}
-              data={n}
-              related={related}
-              options={{ showTime: false, showBookmarked: true, canUnbookmark: publicKey === pubkey }}
-            />
-          );
+          return <Note key={n.id} data={n} options={options} />;
         })}
     </>
   );

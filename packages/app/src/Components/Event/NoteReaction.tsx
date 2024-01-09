@@ -7,7 +7,7 @@ import { useInView } from "react-intersection-observer";
 import { FormattedMessage } from "react-intl";
 import { Link } from "react-router-dom";
 
-import Note from "@/Components/Event/Note";
+import Note from "@/Components/Event/EventComponent";
 import Icon from "@/Components/Icons/Icon";
 import useModeration from "@/Hooks/useModeration";
 import { eventLink, getDisplayName, hexToBech32 } from "@/Utils";
@@ -87,7 +87,7 @@ export default function NoteReaction(props: NoteReactionProps) {
           }}
         />
       </div>
-      {root ? <Note data={root} options={opt} related={[]} depth={props.depth} /> : null}
+      {root ? <Note data={root} options={opt} depth={props.depth} /> : null}
       {!root && refEvent ? (
         <p>
           <Link to={eventLink(refEvent[1] ?? "", refEvent[2])}>

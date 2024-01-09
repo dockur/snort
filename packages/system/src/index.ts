@@ -32,7 +32,6 @@ export * from "./pow-util";
 export * from "./query-optimizer";
 export * from "./encrypted";
 export * from "./outbox-model";
-export { parseIMeta } from "./utils";
 
 export * from "./impl/nip4";
 export * from "./impl/nip44";
@@ -44,7 +43,7 @@ export * from "./cache/user-relays";
 export * from "./cache/user-metadata";
 export * from "./cache/relay-metric";
 
-export * from "./worker/system-worker";
+export * from "./worker";
 
 export interface SystemInterface {
   /**
@@ -80,7 +79,7 @@ export interface SystemInterface {
    * @param req Request to send to relays
    * @param cb A callback which will fire every 100ms when new data is received
    */
-  Fetch(req: RequestBuilder, cb?: (evs: Array<TaggedNostrEvent>) => void): Promise<Array<TaggedNostrEvent>>;
+  Fetch(req: RequestBuilder, cb?: (evs: ReadonlyArray<TaggedNostrEvent>) => void): Promise<Array<TaggedNostrEvent>>;
 
   /**
    * Create a new permanent connection to a relay

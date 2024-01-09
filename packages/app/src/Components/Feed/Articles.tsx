@@ -1,22 +1,18 @@
-import { NostrLink } from "@snort/system";
-import { useReactions } from "@snort/system-react";
 import { useContext } from "react";
 
 import { useArticles } from "@/Feed/ArticlesFeed";
 import { DeckContext } from "@/Pages/DeckLayout";
 import { orderDescending } from "@/Utils";
 
-import Note from "../Event/Note";
+import Note from "../Event/EventComponent";
+
+const options = {
+  longFormPreview: true,
+};
 
 export default function Articles() {
   const data = useArticles();
   const deck = useContext(DeckContext);
-  const related = useReactions(
-    "articles:reactions",
-    data.data?.map(v => NostrLink.fromEvent(v)) ?? [],
-    undefined,
-    true,
-  );
 
   return (
     <>
@@ -24,10 +20,7 @@ export default function Articles() {
         <Note
           data={a}
           key={a.id}
-          related={related.data ?? []}
-          options={{
-            longFormPreview: true,
-          }}
+          options={options}
           onClick={ev => {
             deck?.setArticle(ev);
           }}

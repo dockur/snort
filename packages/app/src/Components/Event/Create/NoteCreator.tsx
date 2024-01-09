@@ -12,7 +12,7 @@ import { AsyncIcon } from "@/Components/Button/AsyncIcon";
 import CloseButton from "@/Components/Button/CloseButton";
 import { TrendingHashTagsLine } from "@/Components/Event/Create/TrendingHashTagsLine";
 import { sendEventToRelays } from "@/Components/Event/Create/util";
-import Note from "@/Components/Event/Note";
+import Note from "@/Components/Event/EventComponent";
 import Icon from "@/Components/Icons/Icon";
 import { ToggleSwitch } from "@/Components/Icons/Toggle";
 import Modal from "@/Components/Modal/Modal";
@@ -29,6 +29,32 @@ import { ZapTarget } from "@/Utils/Zapper";
 
 import FileUploadProgress from "../FileUpload";
 import { OkResponseRow } from "./OkResponseRow";
+
+const previewNoteOptions = {
+  showContextMenu: false,
+  showFooter: false,
+  canClick: false,
+  showTime: false,
+};
+
+const replyToNoteOptions = {
+  showFooter: false,
+  showContextMenu: false,
+  showProfileCard: false,
+  showTime: false,
+  canClick: false,
+  showMedia: false,
+  longFormPreview: true,
+};
+
+const quoteNoteOptions = {
+  showFooter: false,
+  showContextMenu: false,
+  showTime: false,
+  canClick: false,
+  showMedia: false,
+  longFormPreview: true,
+};
 
 export function NoteCreator() {
   const { formatMessage } = useIntl();
@@ -173,6 +199,16 @@ export function NoteCreator() {
         props ??= {};
         props["zap-split"] = true;
       }
+      if (note.hashTags.length > 0) {
+        props ??= {};
+        props["hashtags"] = true;
+      }
+      if (props) {
+        props["content-warning"] ??= false;
+        props["poll"] ??= false;
+        props["zap-split"] ??= false;
+        props["hashtags"] ??= false;
+      }
       trackEvent("PostNote", props);
 
       const events = (note.otherEvents ?? []).concat(ev);
@@ -283,18 +319,7 @@ export function NoteCreator() {
 
   function getPreviewNote() {
     if (note.preview) {
-      return (
-        <Note
-          data={note.preview as TaggedNostrEvent}
-          related={[]}
-          options={{
-            showContextMenu: false,
-            showFooter: false,
-            canClick: false,
-            showTime: false,
-          }}
-        />
-      );
+      return <Note data={note.preview as TaggedNostrEvent} options={previewNoteOptions} />;
     }
   }
 
@@ -591,19 +616,7 @@ export function NoteCreator() {
             <h4>
               <FormattedMessage defaultMessage="Reply To" id="8ED/4u" />
             </h4>
-            <Note
-              data={note.replyTo}
-              related={[]}
-              options={{
-                showFooter: false,
-                showContextMenu: false,
-                showProfileCard: false,
-                showTime: false,
-                canClick: false,
-                showMedia: false,
-                longFormPreview: true,
-              }}
-            />
+            <Note data={note.replyTo} options={replyToNoteOptions} />
           </>
         )}
         {note.quote && (
@@ -611,18 +624,7 @@ export function NoteCreator() {
             <h4>
               <FormattedMessage defaultMessage="Quote Repost" id="C7642/" />
             </h4>
-            <Note
-              data={note.quote}
-              related={[]}
-              options={{
-                showFooter: false,
-                showContextMenu: false,
-                showTime: false,
-                canClick: false,
-                showMedia: false,
-                longFormPreview: true,
-              }}
-            />
+            <Note data={note.quote} options={quoteNoteOptions} />
           </>
         )}
         {note.preview && getPreviewNote()}
