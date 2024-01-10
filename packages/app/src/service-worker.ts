@@ -15,6 +15,23 @@ import { formatShort } from "@/Utils/Number";
 
 precacheAndRoute(self.__WB_MANIFEST);
 clientsClaim();
+
+// cache everything in current domain /assets because precache doesn't seem to include everything
+registerRoute(
+  ({ url }) => url.origin === location.origin && url.pathname.startsWith("/assets"),
+  new StaleWhileRevalidate({
+    cacheName: "assets-cache",
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 200,
+        matchOptions: {
+          ignoreVary: true,
+        },
+      }),
+    ],
+  }),
+);
+
 registerRoute(
   ({ url }) => url.pathname.endsWith("/.well-known/nostr.json"),
   new StaleWhileRevalidate({
@@ -31,9 +48,20 @@ registerRoute(
     cacheName: "image-cache",
     plugins: [
       new ExpirationPlugin({
-        maxEntries: 100,
+        maxEntries: 200,
+        matchOptions: {
+          ignoreVary: true,
+        },
       }),
     ],
+  }),
+);
+
+registerRoute(
+  ({ url }) => url.origin === "https://api.snort.social" && url.pathname.startsWith("/api/v1/preview"),
+  new StaleWhileRevalidate({
+    cacheName: "preview-cache",
+    plugins: [new ExpirationPlugin({ maxAgeSeconds: 4 * 60 * 60 })],
   }),
 );
 

@@ -3,8 +3,8 @@ import "./index.css";
 import { Outlet, RouteObject } from "react-router-dom";
 
 import Icon from "@/Components/Icons/Icon";
-import { useLocale } from "@/IntlProvider";
-import { AllLanguageCodes } from "@/Pages/settings/Preferences";
+import { AllLanguageCodes } from "@/Components/IntlProvider/IntlProviderUtils";
+import { useLocale } from "@/Components/IntlProvider/useLocale";
 
 import { Discover } from "./discover";
 import { Moderation } from "./moderation";

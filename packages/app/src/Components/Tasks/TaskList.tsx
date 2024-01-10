@@ -20,10 +20,14 @@ class TaskStore extends ExternalStore<Array<UITask>> {
 
   constructor() {
     super();
-    const AllTasks: Array<UITask> = [new BackupKeyTask(), new Nip5Task(), new DonateTask(), new NoticeZapPoolDefault()];
+    const AllTasks: Array<UITask> = [new BackupKeyTask(), new Nip5Task()];
+    if (CONFIG.features.zapPool) {
+      AllTasks.push(new NoticeZapPoolDefault());
+    }
     if (CONFIG.features.subscriptions) {
       AllTasks.push(new RenewSubTask());
     }
+    AllTasks.push(new DonateTask());
     AllTasks.forEach(a =>
       a.load(() => {
         this.notifyChange();
@@ -54,6 +58,7 @@ export const TaskList = () => {
     <div className="task-list">
       {tasks
         .filter(a => (user ? a.check(user, session) : false))
+        .slice(0, 1)
         .map(a => {
           if (a.noBaseStyle) {
             return <Fragment key={a.id}>{a.render()}</Fragment>;

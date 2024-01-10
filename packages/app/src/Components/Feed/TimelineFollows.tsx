@@ -12,6 +12,7 @@ import { DisplayAs, DisplayAsSelector } from "@/Components/Feed/DisplayAsSelecto
 import { TimelineRenderer } from "@/Components/Feed/TimelineRenderer";
 import { LiveStreams } from "@/Components/LiveStream/LiveStreams";
 import useHashtagsFeed from "@/Feed/HashtagsFeed";
+import useHistoryState from "@/Hooks/useHistoryState";
 import useLogin from "@/Hooks/useLogin";
 import useModeration from "@/Hooks/useModeration";
 import { dedupeByPubkey, findTag, orderDescending } from "@/Utils";
@@ -33,7 +34,7 @@ const TimelineFollows = (props: TimelineFollowsProps) => {
   const login = useLogin();
   const displayAsInitial = props.displayAs ?? login.feedDisplayAs ?? "list";
   const [displayAs, setDisplayAs] = useState<DisplayAs>(displayAsInitial);
-  const [latest, setLatest] = useState(unixNow());
+  const [latest, setLatest] = useHistoryState(unixNow(), "TimelineFollowsLatest");
   const feed = useSyncExternalStore(
     cb => FollowsFeed.hook(cb, "*"),
     () => FollowsFeed.snapshot(),

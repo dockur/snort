@@ -11,9 +11,9 @@ import { createBrowserRouter, RouteObject, RouterProvider } from "react-router-d
 
 import { preload } from "@/Cache";
 import { ThreadRoute } from "@/Components/Event/Thread";
+import { IntlProvider } from "@/Components/IntlProvider/IntlProvider";
 import { db } from "@/Db";
 import { updateRelayConnections } from "@/Hooks/useLoginRelays";
-import { IntlProvider } from "@/IntlProvider";
 import { AboutPage } from "@/Pages/About";
 import { SnortDeckLayout } from "@/Pages/DeckLayout";
 import DonatePage from "@/Pages/DonatePage";
@@ -29,12 +29,12 @@ import NostrLinkHandler from "@/Pages/NostrLinkHandler";
 import NotificationsPage from "@/Pages/Notifications/Notifications";
 import { OnboardingRoutes } from "@/Pages/onboarding";
 import ProfilePage from "@/Pages/Profile/ProfilePage";
-import { RootRoutes, RootTabRoutes } from "@/Pages/Root";
+import { RootRoutes } from "@/Pages/Root/RootRoutes";
+import { RootTabRoutes } from "@/Pages/Root/RootTabRoutes";
 import SearchPage from "@/Pages/SearchPage";
 import SettingsRoutes from "@/Pages/settings/Routes";
 import { SubscribeRoutes } from "@/Pages/subscribe";
 import ZapPoolPage from "@/Pages/ZapPool";
-import * as serviceWorkerRegistration from "@/serviceWorkerRegistration";
 import { System } from "@/system";
 import { getCountry, storeRefCode, unwrap } from "@/Utils";
 import { LoginStore } from "@/Utils/Login";
@@ -45,8 +45,6 @@ import { setupWebLNWalletConfig } from "@/Wallet/WebLN";
 import WalletPage from "./Pages/wallet";
 import { WalletReceivePage } from "./Pages/wallet/receive";
 import { WalletSendPage } from "./Pages/wallet/send";
-
-serviceWorkerRegistration.register();
 
 async function initSite() {
   console.debug(getCountry());
@@ -193,7 +191,7 @@ if (CONFIG.features.deck) {
   } as RouteObject);
 }
 
-export const router = createBrowserRouter(routes);
+const router = createBrowserRouter(routes);
 
 const root = ReactDOM.createRoot(unwrap(document.getElementById("root")));
 root.render(

@@ -2,37 +2,14 @@ import "./Preferences.css";
 
 import { FormattedMessage, useIntl } from "react-intl";
 
+import { AllLanguageCodes } from "@/Components/IntlProvider/IntlProviderUtils";
+import { useLocale } from "@/Components/IntlProvider/useLocale";
 import useLogin from "@/Hooks/useLogin";
-import { useLocale } from "@/IntlProvider";
 import { unwrap } from "@/Utils";
 import { DefaultImgProxy } from "@/Utils/Const";
 import { updatePreferences, UserPreferences } from "@/Utils/Login";
 
 import messages from "./messages";
-
-export const AllLanguageCodes = [
-  "en",
-  "ja",
-  "es",
-  "hu",
-  "zh-CN",
-  "zh-TW",
-  "fr",
-  "ar",
-  "it",
-  "id",
-  "de",
-  "ru",
-  "sv",
-  "hr",
-  "ta-IN",
-  "fa-IR",
-  "th",
-  "pt-BR",
-  "sw",
-  "nl",
-  "fi",
-];
 
 const PreferencesPage = () => {
   const { formatMessage } = useIntl();
