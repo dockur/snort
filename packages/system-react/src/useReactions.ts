@@ -27,8 +27,8 @@ export function useReactions(
       }
     }
     others?.(rb);
-    return rb.numFilters > 0 ? rb : null;
+    return rb.numFilters > 0 ? rb : undefined;
   }, [ids]);
 
-  return useRequestBuilder(NoteCollection, sub);
+  return useRequestBuilder(sub);
 }

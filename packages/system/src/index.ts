@@ -1,12 +1,14 @@
 import { RelaySettings, ConnectionStateSnapshot, OkResponse } from "./connection";
 import { RequestBuilder } from "./request-builder";
-import { NoteStore, NoteStoreSnapshotData } from "./note-collection";
-import { Query } from "./query";
 import { NostrEvent, ReqFilter, TaggedNostrEvent } from "./nostr";
 import { ProfileLoaderService } from "./profile-cache";
-import { RelayCache } from "./outbox-model";
+import { RelayCache, RelayMetadataLoader } from "./outbox-model";
 import { Optimizer } from "./query-optimizer";
 import { base64 } from "@scure/base";
+import { FeedCache } from "@snort/shared";
+import { ConnectionPool } from "./connection-pool";
+import EventEmitter from "eventemitter3";
+import { QueryEvents } from "./query";
 
 export { NostrSystem } from "./nostr-system";
 export { default as EventKind } from "./event-kind";
@@ -43,7 +45,18 @@ export * from "./cache/user-relays";
 export * from "./cache/user-metadata";
 export * from "./cache/relay-metric";
 
-export * from "./worker";
+export * from "./worker/system-worker";
+
+export type QueryLike = {
+  get progress(): number;
+  feed: {
+    add: (evs: Array<TaggedNostrEvent>) => void;
+    clear: () => void;
+  };
+  cancel: () => void;
+  uncancel: () => void;
+  get snapshot(): Array<TaggedNostrEvent>;
+} & EventEmitter<QueryEvents>;
 
 export interface SystemInterface {
   /**
@@ -65,21 +78,20 @@ export interface SystemInterface {
    * Get an active query by ID
    * @param id Query ID
    */
-  GetQuery(id: string): Query | undefined;
+  GetQuery(id: string): QueryLike | undefined;
 
   /**
    * Open a new query to relays
-   * @param type Store type
    * @param req Request to send to relays
    */
-  Query<T extends NoteStore>(type: { new (): T }, req: RequestBuilder): Query;
+  Query(req: RequestBuilder): QueryLike;
 
   /**
    * Fetch data from nostr relays asynchronously
    * @param req Request to send to relays
    * @param cb A callback which will fire every 100ms when new data is received
    */
-  Fetch(req: RequestBuilder, cb?: (evs: ReadonlyArray<TaggedNostrEvent>) => void): Promise<Array<TaggedNostrEvent>>;
+  Fetch(req: RequestBuilder, cb?: (evs: Array<TaggedNostrEvent>) => void): Promise<Array<TaggedNostrEvent>>;
 
   /**
    * Create a new permanent connection to a relay
@@ -116,17 +128,32 @@ export interface SystemInterface {
   /**
    * Profile cache/loader
    */
-  get ProfileLoader(): ProfileLoaderService;
+  get profileLoader(): ProfileLoaderService;
 
   /**
    * Relay cache for "Gossip" model
    */
-  get RelayCache(): RelayCache;
+  get relayCache(): RelayCache;
 
   /**
    * Query optimizer
    */
-  get Optimizer(): Optimizer;
+  get optimizer(): Optimizer;
+
+  /**
+   * Generic cache store for events
+   */
+  get eventsCache(): FeedCache<NostrEvent>;
+
+  /**
+   * Relay loader loads relay metadata for a set of profiles
+   */
+  get relayLoader(): RelayMetadataLoader;
+
+  /**
+   * Main connection pool
+   */
+  get pool(): ConnectionPool;
 }
 
 export interface SystemSnapshot {

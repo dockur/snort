@@ -1,9 +1,9 @@
-import { normalizeReaction } from "@snort/shared";
+import { barrierQueue, normalizeReaction, processWorkQueue, WorkQueueItem } from "@snort/shared";
 import { countLeadingZeros, NostrLink, TaggedNostrEvent } from "@snort/system";
 import { useEventReactions, useReactions, useUserProfile } from "@snort/system-react";
 import { Menu, MenuItem } from "@szhsin/react-menu";
 import classNames from "classnames";
-import React, { forwardRef, useEffect, useState } from "react";
+import React, { forwardRef, useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useLongPress } from "use-long-press";
 
@@ -15,7 +15,7 @@ import useEventPublisher from "@/Hooks/useEventPublisher";
 import { useInteractionCache } from "@/Hooks/useInteractionCache";
 import useLogin from "@/Hooks/useLogin";
 import { useNoteCreator } from "@/State/NoteCreator";
-import { delay, findTag, getDisplayName } from "@/Utils";
+import { findTag, getDisplayName } from "@/Utils";
 import { formatShort } from "@/Utils/Number";
 import { Zapper, ZapTarget } from "@/Utils/Zapper";
 import { ZapPoolController } from "@/Utils/ZapPoolController";
@@ -23,18 +23,8 @@ import { useWallet } from "@/Wallet";
 
 import messages from "../../messages";
 
-let isZapperBusy = false;
-const barrierZapper = async <T,>(then: () => Promise<T>): Promise<T> => {
-  while (isZapperBusy) {
-    await delay(100);
-  }
-  isZapperBusy = true;
-  try {
-    return await then();
-  } finally {
-    isZapperBusy = false;
-  }
-};
+const ZapperQueue: Array<WorkQueueItem> = [];
+processWorkQueue(ZapperQueue);
 
 export interface NoteFooterProps {
   replies?: number;
@@ -43,10 +33,11 @@ export interface NoteFooterProps {
 
 export default function NoteFooter(props: NoteFooterProps) {
   const { ev } = props;
-  const link = NostrLink.fromEvent(ev);
+  const link = useMemo(() => NostrLink.fromEvent(ev), [ev.id]);
+  const ids = useMemo(() => [link], [link]);
 
-  const related = useReactions(link.id + "related", [link], undefined, false);
-  const { reactions, zaps, reposts } = useEventReactions(link, related.data ?? []);
+  const related = useReactions("note:reactions", ids, undefined, false);
+  const { reactions, zaps, reposts } = useEventReactions(link, related);
   const { positive } = reactions;
 
   const { formatMessage } = useIntl();
@@ -153,7 +144,7 @@ export default function NoteFooter(props: NoteFooterProps) {
   async function fastZapInner(targets: Array<ZapTarget>, amount: number) {
     if (wallet) {
       // only allow 1 invoice req/payment at a time to avoid hitting rate limits
-      await barrierZapper(async () => {
+      await barrierQueue(ZapperQueue, async () => {
         const zapper = new Zapper(system, publisher);
         const result = await zapper.send(wallet, targets, amount);
         const totalSent = result.reduce((acc, v) => (acc += v.sent), 0);

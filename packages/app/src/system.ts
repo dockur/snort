@@ -2,7 +2,7 @@ import { removeUndefined, throwIfOffline } from "@snort/shared";
 import { mapEventToProfile, NostrEvent, NostrSystem, ProfileLoaderService, socialGraphInstance } from "@snort/system";
 
 import { RelayMetrics, SystemDb, UserCache, UserRelays } from "@/Cache";
-import { addEventToFuzzySearch } from "@/Db/FuzzySearch";
+import { addCachedMetadataToFuzzySearch, addEventToFuzzySearch } from "@/Db/FuzzySearch";
 import { LoginStore } from "@/Utils/Login";
 import { hasWasm, WasmOptimizer } from "@/Utils/wasm";
 
@@ -30,11 +30,16 @@ System.on("event", (_, ev) => {
   socialGraphInstance.handleEvent(ev);
 });
 
+System.profileCache.on("change", keys => {
+  const changed = removeUndefined(keys.map(a => System.profileCache.getFromCache(a)));
+  changed.forEach(addCachedMetadataToFuzzySearch);
+});
+
 /**
  * Add profile loader fn
  */
 if (CONFIG.httpCache) {
-  System.ProfileLoader.loaderFn = async (keys: Array<string>) => {
+  System.profileLoader.loaderFn = async (keys: Array<string>) => {
     return removeUndefined(await Promise.all(keys.map(a => fetchProfile(a))));
   };
 }

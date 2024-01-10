@@ -20,7 +20,7 @@ export const addEventToFuzzySearch = ev => {
   if (ev.kind !== 0) {
     return;
   }
-  requestAnimationFrame(() => {
+  queueMicrotask(() => {
     const existing = profileTimestamps.get(ev.pubkey);
     if (existing) {
       if (existing > ev.created_at) {
@@ -42,8 +42,7 @@ export const addEventToFuzzySearch = ev => {
 };
 
 export const addCachedMetadataToFuzzySearch = (profile: CachedMetadata) => {
-  // TODO add profiles from Cache
-  requestAnimationFrame(() => {
+  queueMicrotask(() => {
     const existing = profileTimestamps.get(profile.pubkey);
     if (existing) {
       if (existing > profile.created) {
@@ -54,7 +53,6 @@ export const addCachedMetadataToFuzzySearch = (profile: CachedMetadata) => {
     profileTimestamps.set(profile.pubkey, profile.created);
     if (profile.pubkey && (profile.name || profile.display_name || profile.nip05)) {
       fuzzySearch.add(profile);
-      console.log("added profile to fuzzy search", profile);
     }
   });
 };

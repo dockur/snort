@@ -3,9 +3,9 @@ import debug from "debug";
 import EventEmitter from "eventemitter3";
 import { unixNowMs, unwrap } from "@snort/shared";
 
-import { Connection, ReqFilter, Nips, TaggedNostrEvent } from ".";
-import { NoteStore } from "./note-collection";
-import { BuiltRawReqFilter } from "./request-builder";
+import { Connection, ReqFilter, Nips, TaggedNostrEvent, SystemInterface } from ".";
+import { NoteCollection } from "./note-collection";
+import { BuiltRawReqFilter, RequestBuilder } from "./request-builder";
 import { eventMatchesFilter } from "./request-matcher";
 
 interface QueryTraceEvents {
@@ -89,23 +89,6 @@ export class QueryTrace extends EventEmitter<QueryTraceEvents> {
   }
 }
 
-export interface QueryBase {
-  /**
-   * Uniquie ID of this query
-   */
-  id: string;
-
-  /**
-   * The query payload (REQ filters)
-   */
-  filters: Array<ReqFilter>;
-
-  /**
-   * List of relays to send this query to
-   */
-  relays?: Array<string>;
-}
-
 export interface TraceReport {
   id: string;
   conn: Connection;
@@ -114,23 +97,31 @@ export interface TraceReport {
   responseTime: number;
 }
 
-interface QueryEvents {
+export interface QueryEvents {
+  loading: (v: boolean) => void;
   trace: (report: TraceReport) => void;
+  filters: (req: BuiltRawReqFilter) => void;
+  event: (evs: Array<TaggedNostrEvent>) => void;
+  end: () => void;
 }
 
 /**
  * Active or queued query on the system
  */
-export class Query extends EventEmitter<QueryEvents> implements QueryBase {
-  /**
-   * Uniquie ID of this query
-   */
-  id: string;
+export class Query extends EventEmitter<QueryEvents> {
+  get id() {
+    return this.request.id;
+  }
 
   /**
    * RequestBuilder instance
    */
-  fromInstance: string;
+  request: RequestBuilder;
+
+  /**
+   * Nostr system interface
+   */
+  #system: SystemInterface;
 
   /**
    * Which relays this query has already been executed on
@@ -155,23 +146,52 @@ export class Query extends EventEmitter<QueryEvents> implements QueryBase {
   /**
    * Feed object which collects events
    */
-  #feed: NoteStore;
+  #feed: NoteCollection;
 
   /**
    * Maximum waiting time for this query
    */
   #timeout: number;
 
+  /**
+   * Milliseconds to wait before sending query (debounce)
+   */
+  #groupingDelay?: number;
+
+  /**
+   * Timer which waits for no-change before emitting filters
+   */
+  #groupTimeout?: ReturnType<typeof setTimeout>;
+
   #log = debug("Query");
 
-  constructor(id: string, instance: string, feed: NoteStore, leaveOpen?: boolean, timeout?: number) {
+  constructor(system: SystemInterface, req: RequestBuilder) {
     super();
-    this.id = id;
-    this.#feed = feed;
-    this.fromInstance = instance;
-    this.#leaveOpen = leaveOpen ?? false;
-    this.#timeout = timeout ?? 5_000;
+    this.request = req;
+    this.#system = system;
+    this.#feed = new NoteCollection();
+    this.#leaveOpen = req.options?.leaveOpen ?? false;
+    this.#timeout = req.options?.timeout ?? 5_000;
+    this.#groupingDelay = req.options?.groupingDelay ?? 100;
     this.#checkTraces();
+
+    this.feed.on("event", evs => this.emit("event", evs));
+    this.#start();
+  }
+
+  /**
+   * Adds another request to this one
+   */
+  addRequest(req: RequestBuilder) {
+    if (req.instance === this.request.instance) {
+      // same requst, do nothing
+      this.#log("Same query %O === %O", req, this.request);
+      return;
+    }
+    this.#log("Add query %O to %s", req, this.id);
+    this.request.add(req);
+    this.#start();
+    return true;
   }
 
   isOpen() {
@@ -193,12 +213,15 @@ export class Query extends EventEmitter<QueryEvents> implements QueryBase {
     return this.#feed;
   }
 
-  handleEvent(sub: string, e: TaggedNostrEvent) {
+  get snapshot() {
+    return this.#feed.snapshot;
+  }
+
+  #handleEvent(sub: string, e: TaggedNostrEvent) {
     for (const t of this.#tracing) {
       if (t.id === sub || sub === "*") {
         if (t.filters.some(v => eventMatchesFilter(e, v))) {
           this.feed.add(e);
-          return t;
         } else {
           this.#log("Event did not match filter, rejecting %O %O", e, t);
         }
@@ -219,13 +242,18 @@ export class Query extends EventEmitter<QueryEvents> implements QueryBase {
   }
 
   cleanup() {
+    if (this.#groupTimeout) {
+      clearTimeout(this.#groupTimeout);
+      this.#groupTimeout = undefined;
+    }
     this.#stopCheckTraces();
+    this.emit("end");
   }
 
   /**
    * Insert a new trace as a placeholder
    */
-  insertCompletedTrace(subq: BuiltRawReqFilter, data: Readonly<Array<TaggedNostrEvent>>) {
+  insertCompletedTrace(subq: BuiltRawReqFilter, data: Array<TaggedNostrEvent>) {
     const qt = new QueryTrace(subq.relay, subq.filters, "");
     qt.sentToRelay();
     qt.gotEose();
@@ -281,17 +309,46 @@ export class Query extends EventEmitter<QueryEvents> implements QueryBase {
     return thisProgress;
   }
 
+  #start() {
+    if (this.#groupTimeout) {
+      clearTimeout(this.#groupTimeout);
+      this.#groupTimeout = undefined;
+    }
+    if (this.#groupingDelay) {
+      this.#groupTimeout = setTimeout(() => {
+        this.#emitFilters();
+      }, this.#groupingDelay);
+    } else {
+      this.#emitFilters();
+    }
+  }
+
+  #emitFilters() {
+    this.#log("Starting emit of %s", this.id);
+    const existing = this.filters;
+    if (!(this.request.options?.skipDiff ?? false) && existing.length > 0) {
+      const filters = this.request.buildDiff(this.#system, existing);
+      this.#log("Build %s %O", this.id, filters);
+      filters.forEach(f => this.emit("filters", f));
+    } else {
+      const filters = this.request.build(this.#system);
+      this.#log("Build %s %O", this.id, filters);
+      filters.forEach(f => this.emit("filters", f));
+    }
+  }
+
   #onProgress() {
     const isFinished = this.progress === 1;
-    if (this.feed.loading !== isFinished) {
-      this.#log("%s loading=%s, progress=%d, traces=%O", this.id, this.feed.loading, this.progress, this.#tracing);
-      this.feed.loading = isFinished;
+    if (isFinished) {
+      this.#log("%s loading=%s, progress=%d, traces=%O", this.id, !isFinished, this.progress, this.#tracing);
+      this.emit("loading", !isFinished);
     }
   }
 
   #stopCheckTraces() {
     if (this.#checkTrace) {
       clearInterval(this.#checkTrace);
+      this.#checkTrace = undefined;
     }
   }
 
@@ -345,6 +402,9 @@ export class Query extends EventEmitter<QueryEvents> implements QueryBase {
         responseTime: qt.responseTime,
       } as TraceReport),
     );
+    const handler = (sub: string, ev: TaggedNostrEvent) => this.#handleEvent(sub, ev);
+    c.on("event", handler);
+    this.on("end", () => c.off("event", handler));
     this.#tracing.push(qt);
     c.QueueReq(["REQ", qt.id, ...qt.filters], () => qt.sentToRelay());
     return qt;

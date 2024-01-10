@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { injectIntl } from "react-intl";
 
 import messages from "@/Components/messages";
-import { ProfileLoader } from "@/system";
+import { System } from "@/system";
 import { LoginStore } from "@/Utils/Login";
 
 import AccountName from "./AccountName";
@@ -285,15 +285,20 @@ class IrisAccount extends Component<Props> {
   componentDidMount() {
     const session = LoginStore.snapshot();
     const myPub = session.publicKey;
-    ProfileLoader.Cache.hook(() => {
-      const profile = ProfileLoader.Cache.getFromCache(myPub);
-      const irisToActive = profile && profile.nip05 && profile.nip05.endsWith("@iris.to");
-      this.setState({ profile, irisToActive });
-      if (profile && !irisToActive) {
-        this.checkExistingAccount(myPub);
-      }
-    }, myPub);
-    this.checkExistingAccount(myPub);
+    if (myPub) {
+      System.profileLoader.cache.on("change", keys => {
+        if (keys.includes(myPub)) {
+          const profile = System.profileLoader.cache.getFromCache(myPub);
+          const irisToActive = profile && profile.nip05 && profile.nip05.endsWith("@iris.to");
+          this.setState({ profile, irisToActive });
+          if (profile && !irisToActive) {
+            this.checkExistingAccount(myPub);
+          }
+        }
+      });
+
+      this.checkExistingAccount(myPub);
+    }
   }
 
   async checkExistingAccount(pub: any) {

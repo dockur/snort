@@ -1,48 +1,38 @@
 /// <reference lib="webworker" />
 
-import { NostrSystem, NostrsystemProps } from "../nostr-system";
-import { NostrSystemMessage, NostrSystemCommand } from ".";
+import { NostrSystem } from "../nostr-system";
+import { WorkerMessage, WorkerCommand } from ".";
 
-let system: NostrSystem | undefined;
+const system = new NostrSystem({
+  checkSigs: true,
+});
 
-function reply<T>(id: string, type: NostrSystemCommand, data: T) {
+function reply<T>(id: string, type: WorkerCommand, data: T) {
   globalThis.postMessage({
     id,
     type,
     data,
-  } as NostrSystemMessage<T>);
+  } as WorkerMessage<T>);
 }
 function okReply(id: string, message?: string) {
-  reply<string | undefined>(id, NostrSystemCommand.OkResponse, message);
+  reply<string | undefined>(id, WorkerCommand.OkResponse, message);
 }
 function errorReply(id: string, message: string) {
-  reply<string>(id, NostrSystemCommand.ErrorResponse, message);
+  reply<string>(id, WorkerCommand.ErrorResponse, message);
 }
-function checkInitialized() {
-  if (system === undefined) {
-    throw new Error("System not initialized");
-  }
-}
-
 globalThis.onmessage = async ev => {
-  const data = ev.data as { id: string; type: NostrSystemCommand };
+  console.debug(ev);
+  const data = ev.data as { id: string; type: WorkerCommand };
   try {
     switch (data.type) {
-      case NostrSystemCommand.Init: {
-        const cmd = ev.data as NostrSystemMessage<NostrsystemProps>;
-        if (system === undefined) {
-          system = new NostrSystem(cmd.data);
-          await system.Init();
-          okReply(data.id);
-        } else {
-          errorReply(data.id, "System is already initialized");
-        }
+      case WorkerCommand.Init: {
+        await system.Init();
+        okReply(data.id);
         break;
       }
-      case NostrSystemCommand.ConnectRelay: {
-        checkInitialized();
-        const cmd = ev.data as NostrSystemMessage<[string, { read: boolean; write: boolean }]>;
-        await system?.ConnectToRelay(cmd.data[0], cmd.data[1]);
+      case WorkerCommand.ConnectRelay: {
+        const cmd = ev.data as WorkerMessage<[string, { read: boolean; write: boolean }]>;
+        await system.ConnectToRelay(cmd.data[0], cmd.data[1]);
         okReply(data.id, "Connected");
         break;
       }

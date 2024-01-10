@@ -3,60 +3,125 @@ import EventEmitter from "eventemitter3";
 import {
   ConnectionStateSnapshot,
   NostrEvent,
-  NoteStore,
   OkResponse,
   ProfileLoaderService,
-  Optimizer,
-  RelayCache,
   RelaySettings,
   RequestBuilder,
   SystemInterface,
   TaggedNostrEvent,
+  CachedMetadata,
+  DefaultOptimizer,
+  RelayMetadataLoader,
+  RelayMetricCache,
+  RelayMetrics,
+  UserProfileCache,
+  UserRelaysCache,
+  UsersRelays,
+  QueryLike,
 } from "..";
 import { NostrSystemEvents, NostrsystemProps } from "../nostr-system";
-import { Query } from "../query";
 import { WorkerCommand, WorkerMessage } from ".";
+import { FeedCache } from "@snort/shared";
+import { EventsCache } from "../cache/events";
+import { RelayMetricHandler } from "../relay-metric-handler";
+import debug from "debug";
+import { ConnectionPool } from "connection-pool";
 
 export class SystemWorker extends EventEmitter<NostrSystemEvents> implements SystemInterface {
+  #log = debug("SystemWorker");
   #worker: Worker;
   #commandQueue: Map<string, (v: unknown) => void> = new Map();
-  checkSigs: boolean;
+  readonly relayCache: FeedCache<UsersRelays>;
+  readonly profileCache: FeedCache<CachedMetadata>;
+  readonly relayMetricsCache: FeedCache<RelayMetrics>;
+  readonly profileLoader: ProfileLoaderService;
+  readonly relayMetricsHandler: RelayMetricHandler;
+  readonly eventsCache: FeedCache<NostrEvent>;
+  readonly relayLoader: RelayMetadataLoader;
+
+  get checkSigs() {
+    return true;
+  }
+
+  set checkSigs(v: boolean) {
+    // not used
+  }
+
+  get optimizer() {
+    return DefaultOptimizer;
+  }
+
+  get pool() {
+    return {} as ConnectionPool;
+  }
 
   constructor(scriptPath: string, props: NostrsystemProps) {
     super();
-    this.checkSigs = props.checkSigs ?? false;
 
+    this.relayCache = props.relayCache ?? new UserRelaysCache(props.db?.userRelays);
+    this.profileCache = props.profileCache ?? new UserProfileCache(props.db?.users);
+    this.relayMetricsCache = props.relayMetrics ?? new RelayMetricCache(props.db?.relayMetrics);
+    this.eventsCache = props.eventsCache ?? new EventsCache(props.db?.events);
+
+    this.profileLoader = new ProfileLoaderService(this, this.profileCache);
+    this.relayMetricsHandler = new RelayMetricHandler(this.relayMetricsCache);
+    this.relayLoader = new RelayMetadataLoader(this, this.relayCache);
     this.#worker = new Worker(scriptPath, {
       name: "SystemWorker",
+      type: "module",
     });
+    this.#worker.onmessage = async e => {
+      const cmd = e.data as { id: string; type: WorkerCommand; data?: unknown };
+      if (cmd.type === WorkerCommand.OkResponse) {
+        const q = this.#commandQueue.get(cmd.id);
+        q?.(cmd.data);
+        this.#commandQueue.delete(cmd.id);
+      }
+    };
   }
 
   get Sockets(): ConnectionStateSnapshot[] {
-    throw new Error("Method not implemented.");
+    return [];
   }
 
   async Init() {
-    await this.#workerRpc<void, string>(WorkerCommand.Init, undefined);
+    await this.#workerRpc(WorkerCommand.Init);
   }
 
-  GetQuery(id: string): Query | undefined {
+  GetQuery(id: string): QueryLike | undefined {
     return undefined;
   }
 
-  Query<T extends NoteStore>(type: new () => T, req: RequestBuilder): Query {
-    throw new Error("Method not implemented.");
+  Query(req: RequestBuilder): QueryLike {
+    const chan = this.#workerRpc<[RequestBuilder], { id: string; port: MessagePort }>(WorkerCommand.Query, [req]);
+    return {
+      on: (_: "event", cb) => {
+        chan.then(c => {
+          c.port.onmessage = e => {
+            //cb(e.data as Array<TaggedNostrEvent>);
+          };
+        });
+      },
+      off: (_: "event", cb) => {
+        chan.then(c => {
+          c.port.close();
+        });
+      },
+      cancel: () => {},
+      uncancel: () => {},
+    } as QueryLike;
   }
 
   Fetch(req: RequestBuilder, cb?: ((evs: TaggedNostrEvent[]) => void) | undefined): Promise<TaggedNostrEvent[]> {
     throw new Error("Method not implemented.");
   }
 
-  ConnectToRelay(address: string, options: RelaySettings): Promise<void> {
-    throw new Error("Method not implemented.");
+  async ConnectToRelay(address: string, options: RelaySettings) {
+    await this.#workerRpc(WorkerCommand.ConnectRelay, [address, options, false]);
   }
 
   DisconnectRelay(address: string): void {
-    throw new Error("Method not implemented.");
+    this.#workerRpc(WorkerCommand.DisconnectRelay, address);
   }
 
   HandleEvent(ev: TaggedNostrEvent): void {
@@ -71,25 +136,15 @@ export class SystemWorker extends EventEmitter<NostrSystemEvents> implements Sys
     throw new Error("Method not implemented.");
   }
 
-  get ProfileLoader(): ProfileLoaderService {
-    throw new Error("Method not implemented.");
-  }
-
-  get RelayCache(): RelayCache {
-    throw new Error("Method not implemented.");
-  }
-
-  get Optimizer(): Optimizer {
-    throw new Error("Method not implemented.");
-  }
-
-  #workerRpc<T, R>(type: WorkerCommand, data: T, timeout = 5_000) {
+  #workerRpc<T, R>(type: WorkerCommand, data?: T, timeout = 5_000) {
     const id = uuid();
-    this.#worker.postMessage({
+    const msg = {
       id,
       type,
       data,
-    } as WorkerMessage<T>);
+    } as WorkerMessage<T>;
+    this.#log(msg);
+    this.#worker.postMessage(msg);
     return new Promise<R>((resolve, reject) => {
       let t: ReturnType<typeof setTimeout>;
       this.#commandQueue.set(id, v => {

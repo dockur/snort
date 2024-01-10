@@ -1,41 +1,55 @@
-import { useContext, useSyncExternalStore } from "react";
-import { RequestBuilder, EmptySnapshot, NoteStore, StoreSnapshot } from "@snort/system";
-import { unwrap } from "@snort/shared";
+import { useCallback, useContext, useEffect, useMemo, useSyncExternalStore } from "react";
+import { EmptySnapshot, RequestBuilder } from "@snort/system";
 import { SnortContext } from "./context";
 
 /**
  * Send a query to the relays and wait for data
  */
-const useRequestBuilder = <TStore extends NoteStore, TSnapshot = ReturnType<TStore["getSnapshotData"]>>(
-  type: { new (): TStore },
-  rb: RequestBuilder | null,
-) => {
+export function useRequestBuilder(rb: RequestBuilder | null | undefined) {
   const system = useContext(SnortContext);
-  const subscribe = (onChanged: () => void) => {
-    if (rb) {
-      const q = system.Query<TStore>(type, rb);
-      q.feed.on("event", onChanged);
-      q.uncancel();
+  return useSyncExternalStore(
+    v => {
+      if (rb) {
+        const q = system.Query(rb);
+        q.on("event", v);
+        q.uncancel();
+        return () => {
+          q.off("event", v);
+          q.cancel();
+        };
+      }
       return () => {
-        q.feed.off("event", onChanged);
-        q.cancel();
+        // noop
       };
-    }
-    return () => {
-      // noop
-    };
-  };
-  const getState = (): StoreSnapshot<TSnapshot> => {
-    const q = system.GetQuery(rb?.id ?? "");
-    if (q) {
-      return unwrap(q).feed?.snapshot as StoreSnapshot<TSnapshot>;
-    }
-    return EmptySnapshot as StoreSnapshot<TSnapshot>;
-  };
-  return useSyncExternalStore<StoreSnapshot<TSnapshot>>(
-    v => subscribe(v),
-    () => getState(),
+    },
+    () => {
+      const q = system.GetQuery(rb?.id ?? "");
+      if (q) {
+        return q.snapshot;
+      } else {
+        return EmptySnapshot;
+      }
+    },
   );
-};
+}
 
-export { useRequestBuilder };
+/**
+ * More advanced hook which returns the Query object
+ */
+export function useRequestBuilderAdvanced(rb: RequestBuilder | null | undefined) {
+  const system = useContext(SnortContext);
+  const q = useMemo(() => {
+    if (rb) {
+      const q = system.Query(rb);
+      q.uncancel();
+      return q;
+    }
+  }, [rb]);
+  useEffect(() => {
+    return () => {
+      q?.cancel();
+    };
+  }, [q]);
+
+  return q;
+}

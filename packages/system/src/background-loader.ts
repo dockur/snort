@@ -4,7 +4,7 @@ import { SystemInterface, TaggedNostrEvent, RequestBuilder } from ".";
 
 export abstract class BackgroundLoader<T extends { loaded: number; created: number }> {
   #system: SystemInterface;
-  #cache: FeedCache<T>;
+  readonly cache: FeedCache<T>;
   #log = debug(this.name());
 
   /**
@@ -19,12 +19,8 @@ export abstract class BackgroundLoader<T extends { loaded: number; created: numb
 
   constructor(system: SystemInterface, cache: FeedCache<T>) {
     this.#system = system;
-    this.#cache = cache;
+    this.cache = cache;
     this.#FetchMetadata();
-  }
-
-  get Cache() {
-    return this.#cache;
   }
 
   /**
@@ -74,38 +70,42 @@ export abstract class BackgroundLoader<T extends { loaded: number; created: numb
    * Get object from cache or fetch if missing
    */
   async fetch(key: string) {
-    const existing = this.Cache.get(key);
+    const existing = this.cache.get(key);
     if (existing) {
       return existing;
     } else {
       return await new Promise<T>((resolve, reject) => {
         this.TrackKeys(key);
-        const release = this.Cache.hook(() => {
-          const existing = this.Cache.getFromCache(key);
-          if (existing) {
-            resolve(existing);
-            release();
-            this.UntrackKeys(key);
+        const handler = (keys: Array<string>) => {
+          if (keys.includes(key)) {
+            const existing = this.cache.getFromCache(key);
+            if (existing) {
+              resolve(existing);
+              this.UntrackKeys(key);
+              this.cache.off("change", handler);
+            }
           }
-        }, key);
+        };
+        this.cache.on("change", handler);
       });
     }
   }
 
   async #FetchMetadata() {
     const loading = [...this.#wantsKeys];
-    await this.#cache.buffer(loading);
+    await this.cache.buffer(loading);
 
-    const missing = loading.filter(a => (this.#cache.getFromCache(a)?.loaded ?? 0) < this.getExpireCutoff());
+    const missing = loading.filter(a => (this.cache.getFromCache(a)?.loaded ?? 0) < this.getExpireCutoff());
     if (missing.length > 0) {
       this.#log("Fetching keys: %O", missing);
       try {
         const found = await this.#loadData(missing);
         const noResult = removeUndefined(
-          missing.filter(a => !found.some(b => a === this.#cache.key(b))).map(a => this.makePlaceholder(a)),
+          missing.filter(a => !found.some(b => a === this.cache.key(b))).map(a => this.makePlaceholder(a)),
         );
         if (noResult.length > 0) {
-          await Promise.all(noResult.map(a => this.#cache.update(a)));
+          this.#log("Adding placeholders for %O", noResult);
+          await Promise.all(noResult.map(a => this.cache.update(a)));
         }
       } catch (e) {
         this.#log("Error: %O", e);
@@ -117,19 +117,24 @@ export abstract class BackgroundLoader<T extends { loaded: number; created: numb
   }
 
   async #loadData(missing: Array<string>) {
+    this.#log("Loading data", missing);
     if (this.loaderFn) {
       const results = await this.loaderFn(missing);
-      await Promise.all(results.map(a => this.#cache.update(a)));
+      await Promise.all(results.map(a => this.cache.update(a)));
       return results;
     } else {
+      const hookHandled = new Set<string>();
       const v = await this.#system.Fetch(this.buildSub(missing), async e => {
+        this.#log("Callback handled %o", e);
         for (const pe of e) {
           const m = this.onEvent(pe);
           if (m) {
-            await this.#cache.update(m);
+            await this.cache.update(m);
+            hookHandled.add(pe.id);
           }
         }
       });
+      this.#log("Got data", v);
       return removeUndefined(v.map(this.onEvent));
     }
   }
