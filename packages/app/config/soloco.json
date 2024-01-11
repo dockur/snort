@@ -31,6 +31,7 @@
   "hideFromNavbar": [],
   "eventLinkPrefix": "note",
   "profileLinkPrefix": "npub",
+  "showPowIcon": false,
   "defaultRelays": {
     "wss://soloco.nl/": { "read": true, "write": false }
   }
