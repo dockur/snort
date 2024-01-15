@@ -1,10 +1,10 @@
 {
-  "name": "@snort/system-react",
-  "version": "1.2.0",
-  "description": "React hooks for @snort/system",
+  "name": "@snort/worker-relay",
+  "version": "1.0.0",
+  "description": "A nostr relay in a service worker",
   "main": "dist/index.js",
-  "module": "src/index.ts",
   "types": "dist/index.d.ts",
+  "module": "src/index.ts",
   "repository": "https://git.v0l.io/Kieran/snort",
   "author": "Kieran",
   "license": "MIT",
@@ -16,12 +16,13 @@
     "dist"
   ],
   "dependencies": {
-    "@snort/shared": "^1.0.11",
-    "@snort/system": "^1.2.0",
-    "react": "^18.2.0"
+    "@sqlite.org/sqlite-wasm": "^3.44.2-build3",
+    "debug": "^4.3.4",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@types/react": "^18.2.14",
+    "@types/debug": "^4.1.12",
+    "@types/uuid": "^9.0.7",
     "typescript": "^5.2.2"
   }
 }
