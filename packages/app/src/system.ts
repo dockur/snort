@@ -1,8 +1,7 @@
 import { removeUndefined, throwIfOffline } from "@snort/shared";
 import { mapEventToProfile, NostrEvent, NostrSystem, ProfileLoaderService, socialGraphInstance } from "@snort/system";
 
-import { RelayMetrics, SystemDb, UserCache, UserRelays } from "@/Cache";
-import { addCachedMetadataToFuzzySearch, addEventToFuzzySearch } from "@/Db/FuzzySearch";
+import { EventsCache, Relay, RelayMetrics, SystemDb, UserCache, UserRelays } from "@/Cache";
 import { LoginStore } from "@/Utils/Login";
 import { hasWasm, WasmOptimizer } from "@/Utils/wasm";
 
@@ -11,6 +10,7 @@ import { hasWasm, WasmOptimizer } from "@/Utils/wasm";
  */
 export const System = new NostrSystem({
   relayCache: UserRelays,
+  eventsCache: EventsCache,
   profileCache: UserCache,
   relayMetrics: RelayMetrics,
   optimizer: hasWasm ? WasmOptimizer : undefined,
@@ -26,13 +26,10 @@ System.on("auth", async (c, r, cb) => {
 });
 
 System.on("event", (_, ev) => {
-  addEventToFuzzySearch(ev);
+  Relay.event(ev);
+  EventsCache.discover(ev);
+  UserCache.discover(ev);
   socialGraphInstance.handleEvent(ev);
-});
-
-System.profileCache.on("change", keys => {
-  const changed = removeUndefined(keys.map(a => System.profileCache.getFromCache(a)));
-  changed.forEach(addCachedMetadataToFuzzySearch);
 });
 
 /**

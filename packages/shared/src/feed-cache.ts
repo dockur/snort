@@ -10,14 +10,42 @@ export interface KeyedHookFilter {
   fn: HookFn;
 }
 
-export interface FeedCacheEvents {
+export interface CacheEvents {
   change: (keys: Array<string>) => void;
 }
+
+export type CachedTable<T> = {
+  preload(): Promise<void>;
+  keysOnTable(): Array<string>;
+  getFromCache(key?: string): T | undefined;
+  get(key?: string): Promise<T | undefined>;
+  bulkGet(keys: Array<string>): Promise<Array<T>>;
+  set(obj: T): Promise<void>;
+  bulkSet(obj: Array<T> | Readonly<Array<T>>): Promise<void>;
+
+  /**
+   * Try to update an entry where created values exists
+   * @param m Profile metadata
+   * @returns
+   */
+  update<TWithCreated extends T & { created: number; loaded: number }>(
+    m: TWithCreated,
+  ): Promise<"new" | "refresh" | "updated" | "no_change">;
+
+  /**
+   * Loads a list of rows from disk cache
+   * @param keys List of ids to load
+   * @returns Keys that do not exist on disk cache
+   */
+  buffer(keys: Array<string>): Promise<Array<string>>;
+  key(of: T): string;
+  snapshot(): Array<T>;
+} & EventEmitter<CacheEvents>;
 
 /**
  * Dexie backed generic hookable store
  */
-export abstract class FeedCache<TCached> extends EventEmitter<FeedCacheEvents> {
+export abstract class FeedCache<TCached> extends EventEmitter<CacheEvents> implements CachedTable<TCached> {
   readonly name: string;
   #snapshot: Array<TCached> = [];
   protected log: ReturnType<typeof debug>;
@@ -135,11 +163,6 @@ export abstract class FeedCache<TCached> extends EventEmitter<FeedCacheEvents> {
     );
   }
 
-  /**
-   * Try to update an entry where created values exists
-   * @param m Profile metadata
-   * @returns
-   */
   async update<TCachedWithCreated extends TCached & { created: number; loaded: number }>(m: TCachedWithCreated) {
     const k = this.key(m);
     const existing = this.getFromCache(k) as TCachedWithCreated;
@@ -166,11 +189,6 @@ export abstract class FeedCache<TCached> extends EventEmitter<FeedCacheEvents> {
     return updateType;
   }
 
-  /**
-   * Loads a list of rows from disk cache
-   * @param keys List of ids to load
-   * @returns Keys that do not exist on disk cache
-   */
   async buffer(keys: Array<string>): Promise<Array<string>> {
     const needsBuffer = keys.filter(a => !this.cache.has(a));
     if (this.table && needsBuffer.length > 0) {

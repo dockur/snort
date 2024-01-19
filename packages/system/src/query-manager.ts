@@ -8,7 +8,7 @@ import { trimFilters } from "./request-trim";
 interface QueryManagerEvents {
   change: () => void;
   trace: (report: TraceReport) => void;
-  filters: (req: BuiltRawReqFilter) => void;
+  request: (subId: string, req: BuiltRawReqFilter) => void;
 }
 
 /**
@@ -57,9 +57,9 @@ export class QueryManager extends EventEmitter<QueryManagerEvents> {
     } else {
       const q = new Query(this.#system, req);
       q.on("trace", r => this.emit("trace", r));
-      q.on("filters", fx => {
+      q.on("request", (id, fx) => {
         this.#send(q, fx);
-        this.emit("filters", fx);
+        this.emit("request", id, fx);
       });
 
       this.#queries.set(req.id, q);
@@ -78,7 +78,7 @@ export class QueryManager extends EventEmitter<QueryManagerEvents> {
   async fetch(req: RequestBuilder, cb?: (evs: Array<TaggedNostrEvent>) => void) {
     const q = new Query(this.#system, req);
     q.on("trace", r => this.emit("trace", r));
-    q.on("filters", fx => {
+    q.on("request", (subId, fx) => {
       this.#send(q, fx);
     });
     if (cb) {
@@ -121,20 +121,6 @@ export class QueryManager extends EventEmitter<QueryManagerEvents> {
       return;
     }
     qSend.filters = fNew;
-
-    const alreadyHave = new Set<string>();
-    qSend.filters.forEach(f => {
-      // check what we already have locally
-      q.feed.takeSnapshot().forEach(e => alreadyHave.add(e.id));
-      if (alreadyHave.size) {
-        f.not = f.not || {};
-        f.not.ids = f.not.ids || [];
-        // if there's multiple filters in the query, should we only add alreadyHave events that actually match the filter?
-        f.not.ids.push(...alreadyHave);
-        console.log("already have", f, alreadyHave);
-      }
-      // query relays one at a time at intervals, updating alreadyHave in between?
-    });
 
     if (qSend.relay) {
       this.#log("Sending query to %s %s %O", qSend.relay, q.id, qSend);

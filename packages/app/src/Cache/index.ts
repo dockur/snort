@@ -1,38 +1,44 @@
-import { RelayMetricCache, UserProfileCache, UserRelaysCache } from "@snort/system";
+import { RelayMetricCache, UserRelaysCache } from "@snort/system";
 import { SnortSystemDb } from "@snort/system-web";
+import { WorkerRelayInterface } from "@snort/worker-relay";
+import WorkerRelayPath from "@snort/worker-relay/dist/worker?worker&url";
 
 import { ChatCache } from "./ChatCache";
-import { EventInteractionCache } from "./EventInteractionCache";
-import { FollowListCache } from "./FollowListCache";
-import { FollowsFeedCache } from "./FollowsFeed";
+import { EventCacheWorker } from "./EventCacheWorker";
 import { GiftWrapCache } from "./GiftWrapCache";
-import { NotificationsCache } from "./Notifications";
-import { Payments } from "./PaymentsCache";
+import { ProfileCacheRelayWorker } from "./ProfileWorkeCache";
+
+export const Relay = new WorkerRelayInterface(WorkerRelayPath);
+export async function initRelayWorker() {
+  try {
+    if (await Relay.init()) {
+      if (await Relay.open()) {
+        await Relay.migrate();
+      }
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
 
 export const SystemDb = new SnortSystemDb();
-export const UserCache = new UserProfileCache(SystemDb.users);
 export const UserRelays = new UserRelaysCache(SystemDb.userRelays);
 export const RelayMetrics = new RelayMetricCache(SystemDb.relayMetrics);
 
+export const UserCache = new ProfileCacheRelayWorker(Relay);
+export const EventsCache = new EventCacheWorker(Relay);
+
 export const Chats = new ChatCache();
-export const PaymentsCache = new Payments();
-export const InteractionCache = new EventInteractionCache();
 export const GiftsCache = new GiftWrapCache();
-export const Notifications = new NotificationsCache();
-export const FollowsFeed = new FollowsFeedCache();
-export const FollowLists = new FollowListCache();
 
 export async function preload(follows?: Array<string>) {
   const preloads = [
-    UserCache.preload(follows),
+    UserCache.preload(),
     Chats.preload(),
-    InteractionCache.preload(),
-    UserRelays.preload(follows),
     RelayMetrics.preload(),
     GiftsCache.preload(),
-    Notifications.preload(),
-    FollowsFeed.preload(),
-    FollowLists.preload(),
+    UserRelays.preload(follows),
+    EventsCache.preload(),
   ];
   await Promise.all(preloads);
 }

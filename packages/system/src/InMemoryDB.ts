@@ -1,5 +1,6 @@
 import { ID, ReqFilter as Filter, STR, TaggedNostrEvent, UID } from ".";
 import loki from "lokijs";
+import debug from "debug";
 
 type PackedNostrEvent = {
   id: UID;
@@ -37,6 +38,8 @@ class InMemoryDB {
     };
     setTimeout(() => removeOldest(), 3000);
   }
+
+  #log = debug("InMemoryDB");
 
   get(id: string): TaggedNostrEvent | undefined {
     const event = this.eventsCollection.by("id", ID(id)); // throw if db not ready yet?
@@ -120,15 +123,19 @@ class InMemoryDB {
 
   removeOldest(): void {
     const count = this.eventsCollection.count();
-    console.log("InMemoryDB: count", count, this.maxSize);
+    this.#log("InMemoryDB: count", count, this.maxSize);
     if (count > this.maxSize) {
-      console.log("InMemoryDB: removing oldest events", count - this.maxSize);
+      this.#log("InMemoryDB: removing oldest events", count - this.maxSize);
       this.eventsCollection
         .chain()
         .simplesort("saved_at")
         .limit(count - this.maxSize)
         .remove();
     }
+  }
+
+  count(filter: Filter): number {
+    return this.findArray(filter).length;
   }
 
   find(filter: Filter, callback: (event: TaggedNostrEvent) => void): void {

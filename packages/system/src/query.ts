@@ -100,7 +100,7 @@ export interface TraceReport {
 export interface QueryEvents {
   loading: (v: boolean) => void;
   trace: (report: TraceReport) => void;
-  filters: (req: BuiltRawReqFilter) => void;
+  request: (subId: string, req: BuiltRawReqFilter) => void;
   event: (evs: Array<TaggedNostrEvent>) => void;
   end: () => void;
 }
@@ -329,11 +329,11 @@ export class Query extends EventEmitter<QueryEvents> {
     if (!(this.request.options?.skipDiff ?? false) && existing.length > 0) {
       const filters = this.request.buildDiff(this.#system, existing);
       this.#log("Build %s %O", this.id, filters);
-      filters.forEach(f => this.emit("filters", f));
+      filters.forEach(f => this.emit("request", this.id, f));
     } else {
       const filters = this.request.build(this.#system);
       this.#log("Build %s %O", this.id, filters);
-      filters.forEach(f => this.emit("filters", f));
+      filters.forEach(f => this.emit("request", this.id, f));
     }
   }
 
@@ -380,16 +380,7 @@ export class Query extends EventEmitter<QueryEvents> {
 
   #sendQueryInternal(c: Connection, q: BuiltRawReqFilter) {
     let filters = q.filters;
-    if (!c.SupportsNip(Nips.NotFilter)) {
-      filters = filters.map(f => {
-        if (f.not) {
-          const copy = { ...f };
-          delete copy.not;
-          return copy;
-        }
-        return f;
-      });
-    }
+
     const qt = new QueryTrace(c.Address, filters, c.Id);
     qt.on("close", x => c.CloseReq(x));
     qt.on("change", () => this.#onProgress());
@@ -402,7 +393,11 @@ export class Query extends EventEmitter<QueryEvents> {
         responseTime: qt.responseTime,
       } as TraceReport),
     );
-    const handler = (sub: string, ev: TaggedNostrEvent) => this.handleEvent(sub, ev);
+    const handler = (sub: string, ev: TaggedNostrEvent) => {
+      if (this.request.options?.fillStore ?? true) {
+        this.handleEvent(sub, ev);
+      }
+    };
     c.on("event", handler);
     this.on("end", () => c.off("event", handler));
     this.#tracing.push(qt);

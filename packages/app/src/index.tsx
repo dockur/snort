@@ -1,15 +1,14 @@
 import "./index.css";
 import "@szhsin/react-menu/dist/index.css";
 import "@/assets/fonts/inter.css";
-import "./wdyr";
 
-import { encodeTLVEntries } from "@snort/system";
+import { encodeTLVEntries, socialGraphInstance } from "@snort/system";
 import { SnortContext } from "@snort/system-react";
 import { StrictMode } from "react";
 import * as ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouteObject, RouterProvider } from "react-router-dom";
 
-import { preload } from "@/Cache";
+import { initRelayWorker, preload, Relay } from "@/Cache";
 import { ThreadRoute } from "@/Components/Event/Thread";
 import { IntlProvider } from "@/Components/IntlProvider/IntlProvider";
 import { db } from "@/Db";
@@ -36,7 +35,7 @@ import SettingsRoutes from "@/Pages/settings/Routes";
 import { SubscribeRoutes } from "@/Pages/subscribe";
 import ZapPoolPage from "@/Pages/ZapPool";
 import { System } from "@/system";
-import { getCountry, storeRefCode, unwrap } from "@/Utils";
+import { storeRefCode, unwrap } from "@/Utils";
 import { LoginStore } from "@/Utils/Login";
 import { hasWasm, wasmInit, WasmPath } from "@/Utils/wasm";
 import { Wallets } from "@/Wallet";
@@ -47,10 +46,10 @@ import { WalletReceivePage } from "./Pages/wallet/receive";
 import { WalletSendPage } from "./Pages/wallet/send";
 
 async function initSite() {
-  console.debug(getCountry());
   storeRefCode();
   if (hasWasm) {
     await wasmInit(WasmPath);
+    await initRelayWorker();
   }
   const login = LoginStore.takeSnapshot();
   db.ready = await db.isAvailable();
@@ -70,6 +69,11 @@ async function initSite() {
   }
 
   setupWebLNWalletConfig(Wallets);
+  Relay.sql("select json from events where kind = ?", [3]).then(res => {
+    for (const [json] of res) {
+      socialGraphInstance.handleEvent(JSON.parse(json as string));
+    }
+  });
   return null;
 }
 

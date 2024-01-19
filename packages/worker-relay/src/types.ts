@@ -1,6 +1,6 @@
 export interface WorkerMessage<T> {
   id: string;
-  cmd: "reply" | "init" | "open" | "migrate" | "event" | "req";
+  cmd: "reply" | "init" | "open" | "migrate" | "event" | "req" | "count" | "summary" | "close" | "dumpDb" | "sql";
   args: T;
 }
 
@@ -14,7 +14,11 @@ export interface NostrEvent {
   sig: string;
 }
 
-export type ReqCommand = [cmd: "REQ", id: string, ...filters: Array<ReqFilter>];
+export interface ReqCommand {
+  id: string;
+  filters: Array<ReqFilter>;
+  leaveOpen?: boolean;
+}
 
 export interface ReqFilter {
   ids?: string[];
@@ -26,4 +30,8 @@ export interface ReqFilter {
   limit?: number;
   not?: ReqFilter;
   [key: string]: Array<string> | Array<number> | string | number | undefined | ReqFilter;
+}
+
+export function unixNowMs() {
+  return new Date().getTime();
 }

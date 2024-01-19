@@ -2,16 +2,15 @@ import "./Timeline.css";
 
 import { unixNow } from "@snort/shared";
 import { EventKind, NostrEvent, TaggedNostrEvent } from "@snort/system";
-import { SnortContext } from "@snort/system-react";
-import { ReactNode, useCallback, useContext, useMemo, useState, useSyncExternalStore } from "react";
+import { ReactNode, useCallback, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { FollowsFeed } from "@/Cache";
 import { ShowMoreInView } from "@/Components/Event/ShowMore";
 import { DisplayAs, DisplayAsSelector } from "@/Components/Feed/DisplayAsSelector";
 import { TimelineRenderer } from "@/Components/Feed/TimelineRenderer";
 import { LiveStreams } from "@/Components/LiveStream/LiveStreams";
 import useHashtagsFeed from "@/Feed/HashtagsFeed";
+import { useFollowsTimelineView } from "@/Feed/WorkerRelayView";
 import useHistoryState from "@/Hooks/useHistoryState";
 import useLogin from "@/Hooks/useLogin";
 import useModeration from "@/Hooks/useModeration";
@@ -35,15 +34,11 @@ const TimelineFollows = (props: TimelineFollowsProps) => {
   const displayAsInitial = props.displayAs ?? login.feedDisplayAs ?? "list";
   const [displayAs, setDisplayAs] = useState<DisplayAs>(displayAsInitial);
   const [latest, setLatest] = useHistoryState(unixNow(), "TimelineFollowsLatest");
-  const feed = useSyncExternalStore(
-    cb => FollowsFeed.hook(cb, "*"),
-    () => FollowsFeed.snapshot(),
-  );
-  const system = useContext(SnortContext);
+  const [limit, setLimit] = useState(50);
+  const feed = useFollowsTimelineView(limit);
   const { muted, isEventMuted } = useModeration();
 
-  const sortedFeed = useMemo(() => orderDescending(feed), [feed]);
-  const oldest = useMemo(() => sortedFeed.at(-1)?.created_at, [sortedFeed]);
+  const oldest = useMemo(() => feed.at(-1)?.created_at, [feed]);
 
   const postsOnly = useCallback(
     (a: NostrEvent) => (props.postsOnly ? !a.tags.some(b => b[0] === "e" || b[0] === "a") : true),
@@ -62,8 +57,8 @@ const TimelineFollows = (props: TimelineFollowsProps) => {
 
   const mixin = useHashtagsFeed();
   const mainFeed = useMemo(() => {
-    return filterPosts((sortedFeed ?? []).filter(a => a.created_at <= latest));
-  }, [sortedFeed, filterPosts, latest, login.follows.timestamp]);
+    return filterPosts((feed ?? []).filter(a => a.created_at <= latest));
+  }, [feed, filterPosts, latest, login.follows.timestamp]);
 
   const findHashTagContext = (a: NostrEvent) => {
     const tag = a.tags.filter(a => a[0] === "t").find(a => login.tags.item.includes(a[1].toLowerCase()))?.[1];
@@ -85,12 +80,12 @@ const TimelineFollows = (props: TimelineFollowsProps) => {
   }, [mixin, mainFeed, postsOnly, isEventMuted]);
 
   const latestFeed = useMemo(() => {
-    return filterPosts((sortedFeed ?? []).filter(a => a.created_at > latest));
-  }, [sortedFeed, latest]);
+    return filterPosts((feed ?? []).filter(a => a.created_at > latest));
+  }, [feed, latest]);
 
   const liveStreams = useMemo(() => {
-    return (sortedFeed ?? []).filter(a => a.kind === EventKind.LiveEvent && findTag(a, "status") === "live");
-  }, [sortedFeed]);
+    return (feed ?? []).filter(a => a.kind === EventKind.LiveEvent && findTag(a, "status") === "live");
+  }, [feed]);
 
   const latestAuthors = useMemo(() => {
     return dedupeByPubkey(latestFeed).map(e => e.pubkey);
@@ -124,8 +119,12 @@ const TimelineFollows = (props: TimelineFollowsProps) => {
         }}
         displayAs={displayAs}
       />
-      {sortedFeed.length > 0 && (
-        <ShowMoreInView onClick={async () => await FollowsFeed.loadMore(system, login, oldest ?? unixNow())} />
+      {feed.length > 0 && (
+        <ShowMoreInView
+          onClick={() => {
+            setLimit(s => s + 20);
+          }}
+        />
       )}
     </>
   );

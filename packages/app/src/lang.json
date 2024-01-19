@@ -153,9 +153,6 @@
   "2ukA4d": {
     "defaultMessage": "{n} hours"
   },
-  "2zJXeA": {
-    "defaultMessage": "Profiles"
-  },
   "39AHJm": {
     "defaultMessage": "Sign Up"
   },
@@ -361,6 +358,9 @@
   "AnLrRC": {
     "defaultMessage": "Non-Zap",
     "description": "Non-Zap, Regular LN payment"
+  },
+  "Aujn2T": {
+    "defaultMessage": "Count"
   },
   "Awq32I": {
     "defaultMessage": "Push notifications"
@@ -1184,6 +1184,9 @@
   "dmsiLv": {
     "defaultMessage": "A default Zap Pool split of {n} has been configured for {site} developers, you can disable it at any time in {link}"
   },
+  "e5x8FT": {
+    "defaultMessage": "Kind"
+  },
   "e61Jf3": {
     "defaultMessage": "Coming soon"
   },
@@ -1213,6 +1216,9 @@
   },
   "f1OxTe": {
     "defaultMessage": "Community leaders are individuals who grow the nostr ecosystem by being active in their local communities and helping onboard new users. Anyone can become a community leader, but few hold the current honorary title."
+  },
+  "f2CAxA": {
+    "defaultMessage": "Dump"
   },
   "fBI91o": {
     "defaultMessage": "Zap"
@@ -1330,9 +1336,6 @@
   },
   "iXPL0Z": {
     "defaultMessage": "Can't login with private key on an insecure connection, please use a Nostr key manager extension instead"
-  },
-  "iYc3Ld": {
-    "defaultMessage": "Payments"
   },
   "ieGrWo": {
     "defaultMessage": "Follow"
@@ -1588,9 +1591,6 @@
   "sfL/O+": {
     "defaultMessage": "Muted notes will not be shown"
   },
-  "tGXF0Q": {
-    "defaultMessage": "Relay Lists"
-  },
   "tOdNiY": {
     "defaultMessage": "Dark"
   },
@@ -1609,9 +1609,6 @@
   "ttxS0b": {
     "defaultMessage": "Supporter Badge"
   },
-  "u+LyXc": {
-    "defaultMessage": "Interactions"
-  },
   "u/vOPu": {
     "defaultMessage": "Paid"
   },
@@ -1623,9 +1620,6 @@
   },
   "uCk8r+": {
     "defaultMessage": "Already have an account?"
-  },
-  "uKqSN+": {
-    "defaultMessage": "Follows Feed"
   },
   "uSV4Ti": {
     "defaultMessage": "Reposts need to be manually confirmed"
@@ -1709,6 +1703,9 @@
   "xQtL3v": {
     "defaultMessage": "Unlock",
     "description": "Unlock wallet"
+  },
+  "xSoIUU": {
+    "defaultMessage": "Worker Relay"
   },
   "xaj9Ba": {
     "defaultMessage": "Provider"
