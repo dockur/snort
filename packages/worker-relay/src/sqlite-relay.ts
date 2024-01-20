@@ -1,13 +1,8 @@
 import sqlite3InitModule, { Database, Sqlite3Static } from "@sqlite.org/sqlite-wasm";
-import debug from "debug";
 import { EventEmitter } from "eventemitter3";
-import { NostrEvent, ReqFilter, unixNowMs } from "./types";
+import { NostrEvent, RelayHandler, RelayHandlerEvents, ReqFilter, unixNowMs } from "./types";
 
-export interface WorkerRelayEvents {
-  event: (evs: Array<NostrEvent>) => void;
-}
-
-export class WorkerRelay extends EventEmitter<WorkerRelayEvents> {
+export class SqliteRelay extends EventEmitter<RelayHandlerEvents> implements RelayHandler {
   #sqlite?: Sqlite3Static;
   #log = (...args: any[]) => console.debug(...args);
   #db?: Database;
@@ -16,16 +11,18 @@ export class WorkerRelay extends EventEmitter<WorkerRelayEvents> {
   /**
    * Initialize the SQLite driver
    */
-  async init() {
+  async init(path: string) {
     if (this.#sqlite) return;
     this.#sqlite = await sqlite3InitModule();
     this.#log(`Got SQLite version: ${this.#sqlite.version.libVersion}`);
+    await this.#open(path);
+    this.#migrate();
   }
 
   /**
    * Open the database from its path
    */
-  async open(path: string) {
+  async #open(path: string) {
     if (!this.#sqlite) throw new Error("Must call init first");
     if (this.#db) return;
 
@@ -33,6 +30,11 @@ export class WorkerRelay extends EventEmitter<WorkerRelayEvents> {
       try {
         this.#db = new this.#sqlite.oo1.OpfsDb(path, "cw");
         this.#log(`Opened ${this.#db.filename}`);
+        this.#db.exec(
+          `PRAGMA cache_size=${
+            32 * 1024
+          }; PRAGMA page_size=8192; PRAGMA journal_mode=MEMORY; PRAGMA temp_store=MEMORY;`,
+        );
       } catch (e) {
         // wipe db
         console.error(e);
@@ -50,7 +52,7 @@ export class WorkerRelay extends EventEmitter<WorkerRelayEvents> {
   /**
    * Do database migration
    */
-  migrate() {
+  #migrate() {
     if (!this.#db) throw new Error("DB must be open");
 
     this.#db.exec(
@@ -70,6 +72,10 @@ export class WorkerRelay extends EventEmitter<WorkerRelayEvents> {
       this.#migrate_v2();
       this.#log("Migrated to v2");
     }
+    if (version < 3) {
+      this.#migrate_v3();
+      this.#log("Migrated to v3");
+    }
   }
 
   /**
@@ -84,11 +90,8 @@ export class WorkerRelay extends EventEmitter<WorkerRelayEvents> {
     return false;
   }
 
-  /**
-   * Run any SQL command
-   */
   sql(sql: string, params: Array<any>) {
-    return this.#db?.selectArrays(sql, params);
+    return this.#db?.selectArrays(sql, params) as Array<Array<string | number>>;
   }
 
   /**
@@ -97,11 +100,13 @@ export class WorkerRelay extends EventEmitter<WorkerRelayEvents> {
   eventBatch(evs: Array<NostrEvent>) {
     const start = unixNowMs();
     let eventsInserted: Array<NostrEvent> = [];
-    for (const ev of evs) {
-      if (this.#insertEvent(this.#db!, ev)) {
-        eventsInserted.push(ev);
+    this.#db?.transaction(db => {
+      for (const ev of evs) {
+        if (this.#insertEvent(db, ev)) {
+          eventsInserted.push(ev);
+        }
       }
-    }
+    });
     if (eventsInserted.length > 0) {
       this.#log(`Inserted Batch: ${eventsInserted.length}/${evs.length}, ${(unixNowMs() - start).toLocaleString()}ms`);
       this.emit("event", eventsInserted);
@@ -111,6 +116,9 @@ export class WorkerRelay extends EventEmitter<WorkerRelayEvents> {
 
   #deleteById(db: Database, ids: Array<string>) {
     db.exec(`delete from events where id in (${this.#repeatParams(ids.length)})`, {
+      bind: ids,
+    });
+    db.exec(`delete from search_content where id in (${this.#repeatParams(ids.length)})`, {
       bind: ids,
     });
     this.#log("Deleted", ids, db.changes());
@@ -157,13 +165,12 @@ export class WorkerRelay extends EventEmitter<WorkerRelayEvents> {
     });
     let eventInserted = (this.#db?.changes() as number) > 0;
     if (eventInserted) {
-      db.transaction(db => {
-        for (const t of ev.tags.filter(a => a[0].length === 1)) {
-          db.exec("insert into tags(event_id, key, value) values(?, ?, ?)", {
-            bind: [ev.id, t[0], t[1]],
-          });
-        }
-      });
+      for (const t of ev.tags.filter(a => a[0].length === 1)) {
+        db.exec("insert into tags(event_id, key, value) values(?, ?, ?)", {
+          bind: [ev.id, t[0], t[1]],
+        });
+      }
+      this.#insertSearchIndex(db, ev);
     }
     this.#seenInserts.add(ev.id);
     return eventInserted;
@@ -229,7 +236,7 @@ export class WorkerRelay extends EventEmitter<WorkerRelayEvents> {
     } catch (e) {
       console.error(e);
     } finally {
-      this.open(filePath);
+      await this.#open(filePath);
     }
     return new Uint8Array();
   }
@@ -247,6 +254,11 @@ export class WorkerRelay extends EventEmitter<WorkerRelayEvents> {
       )})`;
       params.push(key.slice(1));
       params.push(...vArray);
+    }
+    if (req.search) {
+      sql += " inner join search_content on search_content.id = events.id";
+      conditions.push("search_content match ?");
+      params.push(req.search.replaceAll(".", "+").replaceAll("@", "+"));
     }
     if (req.ids) {
       conditions.push(`id in (${this.#repeatParams(req.ids.length)})`);
@@ -334,6 +346,52 @@ export class WorkerRelay extends EventEmitter<WorkerRelayEvents> {
       db.exec("CREATE INDEX pubkey_kind_IDX ON events (pubkey,kind)");
       db.exec("CREATE INDEX pubkey_created_IDX ON events (pubkey,created)");
       db.exec("insert into __migration values(2, ?)", {
+        bind: [new Date().getTime() / 1000],
+      });
+    });
+  }
+
+  #insertSearchIndex(db: Database, ev: NostrEvent) {
+    if (ev.kind === 0) {
+      const profile = JSON.parse(ev.content) as {
+        name?: string;
+        display_name?: string;
+        lud16?: string;
+        nip05?: string;
+        website?: string;
+        about?: string;
+      };
+      if (profile) {
+        const indexContent = [
+          profile.name,
+          profile.display_name,
+          profile.about,
+          profile.website,
+          profile.lud16,
+          profile.nip05,
+        ].join(" ");
+        db.exec("insert into search_content values(?,?)", {
+          bind: [ev.id, indexContent],
+        });
+      }
+    } else if (ev.kind === 1) {
+      db.exec("insert into search_content values(?,?)", {
+        bind: [ev.id, ev.content],
+      });
+    }
+  }
+
+  #migrate_v3() {
+    this.#db?.transaction(db => {
+      db.exec("CREATE VIRTUAL TABLE search_content using fts5(id UNINDEXED, content)");
+      const events = db.selectArrays("select json from events where kind in (?,?)", [0, 1]);
+      for (const json of events) {
+        const ev = JSON.parse(json[0] as string) as NostrEvent;
+        if (ev) {
+          this.#insertSearchIndex(db, ev);
+        }
+      }
+      db.exec("insert into __migration values(3, ?)", {
         bind: [new Date().getTime() / 1000],
       });
     });

@@ -39,6 +39,7 @@ export default defineConfig({
   build: {
     outDir: "build",
     commonjsOptions: { transformMixedEsModules: true },
+    sourcemap: true,
   },
   clearScreen: false,
   publicDir: appConfig.get("publicDir"),
@@ -49,9 +50,8 @@ export default defineConfig({
   },
   server: {
     headers: {
-      "Cross-Origin-Resource-Policy": "corss-origin",
       "Cross-Origin-Opener-Policy": "same-origin",
-      "Cross-Origin-Embedder-Policy": "credentialless",
+      "Cross-Origin-Embedder-Policy": "require-corp",
     },
   },
   optimizeDeps: {

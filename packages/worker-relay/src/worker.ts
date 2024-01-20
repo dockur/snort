@@ -1,8 +1,9 @@
 /// <reference lib="webworker" />
 
+import { InMemoryRelay } from "./memory-relay";
 import { WorkQueueItem, barrierQueue, processWorkQueue } from "./queue";
-import { WorkerRelay } from "./relay";
-import { NostrEvent, ReqCommand, ReqFilter, WorkerMessage } from "./types";
+import { SqliteRelay } from "./sqlite-relay";
+import { NostrEvent, RelayHandler, ReqCommand, ReqFilter, WorkerMessage, eventMatchesFilter, unixNowMs } from "./types";
 
 interface PortedFilter {
   filters: Array<ReqFilter>;
@@ -12,23 +13,7 @@ interface PortedFilter {
 // Active open subscriptions awaiting new events
 const ActiveSubscriptions = new Map<string, PortedFilter>();
 
-const relay = new WorkerRelay();
-relay.on("event", evs => {
-  for (const pf of ActiveSubscriptions.values()) {
-    const pfSend = [];
-    for (const ev of evs) {
-      for (const fx of pf.filters) {
-        if (eventMatchesFilter(ev, fx)) {
-          pfSend.push(ev);
-          continue;
-        }
-      }
-    }
-    if (pfSend.length > 0) {
-      pf.port.postMessage(pfSend);
-    }
-  }
-});
+let relay: RelayHandler | undefined;
 
 async function reply<T>(id: string, obj?: T, transferables?: Transferable[]) {
   globalThis.postMessage(
@@ -47,8 +32,21 @@ async function insertBatch() {
   // Only insert event batches when the command queue is empty
   // This is to make req's execute first and not block them
   if (eventWriteQueue.length > 0 && cmdQueue.length === 0) {
-    relay.eventBatch(eventWriteQueue);
-    eventWriteQueue = [];
+    await barrierQueue(cmdQueue, async () => {
+      const start = unixNowMs();
+      const timeLimit = 1000;
+      if (relay) {
+        while (eventWriteQueue.length > 0) {
+          if (unixNowMs() - start >= timeLimit) {
+            console.debug("Yield insert, queue length: ", eventWriteQueue.length, ", cmds: ", cmdQueue.length);
+            break;
+          }
+          const batch = eventWriteQueue.splice(0, 10);
+          eventWriteQueue = eventWriteQueue.slice(batch.length);
+          relay.eventBatch(batch);
+        }
+      }
+    });
   }
   setTimeout(() => insertBatch(), 100);
 }
@@ -57,31 +55,49 @@ setTimeout(() => insertBatch(), 100);
 const cmdQueue: Array<WorkQueueItem> = [];
 processWorkQueue(cmdQueue, 50);
 
+async function tryOpfs() {
+  try {
+    await navigator.storage.getDirectory();
+    return true;
+  } catch {
+    // ignore
+  }
+  return false;
+}
+
 globalThis.onclose = () => {
-  relay.close();
+  relay?.close();
 };
 
-globalThis.onmessage = ev => {
+globalThis.onmessage = async ev => {
   const msg = ev.data as WorkerMessage<any>;
   try {
     switch (msg.cmd) {
       case "init": {
-        barrierQueue(cmdQueue, async () => {
-          await relay.init();
-          reply(msg.id, true);
-        });
-        break;
-      }
-      case "open": {
-        barrierQueue(cmdQueue, async () => {
-          await relay.open("/relay.db");
-          reply(msg.id, true);
-        });
-        break;
-      }
-      case "migrate": {
-        barrierQueue(cmdQueue, async () => {
-          relay.migrate();
+        await barrierQueue(cmdQueue, async () => {
+          if ("WebAssembly" in globalThis && (await tryOpfs())) {
+            relay = new SqliteRelay();
+          } else {
+            relay = new InMemoryRelay();
+          }
+
+          relay.on("event", evs => {
+            for (const pf of ActiveSubscriptions.values()) {
+              const pfSend = [];
+              for (const ev of evs) {
+                for (const fx of pf.filters) {
+                  if (eventMatchesFilter(ev, fx)) {
+                    pfSend.push(ev);
+                    continue;
+                  }
+                }
+              }
+              if (pfSend.length > 0) {
+                pf.port.postMessage(pfSend);
+              }
+            }
+          });
+          await relay.init(msg.args as string);
           reply(msg.id, true);
         });
         break;
@@ -97,7 +113,7 @@ globalThis.onmessage = ev => {
         break;
       }
       case "req": {
-        barrierQueue(cmdQueue, async () => {
+        await barrierQueue(cmdQueue, async () => {
           const req = msg.args as ReqCommand;
           const chan = new MessageChannel();
           if (req.leaveOpen) {
@@ -108,18 +124,18 @@ globalThis.onmessage = ev => {
           }
           const results = [];
           for (const r of req.filters) {
-            results.push(...relay.req(req.id, r as ReqFilter));
+            results.push(...relay!.req(req.id, r as ReqFilter));
           }
           reply(msg.id, results, req.leaveOpen ? [chan.port2] : undefined);
         });
         break;
       }
       case "count": {
-        barrierQueue(cmdQueue, async () => {
+        await barrierQueue(cmdQueue, async () => {
           const req = msg.args as ReqCommand;
           let results = 0;
           for (const r of req.filters) {
-            const c = relay.count(r as ReqFilter);
+            const c = relay!.count(r as ReqFilter);
             results += c;
           }
           reply(msg.id, results);
@@ -127,26 +143,26 @@ globalThis.onmessage = ev => {
         break;
       }
       case "summary": {
-        barrierQueue(cmdQueue, async () => {
-          const res = relay.summary();
+        await barrierQueue(cmdQueue, async () => {
+          const res = relay!.summary();
           reply(msg.id, res);
         });
         break;
       }
       case "dumpDb": {
-        barrierQueue(cmdQueue, async () => {
-          const res = await relay.dump();
+        await barrierQueue(cmdQueue, async () => {
+          const res = await relay!.dump();
           reply(msg.id, res);
         });
         break;
       }
       case "sql": {
-        barrierQueue(cmdQueue, async () => {
+        await barrierQueue(cmdQueue, async () => {
           const req = msg.args as {
             sql: string;
             params: Array<any>;
           };
-          const res = relay.sql(req.sql, req.params);
+          const res = relay!.sql(req.sql, req.params);
           reply(msg.id, res);
         });
         break;
@@ -161,22 +177,3 @@ globalThis.onmessage = ev => {
     reply(msg.id, { error: e });
   }
 };
-
-export function eventMatchesFilter(ev: NostrEvent, filter: ReqFilter) {
-  if (filter.since && ev.created_at < filter.since) {
-    return false;
-  }
-  if (filter.until && ev.created_at > filter.until) {
-    return false;
-  }
-  if (!(filter.ids?.includes(ev.id) ?? true)) {
-    return false;
-  }
-  if (!(filter.authors?.includes(ev.pubkey) ?? true)) {
-    return false;
-  }
-  if (!(filter.kinds?.includes(ev.kind) ?? true)) {
-    return false;
-  }
-  return true;
-}

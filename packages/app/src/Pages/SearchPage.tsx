@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate, useParams } from "react-router-dom";
 
-import Timeline from "@/Components/Feed/Timeline";
+import { LocalSearch } from "@/Components/Feed/LocalSearch";
 import TabSelectors, { Tab } from "@/Components/TabSelectors/TabSelectors";
 import TrendingNotes from "@/Components/Trending/TrendingPosts";
 import TrendingUsers from "@/Components/Trending/TrendingUsers";
@@ -53,18 +53,9 @@ const SearchPage = () => {
     return debounce(500, () => setKeyword(search));
   }, [search]);
 
-  const subject = useMemo(
-    () => ({
-      type: "post_keyword",
-      items: [keyword + (sortPopular ? " sort:popular" : "")],
-      discriminator: keyword,
-    }),
-    [keyword, sortPopular],
-  );
-
   function tabContent() {
     if (tab.value === PROFILES) {
-      return <Profiles keyword={search} />;
+      return <Profiles keyword={keyword} />;
     }
 
     if (!keyword) {
@@ -74,7 +65,7 @@ const SearchPage = () => {
     return (
       <>
         {sortOptions()}
-        <Timeline key={keyword} subject={subject} postsOnly={false} method={"LIMIT_UNTIL"} loadMore={false} />
+        <LocalSearch term={keyword} kind={1} />
       </>
     );
   }
