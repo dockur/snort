@@ -1,0 +1,49 @@
+{
+  "appName": "Nostr",
+  "appNameCapitalized": "Nostr",
+  "appTitle": "Nostr",
+  "hostname": "nostr.com",
+  "nip05Domain": "nostr.com",
+  "icon": "/nostr.jpg",
+  "navLogo": null,
+  "publicDir": "public/nostr",
+  "httpCache": "",
+  "animalNamePlaceholders": false,
+  "defaultZapPoolFee": 0,
+  "features": {
+    "analytics": false,
+    "subscriptions": false,
+    "deck": false,
+    "zapPool": false,
+    "notificationGraph": true,
+    "communityLeaders": false,
+    "nostrAddress": false,
+    "pushNotifications": false
+  },
+  "signUp": {
+    "moderation": true,
+    "defaultFollows": []
+  },
+  "defaultPreferences": {
+    "hideMutedNotes": false
+  },
+  "media": {
+    "bypassImgProxyError": false,
+    "preferLargeMedia": true
+  },
+  "communityLeaders": null,
+  "noteCreatorToast": true,
+  "hideFromNavbar": ["/graph"],
+  "deckSubKind": 1,
+  "showPowIcon": true,
+  "eventLinkPrefix": "nevent",
+  "profileLinkPrefix": "nprofile",
+  "defaultRelays": {
+    "wss://relay.snort.social/": { "read": true, "write": true },
+    "wss://nostr.wine/": { "read": true, "write": false },
+    "wss://eden.nostr.land/": { "read": true, "write": false },
+    "wss://nos.lol/": { "read": true, "write": true }
+  },
+  "alby": null,
+  "chatChannels": null
+}

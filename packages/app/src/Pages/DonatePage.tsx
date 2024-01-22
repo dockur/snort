@@ -1,8 +1,10 @@
 import { HexKey } from "@snort/system";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { FormattedMessage } from "react-intl";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
+import Telegram from "@/assets/img/telegram.svg";
+import { Nip28ChatSystem } from "@/chat/nip28";
 import AsyncButton from "@/Components/Button/AsyncButton";
 import Copy from "@/Components/Copy/Copy";
 import ZapButton from "@/Components/Event/ZapButton";
@@ -64,10 +66,7 @@ const DonatePage = () => {
   const [today, setSumToday] = useState<RevenueToday>();
   const [onChain, setOnChain] = useState("");
   const api = new SnortApi(ApiHost);
-  const zapPool = useSyncExternalStore(
-    c => unwrap(ZapPoolController).hook(c),
-    () => unwrap(ZapPoolController).snapshot(),
-  );
+  const navigate = useNavigate();
 
   async function getOnChainAddress() {
     const { address } = await api.onChainDonation();
@@ -95,28 +94,24 @@ const DonatePage = () => {
 
   return (
     <div className="main-content p">
-      <h2>
-        <FormattedMessage
-          defaultMessage="Help fund the development of {site}"
-          id="yNBPJp"
-          values={{ site: CONFIG.appNameCapitalized }}
-        />
-      </h2>
       <p>
         <FormattedMessage
-          defaultMessage="{site} is an open source project built by passionate people in their free time, your donations are greatly appreciated"
-          id="XhpBfA"
-          values={{ site: CONFIG.appNameCapitalized }}
+          defaultMessage="Snort is an open source project built by passionate people in their free time, your donations are greatly appreciated"
+          id="fLIvbC"
         />
       </p>
       <p>
         <FormattedMessage
-          defaultMessage="Check out the code here: {link}"
-          id="u4bHcR"
+          defaultMessage="Check out the code {link}"
+          id="LKw/ue"
           values={{
             link: (
-              <a className="highlight" href="https://git.v0l.io/Kieran/snort" rel="noreferrer" target="_blank">
-                https://git.v0l.io/Kieran/snort
+              <a
+                className="highlight underline"
+                href="https://git.v0l.io/Kieran/snort"
+                rel="noreferrer"
+                target="_blank">
+                here
               </a>
             ),
           }}
@@ -128,18 +123,52 @@ const DonatePage = () => {
           id="VfhYxG"
           values={{
             here: (
-              <Link to="/about" className="underline">
+              <Link to="/about" className="highlight underline">
                 <FormattedMessage defaultMessage="here" id="hniz8Z" />
               </Link>
             ),
           }}
         />
       </p>
-      <p>
-        <a href="https://t.me/irismessenger" target="_blank" rel="noreferrer" className="underline">
-          Telegram
-        </a>
-      </p>
+      {CONFIG.chatChannels && (
+        <>
+          <h4>
+            <FormattedMessage defaultMessage="Public Chat Channels" id="rn52n9" />
+          </h4>
+          <div className="flex gap-2">
+            {CONFIG.chatChannels.map(a => {
+              switch (a.type) {
+                case "telegram": {
+                  return (
+                    <AsyncButton
+                      onClick={() => {
+                        window.open(a.value, "_blank", "noreferrer");
+                      }}>
+                      <img src={Telegram} width={24} height={24} />
+                      <FormattedMessage defaultMessage="Telegram" id="TH1fFo" />
+                    </AsyncButton>
+                  );
+                }
+                case "nip28": {
+                  return (
+                    <AsyncButton
+                      onClick={() => {
+                        const id = Nip28ChatSystem.chatId(a.value);
+                        navigate(`/messages/${id}`);
+                      }}>
+                      <img src={CONFIG.icon} width={24} height={24} className="rounded-full" />
+                      <FormattedMessage defaultMessage="Nostr Public Chat" id="whSrs+" />
+                    </AsyncButton>
+                  );
+                }
+              }
+            })}
+          </div>
+        </>
+      )}
+      <h3>
+        <FormattedMessage defaultMessage="Donate" id="2IFGap" />
+      </h3>
       <div className="flex flex-col g12">
         <div className="b br p">
           <div className="flex items-center justify-between">
@@ -178,34 +207,7 @@ const DonatePage = () => {
           </div>
         </Modal>
       )}
-      {CONFIG.features.zapPool && (
-        <>
-          <h3>
-            <FormattedMessage defaultMessage="ZapPool" id="pRess9" />
-          </h3>
-          <p>
-            <FormattedMessage
-              defaultMessage="Fund the services that you use by splitting a portion of all your zaps into a pool of funds!"
-              id="x/Fx2P"
-            />
-          </p>
-          <p>
-            <Link to="/zap-pool" className="underline">
-              <FormattedMessage defaultMessage="Configure zap pool" id="kqPQJD" />
-            </Link>
-          </p>
-          <ZapPoolTarget
-            target={
-              zapPool.find(b => b.pubkey === bech32ToHex(SnortPubKey) && b.type === ZapPoolRecipientType.Generic) ?? {
-                type: ZapPoolRecipientType.Generic,
-                pubkey: bech32ToHex(SnortPubKey),
-                split: 0,
-                sum: 0,
-              }
-            }
-          />
-        </>
-      )}
+      <ZapPoolDonateSection />
       <h3>
         <FormattedMessage defaultMessage="Primary Developers" id="4IPzdn" />
       </h3>
@@ -227,5 +229,45 @@ const DonatePage = () => {
     </div>
   );
 };
+
+function ZapPoolDonateSection() {
+  if (!CONFIG.features.zapPool) {
+    return;
+  }
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const zapPool = useSyncExternalStore(
+    c => unwrap(ZapPoolController).hook(c),
+    () => unwrap(ZapPoolController).snapshot(),
+  );
+
+  return (
+    <>
+      <h3>
+        <FormattedMessage defaultMessage="ZapPool" id="pRess9" />
+      </h3>
+      <p>
+        <FormattedMessage
+          defaultMessage="Fund the services that you use by splitting a portion of all your zaps into a pool of funds!"
+          id="x/Fx2P"
+        />
+      </p>
+      <p>
+        <Link to="/zap-pool" className="underline">
+          <FormattedMessage defaultMessage="Configure zap pool" id="kqPQJD" />
+        </Link>
+      </p>
+      <ZapPoolTarget
+        target={
+          zapPool.find(b => b.pubkey === bech32ToHex(SnortPubKey) && b.type === ZapPoolRecipientType.Generic) ?? {
+            type: ZapPoolRecipientType.Generic,
+            pubkey: bech32ToHex(SnortPubKey),
+            split: 0,
+            sum: 0,
+          }
+        }
+      />
+    </>
+  );
+}
 
 export default DonatePage;
