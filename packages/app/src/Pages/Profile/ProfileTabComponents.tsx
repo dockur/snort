@@ -11,6 +11,7 @@ import FollowsList from "@/Components/User/FollowListBase";
 import useFollowersFeed from "@/Feed/FollowersFeed";
 import useFollowsFeed from "@/Feed/FollowsFeed";
 import useRelaysFeed from "@/Feed/RelaysFeed";
+import { TimelineSubject } from "@/Feed/TimelineFeed";
 import useZapsFeed from "@/Feed/ZapsFeed";
 import { useBookmarkList, usePinList } from "@/Hooks/useLists";
 import messages from "@/Pages/messages";
@@ -52,16 +53,16 @@ export function BookMarksTab({ id }: { id: HexKey }) {
 }
 
 export function ProfileNotesTab({ id, relays, isMe }: { id: HexKey; relays?: Array<string>; isMe: boolean }) {
-  console.count("ProfileNotesTab");
   const pinned = usePinList(id);
   const options = useMemo(() => ({ showTime: false, showPinned: true, canUnpin: isMe }), [isMe]);
   const subject = useMemo(
-    () => ({
-      type: "pubkey",
-      items: [id],
-      discriminator: id.slice(0, 12),
-      relay: relays,
-    }),
+    () =>
+      ({
+        type: "pubkey",
+        items: [id],
+        discriminator: id.slice(0, 12),
+        relay: relays,
+      }) as TimelineSubject,
     [id, relays],
   );
   return (
@@ -76,7 +77,7 @@ export function ProfileNotesTab({ id, relays, isMe }: { id: HexKey; relays?: Arr
         subject={subject}
         postsOnly={false}
         method={"LIMIT_UNTIL"}
-        loadMore={false}
+        loadMore={true}
         ignoreModeration={true}
         window={60 * 60 * 6}
       />
