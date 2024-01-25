@@ -5,11 +5,11 @@ import { unixNowMs, dedupe } from "@snort/shared";
 import EventEmitter from "eventemitter3";
 
 import { DefaultConnectTimeout } from "./const";
-import { ConnectionStats } from "./connection-stats";
 import { NostrEvent, OkResponse, ReqCommand, ReqFilter, TaggedNostrEvent, u256 } from "./nostr";
 import { RelayInfo } from "./relay-info";
 import EventKind from "./event-kind";
 import { EventExt } from "./event-ext";
+import { NegentropyFlow } from "./negentropy/negentropy-flow";
 
 /**
  * Relay settings
@@ -19,28 +19,8 @@ export interface RelaySettings {
   write: boolean;
 }
 
-/**
- * Snapshot of connection stats
- */
-export interface ConnectionStateSnapshot {
-  connected: boolean;
-  disconnects: number;
-  avgLatency: number;
-  events: {
-    received: number;
-    send: number;
-  };
-  settings?: RelaySettings;
-  info?: RelayInfo;
-  pendingRequests: Array<string>;
-  activeRequests: Array<string>;
-  id: string;
-  ephemeral: boolean;
-  address: string;
-}
-
 interface ConnectionEvents {
-  change: (snapshot: ConnectionStateSnapshot) => void;
+  change: () => void;
   connected: (wasReconnect: boolean) => void;
   event: (sub: string, e: TaggedNostrEvent) => void;
   eose: (sub: string) => void;
@@ -48,6 +28,21 @@ interface ConnectionEvents {
   disconnect: (code: number) => void;
   auth: (challenge: string, relay: string, cb: (ev: NostrEvent) => void) => void;
   notice: (msg: string) => void;
+  unknownMessage: (obj: Array<any>) => void;
+}
+
+/**
+ * SYNC command is an internal command that requests the connection to devise a strategy
+ * to synchronize based on a set of existing cached events and a filter set.
+ */
+export type SyncCommand = ["SYNC", id: string, fromSet: Array<TaggedNostrEvent>, ...filters: Array<ReqFilter>];
+
+/**
+ * Pending REQ queue
+ */
+interface ConnectionQueueItem {
+  obj: ReqCommand | SyncCommand;
+  cb: () => void;
 }
 
 export class Connection extends EventEmitter<ConnectionEvents> {
@@ -58,20 +53,16 @@ export class Connection extends EventEmitter<ConnectionEvents> {
   #ephemeral: boolean;
 
   Id: string;
-  Address: string;
+  readonly Address: string;
   Socket: WebSocket | null = null;
 
   PendingRaw: Array<object> = [];
-  PendingRequests: Array<{
-    cmd: ReqCommand;
-    cb: () => void;
-  }> = [];
+  PendingRequests: Array<ConnectionQueueItem> = [];
   ActiveRequests = new Set<string>();
 
   Settings: RelaySettings;
   Info?: RelayInfo;
   ConnectTimeout: number = DefaultConnectTimeout;
-  Stats: ConnectionStats = new ConnectionStats();
   HasStateChange: boolean = true;
   IsClosed: boolean;
   ReconnectTimer?: ReturnType<typeof setTimeout>;
@@ -102,7 +93,7 @@ export class Connection extends EventEmitter<ConnectionEvents> {
     this.#setupEphemeral();
   }
 
-  async Connect() {
+  async connect() {
     try {
       if (this.Info === undefined) {
         const u = new URL(this.Address);
@@ -136,19 +127,18 @@ export class Connection extends EventEmitter<ConnectionEvents> {
     }
     this.IsClosed = false;
     this.Socket = new WebSocket(this.Address);
-    this.Socket.onopen = () => this.OnOpen(wasReconnect);
-    this.Socket.onmessage = e => this.OnMessage(e);
-    this.Socket.onerror = e => this.OnError(e);
-    this.Socket.onclose = e => this.OnClose(e);
+    this.Socket.onopen = () => this.#onOpen(wasReconnect);
+    this.Socket.onmessage = e => this.#onMessage(e);
+    this.Socket.onerror = e => this.#onError(e);
+    this.Socket.onclose = e => this.#onClose(e);
   }
 
-  Close() {
+  close() {
     this.IsClosed = true;
     this.Socket?.close();
-    this.notifyChange();
   }
 
-  OnOpen(wasReconnect: boolean) {
+  #onOpen(wasReconnect: boolean) {
     this.ConnectTimeout = DefaultConnectTimeout;
     this.#log(`Open!`);
     this.Down = false;
@@ -157,7 +147,7 @@ export class Connection extends EventEmitter<ConnectionEvents> {
     this.#sendPendingRaw();
   }
 
-  OnClose(e: WebSocket.CloseEvent) {
+  #onClose(e: WebSocket.CloseEvent) {
     if (this.ReconnectTimer) {
       clearTimeout(this.ReconnectTimer);
       this.ReconnectTimer = undefined;
@@ -174,12 +164,12 @@ export class Connection extends EventEmitter<ConnectionEvents> {
       );
       this.ReconnectTimer = setTimeout(() => {
         try {
-          this.Connect();
+          this.connect();
         } catch {
           this.emit("disconnect", -1);
         }
       }, this.ConnectTimeout);
-      this.Stats.Disconnects++;
+      // todo: stats disconnect
     } else {
       this.#log(`Closed!`);
       this.ReconnectTimer = undefined;
@@ -187,10 +177,9 @@ export class Connection extends EventEmitter<ConnectionEvents> {
 
     this.emit("disconnect", e.code);
     this.#reset();
-    this.notifyChange();
   }
 
-  OnMessage(e: WebSocket.MessageEvent) {
+  #onMessage(e: WebSocket.MessageEvent) {
     this.#activity = unixNowMs();
     if ((e.data as string).length > 0) {
       const msg = JSON.parse(e.data as string) as Array<string | NostrEvent | boolean>;
@@ -201,8 +190,7 @@ export class Connection extends EventEmitter<ConnectionEvents> {
             this.#onAuthAsync(msg[1] as string)
               .then(() => this.#sendPendingRaw())
               .catch(this.#log);
-            this.Stats.EventsReceived++;
-            this.notifyChange();
+            // todo: stats events received
           } else {
             this.#log("Ignoring unexpected AUTH request");
           }
@@ -219,8 +207,7 @@ export class Connection extends EventEmitter<ConnectionEvents> {
             return;
           }
           this.emit("event", msg[1] as string, ev);
-          this.Stats.EventsReceived++;
-          this.notifyChange();
+          // todo: stats events received
           break;
         }
         case "EOSE": {
@@ -249,35 +236,34 @@ export class Connection extends EventEmitter<ConnectionEvents> {
           break;
         }
         default: {
-          this.#log(`Unknown tag: ${tag}`);
+          this.emit("unknownMessage", msg);
           break;
         }
       }
     }
   }
 
-  OnError(e: WebSocket.Event) {
+  #onError(e: WebSocket.Event) {
     this.#log("Error: %O", e);
-    this.notifyChange();
+    this.emit("change");
   }
 
   /**
    * Send event on this connection
    */
-  SendEvent(e: NostrEvent) {
+  sendEvent(e: NostrEvent) {
     if (!this.Settings.write) {
       return;
     }
-    const req = ["EVENT", e];
-    this.#sendJson(req);
-    this.Stats.EventsSent++;
-    this.notifyChange();
+    this.send(["EVENT", e]);
+    // todo: stats events send
+    this.emit("change");
   }
 
   /**
    * Send event on this connection and wait for OK response
    */
-  async SendAsync(e: NostrEvent, timeout = 5000) {
+  async sendEventAsync(e: NostrEvent, timeout = 5000) {
     return await new Promise<OkResponse>((resolve, reject) => {
       if (!this.Settings.write) {
         reject(new Error("Not a write relay"));
@@ -317,17 +303,16 @@ export class Connection extends EventEmitter<ConnectionEvents> {
         });
       });
 
-      const req = ["EVENT", e];
-      this.#sendJson(req);
-      this.Stats.EventsSent++;
-      this.notifyChange();
+      this.send(["EVENT", e]);
+      // todo: stats events send
+      this.emit("change");
     });
   }
 
   /**
    * Using relay document to determine if this relay supports a feature
    */
-  SupportsNip(n: number) {
+  supportsNip(n: number) {
     return this.Info?.supported_nips?.some(a => a === n) ?? false;
   }
 
@@ -335,7 +320,7 @@ export class Connection extends EventEmitter<ConnectionEvents> {
    * Queue or send command to the relay
    * @param cmd The REQ to send to the server
    */
-  QueueReq(cmd: ReqCommand, cbSent: () => void) {
+  queueReq(cmd: ReqCommand | SyncCommand, cbSent: () => void) {
     const requestKinds = dedupe(
       cmd
         .slice(2)
@@ -349,60 +334,76 @@ export class Connection extends EventEmitter<ConnectionEvents> {
     }
     if (this.ActiveRequests.size >= this.#maxSubscriptions) {
       this.PendingRequests.push({
-        cmd,
+        obj: cmd,
         cb: cbSent,
       });
       this.#log("Queuing: %O", cmd);
     } else {
       this.ActiveRequests.add(cmd[1]);
-      this.#sendJson(cmd);
+      this.#sendRequestCommand({
+        obj: cmd,
+        cb: cbSent,
+      });
       cbSent();
     }
-    this.notifyChange();
+    this.emit("change");
   }
 
-  CloseReq(id: string) {
+  closeReq(id: string) {
     if (this.ActiveRequests.delete(id)) {
-      this.#sendJson(["CLOSE", id]);
+      this.send(["CLOSE", id]);
       this.emit("eose", id);
-      this.#SendQueuedRequests();
+      this.#sendQueuedRequests();
+      this.emit("change");
     }
-    this.notifyChange();
   }
 
-  takeSnapshot(): ConnectionStateSnapshot {
-    return {
-      connected: this.Socket?.readyState === WebSocket.OPEN,
-      events: {
-        received: this.Stats.EventsReceived,
-        send: this.Stats.EventsSent,
-      },
-      avgLatency:
-        this.Stats.Latency.length > 0
-          ? this.Stats.Latency.reduce((acc, v) => acc + v, 0) / this.Stats.Latency.length
-          : 0,
-      disconnects: this.Stats.Disconnects,
-      info: this.Info,
-      id: this.Id,
-      pendingRequests: [...this.PendingRequests.map(a => a.cmd[1])],
-      activeRequests: [...this.ActiveRequests],
-      ephemeral: this.Ephemeral,
-      address: this.Address,
-    };
-  }
-
-  #SendQueuedRequests() {
+  #sendQueuedRequests() {
     const canSend = this.#maxSubscriptions - this.ActiveRequests.size;
     if (canSend > 0) {
       for (let x = 0; x < canSend; x++) {
         const p = this.PendingRequests.shift();
         if (p) {
-          this.ActiveRequests.add(p.cmd[1]);
-          this.#sendJson(p.cmd);
-          p.cb();
-          this.#log("Sent pending REQ %O", p.cmd);
+          this.#sendRequestCommand(p);
+          this.#log("Sent pending REQ %O", p.obj);
         }
       }
+    }
+  }
+
+  #sendRequestCommand(item: ConnectionQueueItem) {
+    try {
+      const cmd = item.obj;
+      if (cmd[0] === "REQ") {
+        this.ActiveRequests.add(cmd[1]);
+        this.send(cmd);
+      } else if (cmd[0] === "SYNC") {
+        const [_, id, eventSet, ...filters] = cmd;
+        const lastResortSync = () => {
+          const latest = eventSet.reduce((acc, v) => (acc = v.created_at > acc ? v.created_at : acc), 0);
+          const newFilters = filters.map(a => ({
+            ...a,
+            since: latest,
+          }));
+          this.queueReq(["REQ", id, ...newFilters], item.cb);
+        };
+        if (this.Info?.software?.includes("strfry")) {
+          const neg = new NegentropyFlow(id, this, eventSet, filters);
+          neg.once("finish", filters => {
+            if (filters.length > 0) {
+              this.queueReq(["REQ", cmd[1], ...filters], item.cb);
+            }
+          });
+          neg.once("error", () => {
+            lastResortSync();
+          });
+          neg.start();
+        } else {
+          lastResortSync();
+        }
+      }
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -413,15 +414,15 @@ export class Connection extends EventEmitter<ConnectionEvents> {
     this.ActiveRequests.clear();
     this.PendingRequests = [];
     this.PendingRaw = [];
-    this.notifyChange();
+    this.emit("change");
   }
 
-  #sendJson(obj: object) {
+  send(obj: object) {
     const authPending = !this.Authed && (this.AwaitingAuth.size > 0 || this.Info?.limitation?.auth_required === true);
     if (!this.Socket || this.Socket?.readyState !== WebSocket.OPEN || authPending) {
       this.PendingRaw.push(obj);
       if (this.Socket?.readyState === WebSocket.CLOSED && this.Ephemeral && this.IsClosed) {
-        this.Connect();
+        this.connect();
       }
       return false;
     }
@@ -498,14 +499,10 @@ export class Connection extends EventEmitter<ConnectionEvents> {
           if (this.ActiveRequests.size > 0) {
             this.#log("Inactive connection has %d active requests! %O", this.ActiveRequests.size, this.ActiveRequests);
           } else {
-            this.Close();
+            this.close();
           }
         }
       }, 5_000);
     }
-  }
-
-  notifyChange() {
-    this.emit("change", this.takeSnapshot());
   }
 }
