@@ -105,7 +105,7 @@ jobs:
         run: |
           git config --global url.https://github.com/.insteadOf git://github.com/
           git clone --recurse-submodules -j8 https://github.com/v0l/${{ github.event.repository.name }}.git --single-branch --branch v${{ env.latest_tag }}
-          cp Dockerfile ${{ github.event.repository.name }}/
+          cp Dockerfile.custom ${{ github.event.repository.name }}/Dockerfile
           cp Dockerfile.prebuilt ${{ github.event.repository.name }}/
           cp .dockerignore ${{ github.event.repository.name }}/
           cp .yarnrc.yml ${{ github.event.repository.name }}/
