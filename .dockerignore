@@ -8,3 +8,17 @@
 !**/.yarn/versions
 **/.idea
 **/target
+
+.dockerignore
+.github
+.gitignore
+.gitlab-ci.yml
+.gitmodules
+.vscode
+Dockerfile
+Dockerfile.archive
+Dockerfile.prebuilt
+docker-compose.yml
+renovate.json
+
+*.md
