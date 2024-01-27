@@ -109,8 +109,8 @@ jobs:
           cp Dockerfile.prebuilt ${{ github.event.repository.name }}/
           cp .dockerignore ${{ github.event.repository.name }}/
           cp .yarnrc.yml ${{ github.event.repository.name }}/
-          cp docker/nginx.custom.conf ${{ github.event.repository.name }}/docker/nginx.conf
-          cp docker/nginx.custom.conf ${{ github.event.repository.name }}/docker/nginx.custom.conf
+          cp docker/nginx.conf.custom ${{ github.event.repository.name }}/docker/nginx.conf
+          cp docker/nginx.conf.custom ${{ github.event.repository.name }}/docker/nginx.conf.custom
       -
         name: Build Docker image
         if: env.exists == 'false'
