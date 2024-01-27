@@ -34,13 +34,9 @@
     "preferLargeMedia": true
   },
   "communityLeaders": null,
-  "hideFromNavbar": [],
   "noteCreatorToast": true,
-  "eventLinkPrefix": "note",
   "hideFromNavbar": ["/graph"],
-  "profileLinkPrefix": "npub",
   "deckSubKind": 1,
-  "showPowIcon": false,
   "showPowIcon": true,
   "eventLinkPrefix": "nevent",
   "profileLinkPrefix": "nprofile",
