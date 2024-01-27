@@ -10,11 +10,11 @@
   "publicDir": "public/snort",
   "httpCache": "",
   "animalNamePlaceholders": true,
-  "defaultZapPoolFee": 1,
+  "defaultZapPoolFee": 0,
   "features": {
-    "analytics": true,
+    "analytics": false,
     "subscriptions": false,
-    "deck": true,
+    "deck": false,
     "zapPool": false,
     "notificationGraph": false,
     "communityLeaders": false
