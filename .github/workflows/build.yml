@@ -109,8 +109,7 @@ jobs:
           cp Dockerfile.prebuilt ${{ github.event.repository.name }}/
           cp .dockerignore ${{ github.event.repository.name }}/
           cp .yarnrc.yml ${{ github.event.repository.name }}/
-          cp docker/nginx.conf.custom ${{ github.event.repository.name }}/docker/nginx.conf
-          cp docker/nginx.conf.custom ${{ github.event.repository.name }}/docker/nginx.conf.custom
+          cp docker/nginx.conf ${{ github.event.repository.name }}/docker/nginx.conf.custom
       -
         name: Build Docker image
         if: env.exists == 'false'
@@ -130,6 +129,7 @@ jobs:
         if: env.exists == 'false'
         run: |
           cp packages/app/config/soloco.json ${{ github.event.repository.name }}/packages/app/config/default.json
+          cp docker/nginx.conf.custom ${{ github.event.repository.name }}/docker/nginx.conf.custom
       -
         name: Build custom image
         if: env.exists == 'false'
