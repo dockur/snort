@@ -37,5 +37,7 @@
   "showPowIcon": false,
   "defaultRelays": {
     "wss://soloco.nl/": { "read": true, "write": false }
-  }
+  },
+  "alby": null,
+  "chatChannels": null
 }
