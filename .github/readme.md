@@ -30,6 +30,9 @@ services:
     restart: on-failure
 ```
 
+## Stars
+[![Stars](https://starchart.cc/dockur/snort.svg?variant=adaptive)](https://starchart.cc/dockur/snort)
+
 [build_url]: https://github.com/dockur/snort/
 [hub_url]: https://hub.docker.com/r/dockurr/snort/
 [tag_url]: https://hub.docker.com/r/dockurr/snort/tags
