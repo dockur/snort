@@ -31,16 +31,6 @@
   border-radius: 0;
 }
 
-.thread-container .show-more {
-  background: var(--gray-superdark);
-  padding-left: 76px;
-  width: 100%;
-  text-align: left;
-  border-radius: 0;
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-
 .subthread-container {
   position: relative;
 }
@@ -83,11 +73,6 @@
 .divider.divider-small {
   margin-left: calc(16px + 61px);
   margin-right: 16px;
-}
-
-.thread-container .collapsed,
-.thread-container .show-more-container {
-  min-height: 48px;
 }
 
 .thread-container .hidden-note {

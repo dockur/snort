@@ -2,23 +2,25 @@ import { ReactNode } from "react";
 import { FormattedMessage } from "react-intl";
 
 import Icon from "@/Components/Icons/Icon";
+import { RootTabRoutePath } from "@/Pages/Root/RootTabRoutes";
 import { Newest } from "@/Utils/Login";
-
-export type RootTab =
-  | "following"
-  | "followed-by-friends"
-  | "conversations"
-  | "trending-notes"
-  | "trending-people"
-  | "suggested"
-  | "tags"
-  | "global";
 
 export function rootTabItems(base: string, pubKey: string | undefined, tags: Newest<Array<string>>) {
   const menuItems = [
     {
+      tab: "for-you",
+      path: `${base}/for-you`,
+      show: Boolean(pubKey) && CONFIG.features.forYouFeed,
+      element: (
+        <>
+          <Icon name="user-v2" />
+          <FormattedMessage defaultMessage="For you" id="xEjBS7" />
+        </>
+      ),
+    },
+    {
       tab: "following",
-      path: `${base}/notes`,
+      path: `${base}/following`,
       show: Boolean(pubKey),
       element: (
         <>
@@ -28,7 +30,7 @@ export function rootTabItems(base: string, pubKey: string | undefined, tags: New
       ),
     },
     {
-      tab: "trending-notes",
+      tab: "trending/notes",
       path: `${base}/trending/notes`,
       show: true,
       element: (
@@ -72,7 +74,7 @@ export function rootTabItems(base: string, pubKey: string | undefined, tags: New
       ),
     },
     {
-      tab: "trending-hashtags",
+      tab: "trending/hashtags",
       path: `${base}/trending/hashtags`,
       show: true,
       element: (
@@ -105,7 +107,7 @@ export function rootTabItems(base: string, pubKey: string | undefined, tags: New
       ),
     },
   ] as Array<{
-    tab: RootTab;
+    tab: RootTabRoutePath;
     path: string;
     show: boolean;
     element: ReactNode;

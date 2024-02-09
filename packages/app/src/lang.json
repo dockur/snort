@@ -773,9 +773,6 @@
   "O3Jz4E": {
     "defaultMessage": "Use your invite code to earn sats!"
   },
-  "O8Z8t9": {
-    "defaultMessage": "Show More"
-  },
   "OEW7yJ": {
     "defaultMessage": "Zaps"
   },
@@ -926,6 +923,9 @@
   },
   "Tpy00S": {
     "defaultMessage": "People"
+  },
+  "TvKqBp": {
+    "defaultMessage": "liked"
   },
   "TwyMau": {
     "defaultMessage": "Account"
@@ -1708,6 +1708,9 @@
   },
   "x82IOl": {
     "defaultMessage": "Mute"
+  },
+  "xEjBS7": {
+    "defaultMessage": "For you"
   },
   "xIcAOU": {
     "defaultMessage": "Votes by {type}"

@@ -4,7 +4,6 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import Timeline from "@/Components/Feed/Timeline";
-import { TimelineSubject } from "@/Feed/TimelineFeed";
 import useHistoryState from "@/Hooks/useHistoryState";
 import useLogin from "@/Hooks/useLogin";
 import { debounce, getRelayName, sha256 } from "@/Utils";
@@ -81,13 +80,12 @@ export const GlobalTab = () => {
   }, [relays, relay]);
 
   const subject = useMemo(
-    () =>
-      ({
-        type: "global",
-        items: [],
-        relay: [relay?.url],
-        discriminator: `all-${sha256(relay?.url ?? "")}`,
-      }) as TimelineSubject,
+    () => ({
+      type: "global",
+      items: [],
+      relay: [relay?.url],
+      discriminator: `all-${sha256(relay?.url ?? "")}`,
+    }),
     [relay?.url],
   );
 

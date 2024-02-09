@@ -6,6 +6,7 @@ import { Connection, RelaySettings } from "./connection";
 import { NostrEvent, OkResponse, TaggedNostrEvent } from "./nostr";
 import { pickRelaysForReply } from "./outbox-model";
 import { SystemInterface } from ".";
+import LRUSet from "@snort/shared/src/LRUSet";
 
 export interface NostrConnectionPoolEvents {
   connected: (address: string, wasReconnect: boolean) => void;
@@ -38,6 +39,7 @@ export class DefaultConnectionPool extends EventEmitter<NostrConnectionPoolEvent
    * All currently connected websockets
    */
   #sockets = new Map<string, Connection>();
+  #requestedIds = new LRUSet<string>(1000);
 
   constructor(system: SystemInterface) {
     super();
@@ -68,6 +70,23 @@ export class DefaultConnectionPool extends EventEmitter<NostrConnectionPoolEvent
             return;
           }
           this.emit("event", addr, s, e);
+        });
+        c.on("have", async (s, id) => {
+          this.#log("%s have: %s %o", c.Address, s, id);
+          if (this.#requestedIds.has(id)) {
+            this.#log("HAVE: Already requested from another relay %s", id);
+            // TODO if request to a relay fails, try another relay. otherwise malicious relays can block content.
+            return;
+          }
+          this.#requestedIds.add(id);
+          // is this performant? should it be batched?
+          const alreadyHave = await this.#system.cacheRelay?.query(["REQ", id, { ids: [id] }]);
+          if (alreadyHave?.length) {
+            this.#log("HAVE: Already have %s", id);
+            return;
+          }
+          this.#log("HAVE: GET requesting %s", id);
+          c.queueReq(["GET", id], () => {});
         });
         c.on("eose", s => this.emit("eose", addr, s));
         c.on("disconnect", code => this.emit("disconnect", addr, code));

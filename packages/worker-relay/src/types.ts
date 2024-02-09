@@ -9,7 +9,9 @@ export type WorkerMessageCommand =
   | "summary"
   | "close"
   | "dumpDb"
-  | "emit-event";
+  | "emit-event"
+  | "forYouFeed"
+  | "setEventMetadata";
 
 export interface WorkerMessage<T> {
   id: string;
@@ -26,6 +28,10 @@ export interface NostrEvent {
   content: string;
   sig: string;
   relays?: Array<string>;
+}
+
+export interface EventMetadata {
+  seen_at?: number;
 }
 
 export type ReqCommand = ["REQ", id: string, ...filters: Array<ReqFilter>];
@@ -64,6 +70,7 @@ export interface RelayHandler extends EventEmitter<RelayHandlerEvents> {
   count(req: ReqFilter): number;
   summary(): Record<string, number>;
   dump(): Promise<Uint8Array>;
+  setEventMetadata(id: string, meta: EventMetadata): void;
 }
 
 export interface RelayHandlerEvents {

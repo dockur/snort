@@ -3,15 +3,8 @@
 import { InMemoryRelay } from "./memory-relay";
 import { WorkQueueItem, barrierQueue, processWorkQueue } from "./queue";
 import { SqliteRelay } from "./sqlite-relay";
-import { NostrEvent, RelayHandler, ReqCommand, ReqFilter, WorkerMessage, eventMatchesFilter, unixNowMs } from "./types";
-
-interface PortedFilter {
-  filters: Array<ReqFilter>;
-  port: MessagePort;
-}
-
-// Active open subscriptions awaiting new events
-const ActiveSubscriptions = new Map<string, PortedFilter>();
+import { NostrEvent, RelayHandler, ReqCommand, ReqFilter, WorkerMessage, unixNowMs, EventMetadata } from "./types";
+import { getForYouFeed } from "./forYouFeed";
 
 let relay: RelayHandler | undefined;
 
@@ -77,23 +70,6 @@ globalThis.onmessage = async ev => {
           } else {
             relay = new InMemoryRelay();
           }
-
-          relay.on("event", evs => {
-            for (const pf of ActiveSubscriptions.values()) {
-              const pfSend = [];
-              for (const ev of evs) {
-                for (const fx of pf.filters) {
-                  if (eventMatchesFilter(ev, fx)) {
-                    pfSend.push(ev);
-                    continue;
-                  }
-                }
-              }
-              if (pfSend.length > 0) {
-                pf.port.postMessage(pfSend);
-              }
-            }
-          });
           await relay.init(msg.args as string);
           reply(msg.id, true);
         });
@@ -152,6 +128,20 @@ globalThis.onmessage = async ev => {
         await barrierQueue(cmdQueue, async () => {
           const res = await relay!.dump();
           reply(msg.id, res);
+        });
+        break;
+      }
+      case "forYouFeed": {
+        await barrierQueue(cmdQueue, async () => {
+          const res = await getForYouFeed(relay!, msg.args as string);
+          reply(msg.id, res);
+        });
+        break;
+      }
+      case "setEventMetadata": {
+        await barrierQueue(cmdQueue, async () => {
+          const [id, metadata] = msg.args as [string, EventMetadata];
+          relay!.setEventMetadata(id, metadata);
         });
         break;
       }
