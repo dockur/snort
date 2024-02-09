@@ -1,6 +1,6 @@
 <h1 align="center">snort-docker<br />
 <div align="center">
-<img src="https://raw.githubusercontent.com/dockur/snort/master/.github/logo.png" title="Logo" style="max-width:100%;" width="128" heigth="128"/>
+<a href="https://github.com/dockur/snort"><img src="https://raw.githubusercontent.com/dockur/snort/master/.github/logo.png" title="Logo" style="max-width:100%;" width="128" heigth="128"/></a>
 </div>
 <div align="center">
   
