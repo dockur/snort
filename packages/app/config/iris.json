@@ -16,14 +16,14 @@
     "deck": true,
     "zapPool": true,
     "notificationGraph": false,
-    "communityLeaders": true,
-    "forYouFeed": true
+    "communityLeaders": true
   },
   "defaultPreferences": {
-    "hideMutedNotes": true
+    "hideMutedNotes": true,
+    "defaultRootTab": "for-you"
   },
   "signUp": {
-    "moderation": false,
+    "quickStart": true,
     "defaultFollows": ["npub1wnwwcv0a8wx0m9stck34ajlwhzuua68ts8mw3kjvspn42dcfyjxs4n95l8"]
   },
   "media": {

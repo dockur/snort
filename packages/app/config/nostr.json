@@ -21,11 +21,12 @@
     "pushNotifications": false
   },
   "signUp": {
-    "moderation": true,
+    "quickStart": false,
     "defaultFollows": []
   },
   "defaultPreferences": {
-    "hideMutedNotes": false
+    "hideMutedNotes": false,
+    "defaultRootTab": "following"
   },
   "media": {
     "bypassImgProxyError": false,

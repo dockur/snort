@@ -8,6 +8,7 @@ import { EventSigner, PrivateKeySigner } from "../signer";
 import { NostrEvent } from "../nostr";
 import { EventBuilder } from "../event-builder";
 import EventKind from "../event-kind";
+import EventEmitter from "eventemitter3";
 
 const NIP46_KIND = 24_133;
 
@@ -31,11 +32,15 @@ interface Nip46Response {
 }
 
 interface QueueObj {
-  resolve: (o: any) => void;
+  resolve: (o: Nip46Response) => void;
   reject: (e: Error) => void;
 }
 
-export class Nip46Signer implements EventSigner {
+interface Nip46Events {
+  oauth: (url: string) => void;
+}
+
+export class Nip46Signer extends EventEmitter<Nip46Events> implements EventSigner {
   #conn?: Connection;
   #relay: string;
   #localPubkey: string;
@@ -47,10 +52,16 @@ export class Nip46Signer implements EventSigner {
   #proto: string;
   #didInit: boolean = false;
 
+  /**
+   * Start NIP-46 connection
+   * @param config bunker/nostrconnect://{npub/hex-pubkey}?relay={websocket-url}#{token-hex}
+   * @param insideSigner
+   */
   constructor(config: string, insideSigner?: EventSigner) {
+    super();
     const u = new URL(config);
     this.#proto = u.protocol;
-    this.#localPubkey = u.pathname.substring(2);
+    this.#localPubkey = u.hostname || u.pathname.substring(2);
 
     if (u.hash.length > 1) {
       this.#token = u.hash.substring(1);
@@ -77,7 +88,12 @@ export class Nip46Signer implements EventSigner {
     }
   }
 
-  async init() {
+  /**
+   * Connect to the bunker relay
+   * @param autoConnect Start connect flow for pubkey
+   * @returns
+   */
+  async init(autoConnect = true) {
     const isBunker = this.#proto === "bunker:";
     if (isBunker) {
       this.#remotePubkey = this.#localPubkey;
@@ -101,14 +117,24 @@ export class Nip46Signer implements EventSigner {
           () => {},
         );
 
-        if (isBunker) {
-          await this.#connect(unwrap(this.#remotePubkey));
-          resolve();
+        if (autoConnect) {
+          if (isBunker) {
+            const rsp = await this.#connect(unwrap(this.#remotePubkey));
+            if (rsp.result === "ack") {
+              resolve();
+            } else {
+              reject(rsp.error);
+            }
+          } else {
+            this.#commandQueue.set("connect", {
+              reject,
+              resolve: () => {
+                resolve();
+              },
+            });
+          }
         } else {
-          this.#commandQueue.set("connect", {
-            reject,
-            resolve,
-          });
+          resolve();
         }
       });
       this.#conn.connect();
@@ -127,24 +153,24 @@ export class Nip46Signer implements EventSigner {
   }
 
   async describe() {
-    return await this.#rpc<Array<string>>("describe", []);
+    const rsp = await this.#rpc("describe", []);
+    return rsp.result as Array<string>;
   }
 
   async getPubKey() {
-    return await this.#rpc<string>("get_public_key", []);
+    //const rsp = await this.#rpc("get_public_key", []);
+    //return rsp.result as string;
+    return this.#remotePubkey!;
   }
 
   async nip4Encrypt(content: string, otherKey: string) {
-    return await this.#rpc<string>("nip04_encrypt", [otherKey, content]);
+    const rsp = await this.#rpc("nip04_encrypt", [otherKey, content]);
+    return rsp.result as string;
   }
 
   async nip4Decrypt(content: string, otherKey: string) {
-    const payload = await this.#rpc<string>("nip04_decrypt", [otherKey, content]);
-    try {
-      return JSON.parse(payload)[0];
-    } catch {
-      return "<error>";
-    }
+    const rsp = await this.#rpc("nip04_decrypt", [otherKey, content]);
+    return rsp.result as string;
   }
 
   nip44Encrypt(content: string, key: string): Promise<string> {
@@ -156,8 +182,23 @@ export class Nip46Signer implements EventSigner {
   }
 
   async sign(ev: NostrEvent) {
-    const evStr = await this.#rpc<string>("sign_event", [JSON.stringify(ev)]);
-    return JSON.parse(evStr);
+    const rsp = await this.#rpc("sign_event", [JSON.stringify(ev)]);
+    return JSON.parse(rsp.result as string);
+  }
+
+  /**
+   * NIP-46 oAuth bunker signup
+   * @param name Desired name
+   * @param domain Desired domain
+   * @param email Backup email address
+   * @returns
+   */
+  async createAccount(name: string, domain: string, email?: string) {
+    await this.init(false);
+    const rsp = await this.#rpc("create_account", [name, domain, email ?? ""]);
+    if (!rsp.error) {
+      this.#remotePubkey = rsp.result as string;
+    }
   }
 
   async #disconnect() {
@@ -169,7 +210,7 @@ export class Nip46Signer implements EventSigner {
     if (this.#token) {
       connectParams.push(this.#token);
     }
-    return await this.#rpc<string>("connect", connectParams);
+    return await this.#rpc("connect", connectParams);
   }
 
   async #onReply(e: NostrEvent) {
@@ -199,11 +240,20 @@ export class Nip46Signer implements EventSigner {
       throw new Error("No pending command found");
     }
 
-    pending.resolve(reply);
-    this.#commandQueue.delete(reply.id);
+    if ("result" in reply && reply.result === "auth_url") {
+      this.emit("oauth", reply.error);
+    } else {
+      const rx = reply as Nip46Response;
+      if (rx.error) {
+        pending.reject(new Error(rx.error));
+      } else {
+        pending.resolve(rx);
+      }
+      this.#commandQueue.delete(reply.id);
+    }
   }
 
-  async #rpc<T>(method: string, params: Array<any>) {
+  async #rpc(method: string, params: Array<any>) {
     if (!this.#didInit) {
       await this.init();
     }
@@ -216,10 +266,10 @@ export class Nip46Signer implements EventSigner {
     } as Nip46Request;
 
     this.#sendCommand(payload, unwrap(this.#remotePubkey));
-    return await new Promise<T>((resolve, reject) => {
+    return await new Promise<Nip46Response>((resolve, reject) => {
       this.#commandQueue.set(payload.id, {
         resolve: async (o: Nip46Response) => {
-          resolve(o.result as T);
+          resolve(o);
         },
         reject,
       });

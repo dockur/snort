@@ -61,13 +61,13 @@ declare const CONFIG: {
     communityLeaders: boolean;
     nostrAddress: boolean;
     pushNotifications: boolean;
-    forYouFeed: boolean;
   };
   defaultPreferences: {
     hideMutedNotes: boolean;
+    defaultRootTab: "following" | "for-you";
   };
   signUp: {
-    moderation: boolean;
+    quickStart: boolean;
     defaultFollows: Array<string>;
   };
   media: {
