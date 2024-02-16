@@ -6,6 +6,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import CloseButton from "@/Components/Button/CloseButton";
 import ErrorBoundary from "@/Components/ErrorBoundary";
 import { LoginUnlock } from "@/Components/PinPrompt/PinPrompt";
+import ScrollToTop from "@/Components/ScrollToTop";
 import Toaster from "@/Components/Toaster/Toaster";
 import useLoginFeed from "@/Feed/LoginFeed";
 import { useCommunityLeaders } from "@/Hooks/useCommunityLeaders";
@@ -57,6 +58,7 @@ export default function Index() {
 
   return (
     <ErrorBoundary>
+      <ScrollToTop />
       <div className="flex justify-center">
         <div className="w-full max-w-screen-xl">
           <div className="flex flex-row">
