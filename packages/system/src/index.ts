@@ -12,6 +12,7 @@ import EventEmitter from "eventemitter3";
 import { QueryEvents } from "./query";
 import { CacheRelay } from "./cache-relay";
 import { RequestRouter } from "./request-router";
+import { UsersFollows } from "./cache/index";
 
 export { NostrSystem } from "./nostr-system";
 export { default as EventKind } from "./event-kind";
@@ -48,8 +49,6 @@ export * from "./cache/user-relays";
 export * from "./cache/user-metadata";
 export * from "./cache/relay-metric";
 
-export * from "./worker/system-worker";
-
 export type QueryLike = {
   get progress(): number;
   feed: {
@@ -69,8 +68,9 @@ export interface SystemInterface {
 
   /**
    * Do some initialization
+   * @param follows A follower list to preload content for
    */
-  Init(): Promise<void>;
+  Init(follows?: Array<string>): Promise<void>;
 
   /**
    * Get an active query by ID
@@ -142,6 +142,11 @@ export interface SystemInterface {
    * Generic cache store for events
    */
   get eventsCache(): CachedTable<NostrEvent>;
+
+  /**
+   * ContactList cache
+   */
+  get userFollowsCache(): CachedTable<UsersFollows>;
 
   /**
    * Relay loader loads relay metadata for a set of profiles
