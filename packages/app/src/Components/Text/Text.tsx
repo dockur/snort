@@ -8,12 +8,14 @@ import CashuNuts from "@/Components/Embed/CashuNuts";
 import Hashtag from "@/Components/Embed/Hashtag";
 import HyperText from "@/Components/Embed/HyperText";
 import Invoice from "@/Components/Embed/Invoice";
+import { baseImageWidth, GRID_GAP, gridConfigMap, ROW_HEIGHT } from "@/Components/Text/const";
+import DisableMedia from "@/Components/Text/DisableMedia";
 import { useTextTransformer } from "@/Hooks/useTextTransformCache";
 
 import RevealMedia from "../Event/RevealMedia";
-import HighlightedText from "../HighlightedText";
 import { ProxyImg } from "../ProxyImg";
 import { SpotlightMediaModal } from "../Spotlight/SpotlightMedia";
+import HighlightedText from "./HighlightedText";
 
 export interface TextProps {
   id: string;
@@ -26,63 +28,9 @@ export interface TextProps {
   depth?: number;
   truncate?: number;
   className?: string;
-  highlighText?: string;
+  highlightText?: string;
   onClick?: (e: React.MouseEvent) => void;
 }
-
-const baseImageWidth = 910;
-
-const gridConfigMap = new Map<number, number[][]>([
-  [1, [[4, 3]]],
-  [
-    2,
-    [
-      [2, 2],
-      [2, 2],
-    ],
-  ],
-  [
-    3,
-    [
-      [2, 2],
-      [2, 1],
-      [2, 1],
-    ],
-  ],
-  [
-    4,
-    [
-      [2, 1],
-      [2, 1],
-      [2, 1],
-      [2, 1],
-    ],
-  ],
-  [
-    5,
-    [
-      [2, 1],
-      [2, 1],
-      [2, 1],
-      [1, 1],
-      [1, 1],
-    ],
-  ],
-  [
-    6,
-    [
-      [2, 2],
-      [1, 1],
-      [1, 1],
-      [2, 2],
-      [1, 1],
-      [1, 1],
-    ],
-  ],
-]);
-
-const ROW_HEIGHT = 140;
-const GRID_GAP = 2;
 
 export default function Text({
   id,
@@ -95,7 +43,7 @@ export default function Text({
   disableLinkPreview,
   truncate,
   className,
-  highlighText,
+  highlightText,
   onClick,
 }: TextProps) {
   const [showSpotlight, setShowSpotlight] = useState(false);
@@ -103,41 +51,6 @@ export default function Text({
 
   const elements = useTextTransformer(id, content, tags);
   const images = elements.filter(a => a.type === "media" && a.mimeType?.startsWith("image")).map(a => a.content);
-
-  function renderContentWithHighlightedText(content: string, textToHighlight: string) {
-    const textToHighlightArray = textToHighlight.trim().toLowerCase().split(" ");
-    const re = new RegExp(`(${textToHighlightArray.join("|")})`, "gi");
-    const splittedContent = content.split(re);
-
-    const fragments = splittedContent.map(c => {
-      if (textToHighlightArray.includes(c.toLowerCase())) {
-        return {
-          type: "highlighted_text",
-          content: c,
-        } as ParsedFragment;
-      }
-
-      return c;
-    });
-
-    return (
-      <>
-        {fragments.map((f, index) => {
-          if (typeof f === "string") {
-            return f;
-          }
-
-          return <HighlightedText key={index} content={f.content} />;
-        })}
-      </>
-    );
-  }
-
-  const DisableMedia = ({ content }: { content: string }) => (
-    <a href={content} onClick={e => e.stopPropagation()} target="_blank" rel="noreferrer" className="ext">
-      {content}
-    </a>
-  );
 
   const RevealMediaInstance = ({ content, data, size }: { content: string; data?: object; size?: number }) => {
     const imeta = data as IMeta | undefined;
@@ -284,7 +197,11 @@ export default function Text({
       if (element.type === "text") {
         chunks.push(
           <div className="text-frag">
-            {highlighText ? renderContentWithHighlightedText(element.content, highlighText) : element.content}
+            {highlightText ? (
+              <HighlightedText content={element.content} textToHighlight={highlightText} />
+            ) : (
+              element.content
+            )}
           </div>,
         );
       }

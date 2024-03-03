@@ -1,7 +1,9 @@
 import { FormattedMessage } from "react-intl";
 import { Outlet, RouteObject } from "react-router-dom";
 
-import { SettingsMenuComponent, SettingsMenuItems } from "../Menu";
+import { SettingsMenuComponent } from "@/Pages/settings/Menu/SettingsMenuComponent";
+
+import { SettingsMenuItems } from "../Menu/Menu";
 import { FollowsRelayHealth } from "./follows-relay-health";
 import { PruneFollowList } from "./prune-follows";
 
