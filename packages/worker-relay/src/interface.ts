@@ -8,8 +8,23 @@ export class WorkerRelayInterface {
   // Command timeout
   timeout: number = 30_000;
 
-  constructor(path: string) {
-    this.#worker = new Worker(path, { type: "module" });
+  /**
+   * Interface wrapper for worker relay
+   * @param scriptPath Path to worker script or Worker script object
+   */
+  constructor(scriptPath?: string | URL | Worker) {
+    if (scriptPath instanceof Worker) {
+      this.#worker = scriptPath;
+    } else {
+      const sp = scriptPath ? scriptPath : new URL("@snort/worker-relay/dist/esm/worker.mjs", import.meta.url);
+      this.#worker = new Worker(sp, { type: "module" })
+    };
+    this.#worker.onerror = e => {
+      console.error(e.message, e);
+    }
+    this.#worker.onmessageerror = e => {
+      console.error(e);
+    }
     this.#worker.onmessage = e => {
       const cmd = e.data as WorkerMessage<any>;
       if (cmd.cmd === "reply") {
@@ -20,8 +35,8 @@ export class WorkerRelayInterface {
     };
   }
 
-  async init(path: string) {
-    return await this.#workerRpc<string, boolean>("init", path);
+  async init(databasePath: string) {
+    return await this.#workerRpc<Array<string | undefined>, boolean>("init", [databasePath]);
   }
 
   async event(ev: NostrEvent) {
@@ -56,6 +71,10 @@ export class WorkerRelayInterface {
     return this.#workerRpc<[string, EventMetadata], void>("setEventMetadata", [id, meta]);
   }
 
+  async debug(v: string) {
+    return await this.#workerRpc<string, boolean>("debug", v);
+  }
+
   async #workerRpc<T, R>(cmd: WorkerMessageCommand, args?: T) {
     const id = uuid();
     const msg = {
@@ -63,8 +82,8 @@ export class WorkerRelayInterface {
       cmd,
       args,
     } as WorkerMessage<T>;
-    this.#worker.postMessage(msg);
     return await new Promise<R>((resolve, reject) => {
+      this.#worker.postMessage(msg);
       const t = setTimeout(() => {
         this.#commandQueue.delete(id);
         reject(new Error("Timeout"));

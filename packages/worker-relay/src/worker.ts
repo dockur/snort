@@ -1,20 +1,13 @@
 /// <reference lib="webworker" />
 
-import { InMemoryRelay } from "./memory-relay";
-import { WorkQueueItem, barrierQueue, processWorkQueue } from "./queue";
 import { SqliteRelay } from "./sqlite-relay";
+import { InMemoryRelay } from "./memory-relay";
+import { debugLog, setLogging } from "./debug";
+import { WorkQueueItem, barrierQueue, processWorkQueue } from "./queue";
 import { NostrEvent, RelayHandler, ReqCommand, ReqFilter, WorkerMessage, unixNowMs, EventMetadata } from "./types";
 import { getForYouFeed } from "./forYouFeed";
 
 let relay: RelayHandler | undefined;
-
-async function reply<T>(id: string, obj?: T) {
-  globalThis.postMessage({
-    id,
-    cmd: "reply",
-    args: obj,
-  } as WorkerMessage<T>);
-}
 
 // Event inserter queue
 let eventWriteQueue: Array<NostrEvent> = [];
@@ -40,37 +33,47 @@ async function insertBatch() {
   }
   setTimeout(() => insertBatch(), 100);
 }
-setTimeout(() => insertBatch(), 100);
 
 const cmdQueue: Array<WorkQueueItem> = [];
-processWorkQueue(cmdQueue, 50);
-
-async function tryOpfs() {
-  try {
-    await navigator.storage.getDirectory();
-    return true;
-  } catch {
-    // ignore
-  }
-  return false;
+try {
+  setTimeout(() => insertBatch(), 100);
+  processWorkQueue(cmdQueue, 50);
+} catch (e) {
+  console.error(e);
 }
 
-globalThis.onclose = () => {
-  relay?.close();
-};
+const handleMsg = async (port: MessagePort | DedicatedWorkerGlobalScope, ev: MessageEvent) => {
+  async function reply<T>(id: string, obj?: T) {
+    port.postMessage({
+      id,
+      cmd: "reply",
+      args: obj,
+    } as WorkerMessage<T>);
+  }
 
-globalThis.onmessage = async ev => {
   const msg = ev.data as WorkerMessage<any>;
   try {
     switch (msg.cmd) {
+      case "debug": {
+        setLogging(true);
+        reply(msg.id, true);
+        break;
+      }
       case "init": {
         await barrierQueue(cmdQueue, async () => {
-          if ("WebAssembly" in globalThis && (await tryOpfs())) {
-            relay = new SqliteRelay();
-          } else {
+          const [dbPath] = msg.args as Array<string>;
+          try {
+            if ("WebAssembly" in self) {
+              relay = new SqliteRelay();
+            } else {
+              relay = new InMemoryRelay();
+            }
+            await relay.init(dbPath);
+          } catch (e) {
+            console.error("Fallback to InMemoryRelay", e);
             relay = new InMemoryRelay();
+            await relay.init(dbPath);
           }
-          await relay.init(msg.args as string);
           reply(msg.id, true);
         });
         break;
@@ -81,7 +84,10 @@ globalThis.onmessage = async ev => {
         break;
       }
       case "close": {
-        reply(msg.id, true);
+        await barrierQueue(cmdQueue, async () => {
+          const res = relay!.close();
+          reply(msg.id, res);
+        });
         break;
       }
       case "req": {
@@ -151,6 +157,25 @@ globalThis.onmessage = async ev => {
       }
     }
   } catch (e) {
-    reply(msg.id, { error: JSON.stringify(e) });
+    if (e instanceof Error) {
+      reply(msg.id, { error: e.message });
+    } else if (typeof e === "string") {
+      reply(msg.id, { error: e });
+    } else {
+      reply(msg.id, "Unknown error")
+    }
   }
-};
+}
+
+if ("SharedWorkerGlobalScope" in globalThis) {
+  onconnect = (e) => {
+    const port = e.ports[0];
+    port.onmessage = (msg) => handleMsg(port, msg);
+    port.start();
+  }
+}
+if ("DedicatedWorkerGlobalScope" in globalThis) {
+  onmessage = e => {
+    handleMsg(self as DedicatedWorkerGlobalScope, e)
+  }
+}

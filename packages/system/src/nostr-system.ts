@@ -1,5 +1,5 @@
 import debug from "debug";
-import EventEmitter from "eventemitter3";
+import { EventEmitter } from "eventemitter3";
 
 import { CachedTable, isHex, unixNowMs } from "@snort/shared";
 import { NostrEvent, TaggedNostrEvent, OkResponse } from "./nostr";
@@ -191,6 +191,13 @@ export class NostrSystem extends EventEmitter<NostrSystemEvents> implements Syst
     // if automatic outbox model, setup request router as OutboxModel
     if (this.#config.automaticOutboxModel) {
       this.requestRouter = OutboxModel.fromSystem(this);
+    }
+
+    // Cache everything
+    if (this.#config.cachingRelay) {
+      this.on("event", async (_, ev) => {
+        await this.#config.cachingRelay?.event(ev);
+      })
     }
 
     // Hook on-event when building follow graph

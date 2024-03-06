@@ -1,14 +1,3 @@
-## Worker Relay
-
-Worker relay is a Nostr relay built on `sqlite-wasm`
-
-`WorkerRelayInterface` is the class which accepts the URL of the worker script
-
-`sqlite-wasm` uses OFPS in order to persist the database.
-
-### Example
-
-```typescript
 import { WorkerRelayInterface } from "@snort/worker-relay";
 
 // when using Vite import the worker script directly (for production)
@@ -37,4 +26,3 @@ const myEvent = {
 if (await workerRelay.event(myEvent)) {
     console.log("Success");
 }
-```
