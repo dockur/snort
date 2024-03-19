@@ -75,7 +75,7 @@ const ProfileDetails = ({
                   value: lnurl?.lnurl,
                   weight: 1,
                   name: user?.display_name || user?.name,
-                  zap: { pubkey: id },
+                  zap: { pubkey: id, anon: false },
                 },
               ]
             : undefined
