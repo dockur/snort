@@ -6,6 +6,7 @@ import { SettingsMenuComponent } from "@/Pages/settings/Menu/SettingsMenuCompone
 import { SettingsMenuItems } from "../Menu/Menu";
 import { FollowsRelayHealth } from "./follows-relay-health";
 import { PruneFollowList } from "./prune-follows";
+import SyncAccountTool from "./sync-account";
 
 const ToolMenuItems = [
   {
@@ -22,6 +23,17 @@ const ToolMenuItems = [
         iconBg: "bg-green-800",
         message: <FormattedMessage defaultMessage="Follows Relay Health" id="XQiFEl" />,
         path: "follows-relay-health",
+      },
+    ],
+  },
+  {
+    title: <FormattedMessage defaultMessage="Account Data" id="IIOul1" />,
+    items: [
+      {
+        icon: "repost",
+        iconBg: "bg-blue-800",
+        message: <FormattedMessage defaultMessage="Sync Account" id="hMQmIw" />,
+        path: "sync-account",
       },
     ],
   },
@@ -46,6 +58,10 @@ export const ToolsPages = [
   {
     path: "follows-relay-health",
     element: <FollowsRelayHealth />,
+  },
+  {
+    path: "sync-account",
+    element: <SyncAccountTool />,
   },
 ] as Array<RouteObject>;
 
