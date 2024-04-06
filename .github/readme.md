@@ -17,7 +17,7 @@ See [snort.social](https://snort.social) for a demo.
 
 ## How to use
 
-Via `docker-compose`
+Via Docker Compose:
 
 ```yaml
 version: "3"
