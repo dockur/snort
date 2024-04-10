@@ -18,7 +18,10 @@
 Dockerfile
 Dockerfile.archive
 Dockerfile.prebuilt
+compose.yml
+compose.yaml
 docker-compose.yml
+docker-compose.yaml
 renovate.json
 
 *.md
