@@ -1,131 +1,16 @@
-import { decodeInvoice, ExternalStore } from "@snort/shared";
+import { ExternalStore, unwrap } from "@snort/shared";
+import { LNWallet, loadWallet, WalletInfo, WalletKind } from "@snort/wallet";
 import { useEffect, useSyncExternalStore } from "react";
-
-import { unwrap } from "@/Utils";
-
-import AlbyWallet from "./AlbyWallet";
-import LNDHubWallet from "./LNDHub";
-import { NostrConnectWallet } from "./NostrWalletConnect";
-import { WebLNWallet } from "./WebLN";
-
-export enum WalletKind {
-  LNDHub = 1,
-  LNC = 2,
-  WebLN = 3,
-  NWC = 4,
-  Cashu = 5,
-  Alby = 6,
-}
-
-export enum WalletErrorCode {
-  BadAuth = 1,
-  NotEnoughBalance = 2,
-  BadPartner = 3,
-  InvalidInvoice = 4,
-  RouteNotFound = 5,
-  GeneralError = 6,
-  NodeFailure = 7,
-}
-
-export class WalletError extends Error {
-  code: WalletErrorCode;
-
-  constructor(c: WalletErrorCode, msg: string) {
-    super(msg);
-    this.code = c;
-  }
-}
-
-export const UnknownWalletError = {
-  code: WalletErrorCode.GeneralError,
-  message: "Unknown error",
-} as WalletError;
-
-export interface WalletInfo {
-  fee: number;
-  nodePubKey: string;
-  alias: string;
-  pendingChannels: number;
-  activeChannels: number;
-  peers: number;
-  blockHeight: number;
-  blockHash: string;
-  synced: boolean;
-  chains: string[];
-  version: string;
-}
-
-export interface Login {
-  service: string;
-  save: () => Promise<void>;
-  load: () => Promise<void>;
-}
-
-export interface InvoiceRequest {
-  amount: Sats;
-  memo?: string;
-  expiry?: number;
-}
-
-export enum WalletInvoiceState {
-  Pending = 0,
-  Paid = 1,
-  Expired = 2,
-  Failed = 3,
-}
-
-export interface WalletInvoice {
-  pr: string;
-  paymentHash: string;
-  memo: string;
-  amount: MilliSats;
-  fees: number;
-  timestamp: number;
-  preimage?: string;
-  state: WalletInvoiceState;
-  direction: "in" | "out";
-}
-
-export function prToWalletInvoice(pr: string) {
-  const parsedInvoice = decodeInvoice(pr);
-  if (parsedInvoice) {
-    return {
-      amount: parsedInvoice.amount ?? 0,
-      memo: parsedInvoice.description,
-      paymentHash: parsedInvoice.paymentHash ?? "",
-      timestamp: parsedInvoice.timestamp ?? 0,
-      state: parsedInvoice.expired ? WalletInvoiceState.Expired : WalletInvoiceState.Pending,
-      pr,
-      direction: "in",
-    } as WalletInvoice;
-  }
-}
-
-export type Sats = number;
-export type MilliSats = number;
-
-export interface LNWallet {
-  isReady(): boolean;
-  getInfo: () => Promise<WalletInfo>;
-  login: (password?: string) => Promise<boolean>;
-  close: () => Promise<boolean>;
-  getBalance: () => Promise<Sats>;
-  createInvoice: (req: InvoiceRequest) => Promise<WalletInvoice>;
-  payInvoice: (pr: string) => Promise<WalletInvoice>;
-  getInvoices: () => Promise<WalletInvoice[]>;
-
-  canAutoLogin: () => boolean;
-  canGetInvoices: () => boolean;
-  canGetBalance: () => boolean;
-  canCreateInvoice: () => boolean;
-  canPayInvoice: () => boolean;
-}
 
 export interface WalletConfig {
   id: string;
   kind: WalletKind;
   active: boolean;
   info: WalletInfo;
+
+  /**
+   * Opaque string for wallet config
+   */
   data?: string;
 }
 
@@ -166,8 +51,10 @@ export class WalletStore extends ExternalStore<WalletStoreSnapshot> {
       if (w) {
         if ("then" in w) {
           w.then(async wx => {
-            this.#instance.set(activeConfig.id, wx);
-            this.notifyChange();
+            if (wx) {
+              this.#instance.set(activeConfig.id, wx);
+              this.notifyChange();
+            }
           });
           return undefined;
         } else {
@@ -231,36 +118,19 @@ export class WalletStore extends ExternalStore<WalletStoreSnapshot> {
     } as WalletStoreSnapshot;
   }
 
-  #activateWallet(cfg: WalletConfig): LNWallet | Promise<LNWallet> | undefined {
-    switch (cfg.kind) {
-      case WalletKind.LNC: {
-        return import("./LNCWallet").then(({ LNCWallet }) => LNCWallet.Empty());
-      }
-      case WalletKind.WebLN: {
-        return new WebLNWallet();
-      }
-      case WalletKind.LNDHub: {
-        return new LNDHubWallet(unwrap(cfg.data), d => this.#onWalletChange(cfg, d));
-      }
-      case WalletKind.NWC: {
-        return new NostrConnectWallet(unwrap(cfg.data), d => this.#onWalletChange(cfg, d));
-      }
-      case WalletKind.Alby: {
-        return new AlbyWallet(JSON.parse(unwrap(cfg.data)), d => this.#onWalletChange(cfg, d));
-      }
-      case WalletKind.Cashu: {
-        return import("./Cashu").then(
-          ({ CashuWallet }) => new CashuWallet(JSON.parse(unwrap(cfg.data)), d => this.#onWalletChange(cfg, d)),
-        );
-      }
+  async #activateWallet(cfg: WalletConfig) {
+    const w = await loadWallet(cfg.kind, cfg.data);
+    if (w) {
+      w.on("change", d => this.#onWalletChange(cfg, d));
     }
+    return w;
   }
 
-  #onWalletChange(cfg: WalletConfig, data?: object) {
+  #onWalletChange(cfg: WalletConfig, data?: string) {
     if (data) {
       const activeConfig = this.#configs.find(a => a.id === cfg.id);
       if (activeConfig) {
-        activeConfig.data = JSON.stringify(data);
+        activeConfig.data = data;
       }
       this.save();
     } else {
@@ -285,4 +155,26 @@ export function useWallet() {
     }
   }, [wallet]);
   return wallet;
+}
+
+/**
+ * Adds a wallet config for WebLN if detected
+ */
+export function setupWebLNWalletConfig(store: WalletStore) {
+  const wallets = store.list();
+
+  const existing = wallets.find(a => a.kind === WalletKind.WebLN);
+  if (window.webln && !existing) {
+    const newConfig = {
+      id: "webln",
+      kind: WalletKind.WebLN,
+      active: wallets.length === 0,
+      info: {
+        alias: "WebLN",
+      },
+    } as WalletConfig;
+    store.add(newConfig);
+  } else if (existing) {
+    store.remove(existing.id);
+  }
 }

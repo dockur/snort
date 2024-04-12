@@ -9,15 +9,21 @@ export interface CopyProps {
   text: string;
   maxSize?: number;
   className?: string;
+  showText?: boolean;
+  mask?: string;
 }
-export default function Copy({ text, maxSize = 32, className }: CopyProps) {
+export default function Copy({ text, maxSize = 32, className, showText, mask }: CopyProps) {
   const { copy, copied } = useCopy();
   const sliceLength = maxSize / 2;
-  const trimmed = text.length > maxSize ? `${text.slice(0, sliceLength)}...${text.slice(-sliceLength)}` : text;
+  const displayText = mask ? mask.repeat(text.length) : text;
+  const trimmed =
+    displayText.length > maxSize
+      ? `${displayText.slice(0, sliceLength)}...${displayText.slice(-sliceLength)}`
+      : displayText;
 
   return (
     <div className={classNames("copy flex pointer g8 items-center", className)} onClick={() => copy(text)}>
-      <span className="copy-body">{trimmed}</span>
+      {(showText ?? true) && <span className="copy-body">{trimmed}</span>}
       <span className="icon" style={{ color: copied ? "var(--success)" : "var(--highlight)" }}>
         {copied ? <Icon name="check" size={14} /> : <Icon name="copy-solid" size={14} />}
       </span>
