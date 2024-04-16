@@ -16,7 +16,7 @@ import { GiftsCache } from "@/Cache";
 import SnortApi from "@/External/SnortApi";
 import { bech32ToHex, dedupeById, deleteRefCode, getCountry, sanitizeRelayUrl, unwrap } from "@/Utils";
 import { Blasters } from "@/Utils/Const";
-import { LoginSession, LoginSessionType, LoginStore, Newest, SnortAppData, UserPreferences } from "@/Utils/Login/index";
+import { LoginSession, LoginSessionType, LoginStore, SnortAppData } from "@/Utils/Login/index";
 import { entropyToPrivateKey, generateBip39Entropy } from "@/Utils/nip6";
 import { SubscriptionEvent } from "@/Utils/Subscription";
 
@@ -54,15 +54,6 @@ export function setRelays(state: LoginSession, relays: Record<string, RelaySetti
 export function removeRelay(state: LoginSession, addr: string) {
   delete state.relays.item[addr];
   LoginStore.updateSession(state);
-}
-
-export function updatePreferences(id: string, p: UserPreferences) {
-  updateAppData(id, d => {
-    return {
-      item: { ...d, preferences: p },
-      timestamp: unixNowMs(),
-    };
-  });
 }
 
 export function logout(id: string) {
@@ -177,14 +168,11 @@ export function setBlocked(state: LoginSession, blocked: Array<string>, ts: numb
   LoginStore.updateSession(state);
 }
 
-export function setFollows(id: string, follows: Array<string>, ts: number) {
+export function updateSession(id: string, fn: (state: LoginSession) => void) {
   const session = LoginStore.get(id);
   if (session) {
-    if (ts > session.follows.timestamp) {
-      session.follows.item = follows;
-      session.follows.timestamp = ts;
-      LoginStore.updateSession(session);
-    }
+    fn(session);
+    LoginStore.updateSession(session);
   }
 }
 
@@ -206,23 +194,19 @@ export function setBookmarked(state: LoginSession, bookmarked: Array<string>, ts
   LoginStore.updateSession(state);
 }
 
-export function setAppData(state: LoginSession, data: SnortAppData, ts: number) {
-  if (state.appData.timestamp >= ts) {
-    return;
-  }
-  state.appData.item = data;
-  state.appData.timestamp = ts;
+export async function setAppData(state: LoginSession, data: SnortAppData, system: SystemInterface) {
+  const pub = LoginStore.getPublisher(state.id);
+  if (!pub) return;
+
+  await state.appData.updateJson(data, pub.signer, system);
   LoginStore.updateSession(state);
 }
 
-export function updateAppData(id: string, fn: (data: SnortAppData) => Newest<SnortAppData>) {
+export async function updateAppData(id: string, system: SystemInterface, fn: (data: SnortAppData) => SnortAppData) {
   const session = LoginStore.get(id);
   if (session) {
-    const next = fn(session.appData.item);
-    if (next.timestamp > session.appData.timestamp) {
-      session.appData = next;
-      LoginStore.updateSession(session);
-    }
+    const next = fn(session.appData.json);
+    await setAppData(session, next, system);
   }
 }
 

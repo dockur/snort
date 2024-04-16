@@ -1,25 +1,22 @@
 import { EventKind, NostrLink, parseRelayTags, RequestBuilder, TaggedNostrEvent } from "@snort/system";
 import { useRequestBuilder } from "@snort/system-react";
-import { usePrevious } from "@uidotdev/usehooks";
 import { useEffect, useMemo } from "react";
 
 import { Nip28ChatSystem } from "@/chat/nip28";
 import useEventPublisher from "@/Hooks/useEventPublisher";
 import useLogin from "@/Hooks/useLogin";
-import { bech32ToHex, debounce, getNewest, getNewestEventTagsByKey, unwrap } from "@/Utils";
+import { bech32ToHex, getNewest, getNewestEventTagsByKey, unwrap } from "@/Utils";
 import { SnortPubKey } from "@/Utils/Const";
 import {
   addSubscription,
   LoginStore,
-  setAppData,
   setBlocked,
   setBookmarked,
-  setFollows,
   setMuted,
   setPinned,
   setRelays,
   setTags,
-  SnortAppData,
+  updateSession,
 } from "@/Utils/Login";
 import { SubscriptionEvent } from "@/Utils/Subscription";
 /**
@@ -27,26 +24,18 @@ import { SubscriptionEvent } from "@/Utils/Subscription";
  */
 export default function useLoginFeed() {
   const login = useLogin();
-  const { publicKey: pubKey, follows } = login;
+  const { publicKey: pubKey, contacts } = login;
   const { publisher, system } = useEventPublisher();
 
   useEffect(() => {
-    system.checkSigs = login.appData.item.preferences.checkSigs;
-  }, [login]);
+    if (login.appData.json) {
+      system.checkSigs = login.appData.json.preferences.checkSigs;
 
-  const previous = usePrevious(login.appData.item);
-  // write appdata after 10s of no changes
-  useEffect(() => {
-    if (!previous || JSON.stringify(previous) === JSON.stringify(login.appData.item)) {
-      return;
-    }
-    return debounce(10_000, async () => {
-      if (publisher && login.appData.item) {
-        const ev = await publisher.appData(login.appData.item, "snort");
-        await system.BroadcastEvent(ev);
+      if (publisher) {
+        login.appData.sync(publisher.signer, system);
       }
-    });
-  }, [previous]);
+    }
+  }, [login, publisher]);
 
   const subLogin = useMemo(() => {
     if (!login || !pubKey) return null;
@@ -68,7 +57,6 @@ export default function useLoginFeed() {
         EventKind.DirectMessage,
       ]);
     if (CONFIG.features.subscriptions && !login.readonly) {
-      b.withFilter().authors([pubKey]).kinds([EventKind.AppData]).tag("d", ["snort"]);
       b.withFilter()
         .relay("wss://relay.snort.social/")
         .kinds([EventKind.SnortSubscriptions])
@@ -87,8 +75,9 @@ export default function useLoginFeed() {
     if (loginFeed) {
       const contactList = getNewest(loginFeed.filter(a => a.kind === EventKind.ContactList));
       if (contactList) {
-        const pTags = contactList.tags.filter(a => a[0] === "p").map(a => a[1]);
-        setFollows(login.id, pTags, contactList.created_at * 1000);
+        updateSession(login.id, s => {
+          s.contacts = contactList.tags;
+        });
       }
 
       const relays = getNewest(loginFeed.filter(a => a.kind === EventKind.Relays));
@@ -113,13 +102,6 @@ export default function useLoginFeed() {
             }
           }),
         ).then(a => addSubscription(login, ...a.filter(a => a !== undefined).map(unwrap)));
-
-        const appData = getNewest(loginFeed.filter(a => a.kind === EventKind.AppData));
-        if (appData) {
-          publisher.decryptGeneric(appData.content, appData.pubkey).then(d => {
-            setAppData(login, JSON.parse(d) as SnortAppData, appData.created_at * 1000);
-          });
-        }
       }
     }
   }, [loginFeed, publisher]);
@@ -198,6 +180,7 @@ export default function useLoginFeed() {
   }, [loginFeed]);
 
   useEffect(() => {
-    system.profileLoader.TrackKeys(follows.item); // always track follows profiles
-  }, [follows.item]);
+    const pTags = contacts.filter(a => a[0] === "p").map(a => a[1]);
+    system.profileLoader.TrackKeys(pTags); // always track follows profiles
+  }, [contacts]);
 }
