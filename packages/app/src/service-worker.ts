@@ -1,11 +1,6 @@
 /// <reference lib="webworker" />
-import { CacheableResponsePlugin } from "workbox-cacheable-response";
-
-declare const self: ServiceWorkerGlobalScope & {
-  __WB_MANIFEST: (string | PrecacheEntry)[];
-};
-
 import { encodeTLVEntries, NostrLink, NostrPrefix, TLVEntryType, tryParseNostrLink } from "@snort/system";
+import { CacheableResponsePlugin } from "workbox-cacheable-response";
 import { clientsClaim } from "workbox-core";
 import { ExpirationPlugin } from "workbox-expiration";
 import { precacheAndRoute, PrecacheEntry } from "workbox-precaching";
@@ -15,12 +10,16 @@ import { CacheFirst, StaleWhileRevalidate } from "workbox-strategies";
 import { defaultAvatar, hexToBech32 } from "@/Utils";
 import { formatShort } from "@/Utils/Number";
 
+declare const self: ServiceWorkerGlobalScope & {
+  __WB_MANIFEST: (string | PrecacheEntry)[];
+};
+
 precacheAndRoute(self.__WB_MANIFEST);
 clientsClaim();
 
 // cache everything in current domain /assets because precache doesn't seem to include everything
 registerRoute(
-  ({ url }) => url.origin === location.origin && url.pathname.startsWith("/assets"),
+  ({ url }) => url.origin === window.location.origin && url.pathname.startsWith("/assets"),
   new StaleWhileRevalidate({
     cacheName: "assets-cache",
     plugins: [
@@ -181,7 +180,7 @@ self.addEventListener("notificationclick", event => {
           if (mention.event) {
             return `/${new NostrLink(NostrPrefix.Note, mention.event).encode()}`;
           }
-        } else if (ev.type == PushType.DirectMessage) {
+        } else if (ev.type === PushType.DirectMessage) {
           const reaction = ev.data as CompactReaction;
           return `/messages/${encodeTLVEntries("chat4" as NostrPrefix, {
             type: TLVEntryType.Author,

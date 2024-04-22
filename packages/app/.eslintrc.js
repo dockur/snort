@@ -1,10 +1,6 @@
+/* eslint-disable import/no-anonymous-default-export */
 module.exports = {
-  extends: [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended",
-    "plugin:react-hooks/recommended",
-  ],
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:react/recommended"],
   parser: "@typescript-eslint/parser",
   plugins: ["@typescript-eslint", "formatjs", "react-refresh", "simple-import-sort"],
   rules: {

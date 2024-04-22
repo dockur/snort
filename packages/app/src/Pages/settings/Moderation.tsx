@@ -1,39 +1,14 @@
 import { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import useEventPublisher from "@/Hooks/useEventPublisher";
-import useLogin from "@/Hooks/useLogin";
-import { appendDedupe } from "@/Utils";
-import { SnortAppData, updateAppData } from "@/Utils/Login";
+import AsyncButton from "@/Components/Button/AsyncButton";
+import useModeration from "@/Hooks/useModeration";
+import { useAllPreferences } from "@/Hooks/usePreferences";
 
 export default function ModerationSettingsPage() {
-  const login = useLogin();
+  const { addMutedWord, removeMutedWord, getMutedWords } = useModeration();
+  const preferences = useAllPreferences();
   const [muteWord, setMuteWord] = useState("");
-  const appData = login.appData.json;
-  const { system } = useEventPublisher();
-
-  function addMutedWord() {
-    updateAppData(login.id, system, ad => ({
-      ...ad,
-      mutedWords: appendDedupe(appData.mutedWords, [muteWord]),
-    }));
-    setMuteWord("");
-  }
-
-  const handleToggle = (setting: keyof SnortAppData) => {
-    updateAppData(login.id, system, ad => ({
-      ...ad,
-      [setting]: !appData[setting],
-    }));
-  };
-
-  function removeMutedWord(word: string) {
-    updateAppData(login.id, system, ad => ({
-      ...ad,
-      mutedWords: appData.mutedWords.filter(a => a !== word),
-    }));
-    setMuteWord("");
-  }
 
   return (
     <>
@@ -45,8 +20,13 @@ export default function ModerationSettingsPage() {
         <div className="flex items-center mb-2">
           <input
             type="checkbox"
-            checked={appData.showContentWarningPosts}
-            onChange={() => handleToggle("showContentWarningPosts")}
+            checked={preferences.preferences.showContentWarningPosts}
+            onChange={() =>
+              preferences.update({
+                ...preferences.preferences,
+                showContentWarningPosts: !preferences.preferences.showContentWarningPosts,
+              })
+            }
             className="mr-2"
             id="showContentWarningPosts"
           />
@@ -68,11 +48,11 @@ export default function ModerationSettingsPage() {
             value={muteWord}
             onChange={e => setMuteWord(e.target.value.toLowerCase())}
           />
-          <button type="button" onClick={addMutedWord}>
+          <AsyncButton type="button" onClick={() => addMutedWord(muteWord)}>
             <FormattedMessage defaultMessage="Add" id="2/2yg+" />
-          </button>
+          </AsyncButton>
         </div>
-        {appData.mutedWords.map(v => (
+        {getMutedWords().map(v => (
           <div key={v} className="p br b flex items-center justify-between">
             <div>{v}</div>
             <button type="button" onClick={() => removeMutedWord(v)}>

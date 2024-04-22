@@ -1,5 +1,7 @@
 import "./RootTabs.css";
 
+import { unwrap } from "@snort/shared";
+import { EventKind } from "@snort/system";
 import { Menu, MenuItem } from "@szhsin/react-menu";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -7,26 +9,24 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { rootTabItems } from "@/Components/Feed/RootTabItems";
 import Icon from "@/Components/Icons/Icon";
 import useLogin from "@/Hooks/useLogin";
+import usePreferences from "@/Hooks/usePreferences";
 import { RootTabRoutePath } from "@/Pages/Root/RootTabRoutes";
 
 export function RootTabs({ base = "/" }: { base: string }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const {
-    publicKey: pubKey,
-    tags,
-    preferences,
-  } = useLogin(s => ({
+  const { publicKey: pubKey, tags } = useLogin(s => ({
     publicKey: s.publicKey,
-    tags: s.tags,
-    preferences: s.appData.json.preferences,
+    tags: s.state.getList(EventKind.InterestSet),
   }));
+  const defaultRootTab = usePreferences(s => s.defaultRootTab);
 
-  const menuItems = useMemo(() => rootTabItems(base, pubKey, tags), [base, pubKey, tags]);
+  const hashTags = tags.filter(a => a.toEventTag()?.[0] === "t").map(a => unwrap(a.toEventTag())[1]);
+  const menuItems = useMemo(() => rootTabItems(base, pubKey, hashTags), [base, pubKey, tags]);
 
   let defaultTab: RootTabRoutePath;
   if (pubKey) {
-    defaultTab = preferences.defaultRootTab;
+    defaultTab = defaultRootTab;
   } else {
     defaultTab = `trending/notes`;
   }
