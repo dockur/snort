@@ -12,6 +12,9 @@ import {
 } from ".";
 import { findTag } from "./utils";
 
+/**
+ * An object which can be stored in a nostr event as a tag
+ */
 export interface ToNostrEventTag {
   toEventTag(): Array<string> | undefined;
 }
@@ -191,12 +194,7 @@ export class NostrLink implements ToNostrEventTag {
     }
   }
 
-  static fromTag<T = NostrLink>(
-    tag: Array<string>,
-    author?: string,
-    kind?: number,
-    fnOther?: (tag: Array<string>) => T | undefined,
-  ) {
+  static fromTag(tag: Array<string>, author?: string, kind?: number) {
     const relays = tag.length > 2 ? [tag[2]] : undefined;
     switch (tag[0]) {
       case "e": {
@@ -209,19 +207,32 @@ export class NostrLink implements ToNostrEventTag {
         const [kind, author, dTag] = tag[1].split(":");
         return new NostrLink(NostrPrefix.Address, dTag, Number(kind), author, relays, tag[3]);
       }
-      default: {
-        return fnOther?.(tag) ?? new UnknownTag(tag);
-      }
     }
+    throw new Error("Unknown tag!");
   }
 
-  static fromTags<T = NostrLink>(tags: ReadonlyArray<Array<string>>, fnOther?: (tag: Array<string>) => T | undefined) {
+  static fromTags(tags: ReadonlyArray<Array<string>>) {
     return removeUndefined(
       tags.map(a => {
         try {
-          return NostrLink.fromTag<T>(a, undefined, undefined, fnOther);
+          return NostrLink.fromTag(a);
         } catch {
           // ignored, cant be mapped
+        }
+      }),
+    );
+  }
+
+  /**
+   * Parse all tags even if they are unknown
+   */
+  static fromAllTags(tags: ReadonlyArray<Array<string>>): Array<ToNostrEventTag> {
+    return removeUndefined(
+      tags.map(a => {
+        try {
+          return NostrLink.fromTag(a);
+        } catch {
+          return new UnknownTag(a);
         }
       }),
     );
