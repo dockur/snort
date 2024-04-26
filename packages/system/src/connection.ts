@@ -10,6 +10,7 @@ import { RelayInfo } from "./relay-info";
 import EventKind from "./event-kind";
 import { EventExt } from "./event-ext";
 import { NegentropyFlow } from "./negentropy/negentropy-flow";
+import { ConnectionType, ConnectionTypeEvents } from "./connection-pool";
 
 /**
  * Relay settings
@@ -17,18 +18,6 @@ import { NegentropyFlow } from "./negentropy/negentropy-flow";
 export interface RelaySettings {
   read: boolean;
   write: boolean;
-}
-
-interface ConnectionEvents {
-  change: () => void;
-  connected: (wasReconnect: boolean) => void;
-  event: (sub: string, e: TaggedNostrEvent) => void;
-  eose: (sub: string) => void;
-  closed: (sub: string, reason: string) => void;
-  disconnect: (code: number) => void;
-  auth: (challenge: string, relay: string, cb: (ev: NostrEvent) => void) => void;
-  notice: (msg: string) => void;
-  unknownMessage: (obj: Array<any>) => void;
 }
 
 /**
@@ -42,10 +31,10 @@ export type SyncCommand = ["SYNC", id: string, fromSet: Array<TaggedNostrEvent>,
  */
 interface ConnectionQueueItem {
   obj: ReqCommand | SyncCommand;
-  cb: () => void;
+  cb?: () => void;
 }
 
-export class Connection extends EventEmitter<ConnectionEvents> {
+export class Connection extends EventEmitter<ConnectionTypeEvents> implements ConnectionType {
   #log: debug.Debugger;
   #ephemeralCheck?: ReturnType<typeof setInterval>;
   #activity: number = unixNowMs();
@@ -55,15 +44,15 @@ export class Connection extends EventEmitter<ConnectionEvents> {
   #downCount = 0;
   #activeRequests = new Set<string>();
 
-  Id: string;
-  readonly Address: string;
+  id: string;
+  readonly address: string;
   Socket: WebSocket | null = null;
 
   PendingRaw: Array<object> = [];
   PendingRequests: Array<ConnectionQueueItem> = [];
 
-  Settings: RelaySettings;
-  Info?: RelayInfo;
+  settings: RelaySettings;
+  info: RelayInfo | undefined;
   ConnectTimeout: number = DefaultConnectTimeout;
   HasStateChange: boolean = true;
   ReconnectTimer?: ReturnType<typeof setTimeout>;
@@ -74,20 +63,20 @@ export class Connection extends EventEmitter<ConnectionEvents> {
 
   constructor(addr: string, options: RelaySettings, ephemeral: boolean = false) {
     super();
-    this.Id = uuid();
-    this.Address = addr;
-    this.Settings = options;
+    this.id = uuid();
+    this.address = addr;
+    this.settings = options;
     this.EventsCallback = new Map();
     this.AwaitingAuth = new Map();
     this.#ephemeral = ephemeral;
     this.#log = debug("Connection").extend(addr);
   }
 
-  get Ephemeral() {
+  get ephemeral() {
     return this.#ephemeral;
   }
 
-  set Ephemeral(v: boolean) {
+  set ephemeral(v: boolean) {
     this.#ephemeral = v;
     this.#setupEphemeral();
   }
@@ -107,8 +96,8 @@ export class Connection extends EventEmitter<ConnectionEvents> {
   async connect() {
     if (this.isOpen) return;
     try {
-      if (this.Info === undefined) {
-        const u = new URL(this.Address);
+      if (this.info === undefined) {
+        const u = new URL(this.address);
         const rsp = await fetch(`${u.protocol === "wss:" ? "https:" : "http:"}//${u.host}`, {
           headers: {
             accept: "application/nostr+json",
@@ -121,7 +110,7 @@ export class Connection extends EventEmitter<ConnectionEvents> {
               data[k] = undefined;
             }
           }
-          this.Info = data;
+          this.info = data;
         }
       }
     } catch {
@@ -130,24 +119,25 @@ export class Connection extends EventEmitter<ConnectionEvents> {
 
     const wasReconnect = this.Socket !== null;
     if (this.Socket) {
-      this.Id = uuid();
+      this.id = uuid();
+      if (this.isOpen) {
+        this.Socket.close();
+      }
       this.Socket.onopen = null;
       this.Socket.onmessage = null;
       this.Socket.onerror = null;
       this.Socket.onclose = null;
       this.Socket = null;
     }
-    this.Socket = new WebSocket(this.Address);
+    this.Socket = new WebSocket(this.address);
     this.Socket.onopen = () => this.#onOpen(wasReconnect);
     this.Socket.onmessage = e => this.#onMessage(e);
     this.Socket.onerror = e => this.#onError(e);
     this.Socket.onclose = e => this.#onClose(e);
   }
 
-  close(final = true) {
-    if (final) {
-      this.#closing = true;
-    }
+  close() {
+    this.#closing = true;
     this.Socket?.close();
   }
 
@@ -215,7 +205,7 @@ export class Connection extends EventEmitter<ConnectionEvents> {
         case "EVENT": {
           const ev = {
             ...(msg[2] as NostrEvent),
-            relays: [this.Address],
+            relays: [this.address],
           } as TaggedNostrEvent;
 
           if (!EventExt.isValid(ev)) {
@@ -268,10 +258,10 @@ export class Connection extends EventEmitter<ConnectionEvents> {
    * Send event on this connection
    */
   sendEvent(e: NostrEvent) {
-    if (!this.Settings.write) {
+    if (!this.settings.write) {
       return;
     }
-    this.send(["EVENT", e]);
+    this.#send(["EVENT", e]);
     // todo: stats events send
     this.emit("change");
   }
@@ -279,9 +269,9 @@ export class Connection extends EventEmitter<ConnectionEvents> {
   /**
    * Send event on this connection and wait for OK response
    */
-  async sendEventAsync(e: NostrEvent, timeout = 5000) {
+  async publish(e: NostrEvent, timeout = 5000) {
     return await new Promise<OkResponse>((resolve, reject) => {
-      if (!this.Settings.write) {
+      if (!this.settings.write) {
         reject(new Error("Not a write relay"));
         return;
       }
@@ -290,7 +280,7 @@ export class Connection extends EventEmitter<ConnectionEvents> {
         resolve({
           ok: false,
           id: e.id,
-          relay: this.Address,
+          relay: this.address,
           message: "Duplicate request",
           event: e,
         });
@@ -301,7 +291,7 @@ export class Connection extends EventEmitter<ConnectionEvents> {
         resolve({
           ok: false,
           id: e.id,
-          relay: this.Address,
+          relay: this.address,
           message: "Timeout waiting for OK response",
           event: e,
         });
@@ -313,13 +303,13 @@ export class Connection extends EventEmitter<ConnectionEvents> {
         resolve({
           ok: accepted as boolean,
           id: id as string,
-          relay: this.Address,
+          relay: this.address,
           message: message as string | undefined,
           event: e,
         });
       });
 
-      this.send(["EVENT", e]);
+      this.#send(["EVENT", e]);
       // todo: stats events send
       this.emit("change");
     });
@@ -329,22 +319,18 @@ export class Connection extends EventEmitter<ConnectionEvents> {
    * Using relay document to determine if this relay supports a feature
    */
   supportsNip(n: number) {
-    return this.Info?.supported_nips?.some(a => a === n) ?? false;
+    return this.info?.supported_nips?.some(a => a === n) ?? false;
   }
 
   /**
    * Queue or send command to the relay
    * @param cmd The REQ to send to the server
    */
-  queueReq(cmd: ReqCommand | SyncCommand, cbSent: () => void) {
-    const requestKinds = dedupe(
-      cmd
-        .slice(2)
-        .map(a => (a as ReqFilter).kinds ?? [])
-        .flat(),
-    );
+  request(cmd: ReqCommand | SyncCommand, cbSent?: () => void) {
+    const filters = (cmd[0] === "REQ" ? cmd.slice(2) : cmd.slice(3)) as Array<ReqFilter>;
+    const requestKinds = new Set(filters.flatMap(a => a.kinds ?? []));
     const ExpectAuth = [EventKind.DirectMessage, EventKind.GiftWrap];
-    if (ExpectAuth.some(a => requestKinds.includes(a)) && !this.#expectAuth) {
+    if (ExpectAuth.some(a => requestKinds.has(a)) && !this.#expectAuth) {
       this.#expectAuth = true;
       this.#log("Setting expectAuth flag %o", requestKinds);
     }
@@ -359,14 +345,14 @@ export class Connection extends EventEmitter<ConnectionEvents> {
         obj: cmd,
         cb: cbSent,
       });
-      cbSent();
+      cbSent?.();
     }
     this.emit("change");
   }
 
-  closeReq(id: string) {
+  closeRequest(id: string) {
     if (this.#activeRequests.delete(id)) {
-      this.send(["CLOSE", id]);
+      this.#send(["CLOSE", id]);
       this.emit("eose", id);
       this.#sendQueuedRequests();
       this.emit("change");
@@ -389,29 +375,29 @@ export class Connection extends EventEmitter<ConnectionEvents> {
   #sendRequestCommand(item: ConnectionQueueItem) {
     try {
       const cmd = item.obj;
-      if (cmd[0] === "REQ" || cmd[0] === "GET") {
+      if (cmd[0] === "REQ") {
         this.#activeRequests.add(cmd[1]);
-        this.send(cmd);
+        this.#send(cmd);
       } else if (cmd[0] === "SYNC") {
         const [_, id, eventSet, ...filters] = cmd;
         const lastResortSync = () => {
           if (filters.some(a => a.since || a.until || a.ids)) {
-            this.queueReq(["REQ", id, ...filters], item.cb);
+            this.request(["REQ", id, ...filters], item.cb);
           } else {
             const latest = eventSet.reduce((acc, v) => (acc = v.created_at > acc ? v.created_at : acc), 0);
             const newFilters = filters.map(a => ({
               ...a,
               since: latest + 1,
             }));
-            this.queueReq(["REQ", id, ...newFilters], item.cb);
+            this.request(["REQ", id, ...newFilters], item.cb);
           }
         };
-        if (this.Info?.negentropy === "v1") {
+        if (this.info?.negentropy === "v1") {
           const newFilters = filters;
           const neg = new NegentropyFlow(id, this, eventSet, newFilters);
           neg.once("finish", filters => {
             if (filters.length > 0) {
-              this.queueReq(["REQ", cmd[1], ...filters], item.cb);
+              this.request(["REQ", cmd[1], ...filters], item.cb);
             } else {
               // no results to query, emulate closed
               this.emit("closed", id, "Nothing to sync");
@@ -432,7 +418,7 @@ export class Connection extends EventEmitter<ConnectionEvents> {
 
   #reset() {
     // reset connection Id on disconnect, for query-tracking
-    this.Id = uuid();
+    this.id = uuid();
     this.#expectAuth = false;
     this.#log(
       "Reset active=%O, pending=%O, raw=%O",
@@ -458,8 +444,15 @@ export class Connection extends EventEmitter<ConnectionEvents> {
     this.emit("change");
   }
 
-  send(obj: object) {
-    const authPending = !this.Authed && (this.AwaitingAuth.size > 0 || this.Info?.limitation?.auth_required === true);
+  /**
+   * Send raw json object on wire
+   */
+  sendRaw(obj: object) {
+    this.#send(obj);
+  }
+
+  #send(obj: object) {
+    const authPending = !this.Authed && (this.AwaitingAuth.size > 0 || this.info?.limitation?.auth_required === true);
     if (!this.isOpen || authPending) {
       this.PendingRaw.push(obj);
       return false;
@@ -494,7 +487,7 @@ export class Connection extends EventEmitter<ConnectionEvents> {
     };
     this.AwaitingAuth.set(challenge, true);
     const authEvent = await new Promise<NostrEvent>((resolve, reject) =>
-      this.emit("auth", challenge, this.Address, resolve),
+      this.emit("auth", challenge, this.address, resolve),
     );
     this.#log("Auth result: %o", authEvent);
     if (!authEvent) {
@@ -522,7 +515,7 @@ export class Connection extends EventEmitter<ConnectionEvents> {
   }
 
   get #maxSubscriptions() {
-    return this.Info?.limitation?.max_subscriptions ?? 25;
+    return this.info?.limitation?.max_subscriptions ?? 20;
   }
 
   #setupEphemeral() {
@@ -530,10 +523,10 @@ export class Connection extends EventEmitter<ConnectionEvents> {
       clearInterval(this.#ephemeralCheck);
       this.#ephemeralCheck = undefined;
     }
-    if (this.Ephemeral) {
+    if (this.ephemeral) {
       this.#ephemeralCheck = setInterval(() => {
         const lastActivity = unixNowMs() - this.#activity;
-        if (lastActivity > 30_000 && !this.#closing) {
+        if (lastActivity > 10_000 && !this.#closing) {
           if (this.#activeRequests.size > 0) {
             this.#log(
               "Inactive connection has %d active requests! %O",
@@ -541,7 +534,7 @@ export class Connection extends EventEmitter<ConnectionEvents> {
               this.#activeRequests,
             );
           } else {
-            this.close(false);
+            this.close();
           }
         }
       }, 5_000);
