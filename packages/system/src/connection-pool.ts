@@ -93,7 +93,7 @@ export type ConnectionBuilder<T extends ConnectionType> = (
   address: string,
   options: RelaySettings,
   ephemeral: boolean,
-) => Promise<T>;
+) => Promise<T> | T;
 
 /**
  * Simple connection pool containing connections to multiple nostr relays
@@ -122,7 +122,7 @@ export class DefaultConnectionPool<T extends ConnectionType = Connection>
       this.#connectionBuilder = builder;
     } else {
       this.#connectionBuilder = (addr, options, ephemeral) => {
-        return Promise.resolve<T>(new Connection(addr, options, ephemeral) as unknown as T);
+        return new Connection(addr, options, ephemeral) as unknown as T;
       };
     }
   }
