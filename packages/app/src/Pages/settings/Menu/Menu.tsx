@@ -30,18 +30,18 @@ const SettingsIndex = () => {
 
   const settingsGroups = [
     {
-      title: <FormattedMessage id="TwyMau" defaultMessage="Account" />,
+      title: <FormattedMessage defaultMessage="Account" />,
       items: [
         {
           icon: "profile",
           iconBg: "bg-green-500",
-          message: <FormattedMessage id="itPgxd" defaultMessage="Profile" />,
+          message: <FormattedMessage defaultMessage="Profile" />,
           path: "profile",
         },
         {
           icon: "key",
           iconBg: "bg-amber-500",
-          message: <FormattedMessage id="08zn6O" defaultMessage="Export Keys" />,
+          message: <FormattedMessage defaultMessage="Export Keys" />,
           path: "keys",
         },
         ...(CONFIG.features.nostrAddress
@@ -49,7 +49,7 @@ const SettingsIndex = () => {
               {
                 icon: "badge",
                 iconBg: "bg-pink-500",
-                message: <FormattedMessage id="9pMqYs" defaultMessage="Nostr Address" />,
+                message: <FormattedMessage defaultMessage="Nostr Address" />,
                 path: "handle",
               },
             ]
@@ -57,13 +57,13 @@ const SettingsIndex = () => {
         {
           icon: "gear",
           iconBg: "bg-slate-500",
-          message: <FormattedMessage id="PCSt5T" defaultMessage="Preferences" />,
+          message: <FormattedMessage defaultMessage="Preferences" />,
           path: "preferences",
         },
         {
           icon: "wallet",
           iconBg: "bg-emerald-500",
-          message: <FormattedMessage id="3yk8fB" defaultMessage="Wallet" />,
+          message: <FormattedMessage defaultMessage="Wallet" />,
           path: "wallet",
         },
         ...(sub
@@ -71,7 +71,7 @@ const SettingsIndex = () => {
               {
                 icon: "code-circle",
                 iconBg: "bg-indigo-500",
-                message: <FormattedMessage id="FvanT6" defaultMessage="Accounts" />,
+                message: <FormattedMessage defaultMessage="Accounts" />,
                 path: "accounts",
               },
             ]
@@ -79,24 +79,24 @@ const SettingsIndex = () => {
         {
           icon: "tool",
           iconBg: "bg-slate-800",
-          message: <FormattedMessage defaultMessage="Tools" id="nUT0Lv" />,
+          message: <FormattedMessage defaultMessage="Tools" />,
           path: "tools",
         },
       ],
     },
     {
-      title: <FormattedMessage id="hvFRBo" defaultMessage="Interaction" />,
+      title: <FormattedMessage defaultMessage="Interaction" />,
       items: [
         {
           icon: "relay",
           iconBg: "bg-dark bg-opacity-20",
-          message: <FormattedMessage id="RoOyAh" defaultMessage="Relays" />,
+          message: <FormattedMessage defaultMessage="Relays" />,
           path: "relays",
         },
         {
           icon: "shield-tick",
           iconBg: "bg-yellow-500",
-          message: <FormattedMessage id="wofVHy" defaultMessage="Moderation" />,
+          message: <FormattedMessage defaultMessage="Moderation" />,
           path: "moderation",
         },
         ...(CONFIG.features.pushNotifications
@@ -104,7 +104,7 @@ const SettingsIndex = () => {
               {
                 icon: "bell-outline",
                 iconBg: "bg-red-500",
-                message: <FormattedMessage id="NAidKb" defaultMessage="Notifications" />,
+                message: <FormattedMessage defaultMessage="Notifications" />,
                 path: "notifications",
               },
             ]
@@ -114,7 +114,7 @@ const SettingsIndex = () => {
               {
                 icon: "link",
                 iconBg: "bg-blue-500",
-                message: <FormattedMessage id="hYOE+U" defaultMessage="Invite" />,
+                message: <FormattedMessage defaultMessage="Invite" />,
                 path: "invite",
               },
             ]
@@ -122,18 +122,18 @@ const SettingsIndex = () => {
         {
           icon: "hard-drive",
           iconBg: "bg-cyan-500",
-          message: <FormattedMessage id="DBiVK1" defaultMessage="Cache" />,
+          message: <FormattedMessage defaultMessage="Cache" />,
           path: "cache",
         },
       ],
     },
     {
-      title: <FormattedMessage id="HqRNN8" defaultMessage="Support" />,
+      title: <FormattedMessage defaultMessage="Support" />,
       items: [
         {
           icon: "heart",
           iconBg: "bg-purple-500",
-          message: <FormattedMessage id="2IFGap" defaultMessage="Donate" />,
+          message: <FormattedMessage defaultMessage="Donate" />,
           path: "/donate",
         },
         ...(CONFIG.features.subscriptions
@@ -141,7 +141,7 @@ const SettingsIndex = () => {
               {
                 icon: "diamond",
                 iconBg: "bg-violet-500",
-                message: <FormattedMessage id="R/6nsx" defaultMessage="Subscription" />,
+                message: <FormattedMessage defaultMessage="Subscription" />,
                 path: "/subscribe/manage",
               },
             ]
@@ -151,7 +151,7 @@ const SettingsIndex = () => {
               {
                 icon: "piggy-bank",
                 iconBg: "bg-rose-500",
-                message: <FormattedMessage id="i/dBAR" defaultMessage="Zap Pool" />,
+                message: <FormattedMessage defaultMessage="Zap Pool" />,
                 path: "/zap-pool",
               },
             ]
@@ -159,12 +159,12 @@ const SettingsIndex = () => {
       ],
     },
     {
-      title: <FormattedMessage id="H0JBH6" defaultMessage="Log Out" />,
+      title: <FormattedMessage defaultMessage="Log Out" />,
       items: [
         {
           icon: "logout",
           iconBg: "bg-red-500",
-          message: <FormattedMessage id="H0JBH6" defaultMessage="Log Out" />,
+          message: <FormattedMessage defaultMessage="Log Out" />,
           action: handleLogout,
         },
       ],

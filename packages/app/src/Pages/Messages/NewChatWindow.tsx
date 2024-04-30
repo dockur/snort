@@ -31,7 +31,7 @@ export default function NewChatWindow() {
   useEffect(() => {
     setNewChat([]);
     setSearchTerm("");
-    setResults(followList);
+    setResults(followList.slice(0, 5));
   }, [show]);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function NewChatWindow() {
   function startChat() {
     setShow(false);
     if (newChat.length === 1) {
-      navigate(createChatLink(ChatType.DirectMessage, newChat[0]));
+      navigate(createChatLink(ChatType.PrivateDirectMessage, newChat[0]));
     } else {
       navigate(createChatLink(ChatType.PrivateGroupChat, ...newChat));
     }
@@ -67,15 +67,15 @@ export default function NewChatWindow() {
           <div className="flex flex-col g16">
             <div className="flex justify-between">
               <h2>
-                <FormattedMessage defaultMessage="New Chat" id="UT7Nkj" />
+                <FormattedMessage defaultMessage="New Chat" />
               </h2>
               <button onClick={startChat}>
-                <FormattedMessage defaultMessage="Start chat" id="v8lolG" />
+                <FormattedMessage defaultMessage="Start chat" />
               </button>
             </div>
             <div className="flex flex-col g8">
               <h3>
-                <FormattedMessage defaultMessage="Search users" id="JjGgXI" />
+                <FormattedMessage defaultMessage="Search users" />
               </h3>
               <input
                 type="text"
@@ -97,7 +97,7 @@ export default function NewChatWindow() {
             </div>
             <div>
               <p>
-                <FormattedMessage defaultMessage="People you follow" id="R81upa" />
+                <FormattedMessage defaultMessage="People you follow" />
               </p>
               <div className="user-list flex flex-col g2">
                 {results.map(a => {
