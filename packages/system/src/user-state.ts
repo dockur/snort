@@ -63,6 +63,7 @@ export class UserState<TAppData> extends EventEmitter<UserStateEvents> {
   // state object will be used in the getters as a fallback value
   #stateObj?: UserStateObject<TAppData>;
   #didInit = false;
+  #version = 0;
 
   constructor(
     readonly pubkey: string,
@@ -92,9 +93,10 @@ export class UserState<TAppData> extends EventEmitter<UserStateEvents> {
     this.#profile.on("change", () => this.emit("change", UserStateChangeType.Profile));
     this.#contacts.on("change", () => this.emit("change", UserStateChangeType.Contacts));
     this.#relays.on("change", () => this.emit("change", UserStateChangeType.Relays));
+    this.on("change", () => this.#version++);
   }
 
-  async init(signer: EventSigner, system: SystemInterface) {
+  async init(signer: EventSigner | undefined, system: SystemInterface) {
     if (this.#didInit) {
       return;
     }
@@ -124,7 +126,7 @@ export class UserState<TAppData> extends EventEmitter<UserStateEvents> {
     );
 
     // update relay metadata with value from contact list if not found
-    if (this.#relays.value === undefined && this.#contacts.value?.content !== undefined) {
+    if (this.#relays.value === undefined && this.#contacts.value?.content !== undefined && signer) {
       this.#log("Saving relays to NIP-65 relay list using %O", this.relays);
       for (const r of this.relays ?? []) {
         await this.addRelay(r.url, r.settings, false);
@@ -135,12 +137,16 @@ export class UserState<TAppData> extends EventEmitter<UserStateEvents> {
 
     // migrate mutes into blocks
     const muteList = this.#standardLists.get(EventKind.MuteList);
-    if (muteList && muteList.tags.length > 0) {
+    if (muteList && muteList.tags.length > 0 && signer) {
       this.#log("Migrating mutes into blocks mutes=%i, blocks=%i", muteList.tags.length, muteList.encryptedTags.length);
       muteList.replace([], false);
       muteList.add(muteList!.tags, true);
       await muteList.persist(signer, system);
     }
+  }
+
+  get version() {
+    return this.#version;
   }
 
   /**
