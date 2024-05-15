@@ -20,7 +20,6 @@ See [snort.social](https://snort.social) for a demo.
 Via Docker Compose:
 
 ```yaml
-version: "3"
 services:
   snort:
     container_name: snort
