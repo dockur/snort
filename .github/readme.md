@@ -26,7 +26,6 @@ services:
     image: dockurr/snort
     ports:
         - 80:8080
-    restart: on-failure
 ```
 
 ## Stars
