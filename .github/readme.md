@@ -28,6 +28,12 @@ services:
         - 80:8080
 ```
 
+Via Docker CLI:
+
+```bash
+docker run -it --rm -p 80:8080 dockurr/snort
+```
+
 ## Stars
 [![Stars](https://starchart.cc/dockur/snort.svg?variant=adaptive)](https://starchart.cc/dockur/snort)
 
