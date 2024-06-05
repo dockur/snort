@@ -11,8 +11,13 @@ import { EventEmitter } from "eventemitter3";
 export abstract class SystemBase extends EventEmitter<NostrSystemEvents> {
   #config: SystemConfig;
 
+  get config() {
+    return this.#config;
+  }
+
   constructor(props: Partial<SystemConfig>) {
     super();
+
     this.#config = {
       relays: props.relays ?? new UserRelaysCache(props.db?.userRelays),
       profiles: props.profiles ?? new UserProfileCache(props.db?.users),
@@ -25,6 +30,7 @@ export abstract class SystemBase extends EventEmitter<NostrSystemEvents> {
       db: props.db,
       automaticOutboxModel: props.automaticOutboxModel ?? true,
       buildFollowGraph: props.buildFollowGraph ?? false,
+      fallbackSync: props.fallbackSync ?? "since",
     };
   }
 

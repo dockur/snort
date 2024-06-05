@@ -91,6 +91,11 @@ export interface SystemConfig {
    * for users when fetching by author.
    */
   buildFollowGraph: boolean;
+
+  /**
+   * Pick a fallback sync method when negentropy is not available
+   */
+  fallbackSync: "since" | "range-sync";
 }
 
 export interface SystemInterface {
@@ -200,6 +205,8 @@ export interface SystemInterface {
    * Request router instance
    */
   get requestRouter(): RequestRouter | undefined;
+
+  get config(): SystemConfig;
 }
 
 export interface SystemSnapshot {
