@@ -13,9 +13,7 @@
 
 Docker image of [snort](https://github.com/v0l/snort), an UI for the [nostr](https://github.com/nostr-protocol/nostr) protocol.
 
-See [snort.social](https://snort.social) for a demo.
-
-## How to use
+## Usage  🐳
 
 Via Docker Compose:
 
@@ -34,7 +32,11 @@ Via Docker CLI:
 docker run -it --rm -p 80:8080 dockurr/snort
 ```
 
-## Stars
+## Demo 👀
+
+  See [snort.social](https://snort.social)
+
+## Stars 🌟
 [![Stars](https://starchart.cc/dockur/snort.svg?variant=adaptive)](https://starchart.cc/dockur/snort)
 
 [build_url]: https://github.com/dockur/snort/
