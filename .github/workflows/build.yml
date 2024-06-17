@@ -121,7 +121,7 @@ jobs:
       -
         name: Build Docker image
         if: env.exists == 'false'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./${{ github.event.repository.name }}
           push: true
@@ -141,7 +141,7 @@ jobs:
       -
         name: Build custom image
         if: env.exists == 'false'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./${{ github.event.repository.name }}
           push: true
