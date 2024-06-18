@@ -45,6 +45,7 @@ export class Connection extends EventEmitter<ConnectionTypeEvents> implements Co
   #activeRequests = new Set<string>();
   #connectStarted = false;
   #syncModule?: ConnectionSyncModule;
+  #wasUp = false;
 
   id: string;
   readonly address: string;
@@ -100,7 +101,7 @@ export class Connection extends EventEmitter<ConnectionTypeEvents> implements Co
     return [...this.#activeRequests];
   }
 
-  async connect() {
+  async connect(awaitOpen = false) {
     // already connected
     if (this.isOpen || this.isConnecting) return;
     // wait for re-connect timer
@@ -131,24 +132,34 @@ export class Connection extends EventEmitter<ConnectionTypeEvents> implements Co
       // ignored
     }
 
-    const wasReconnect = this.Socket !== null;
-    if (this.Socket) {
-      this.id = uuid();
-      if (this.isOpen) {
-        this.Socket.close();
+    try {
+      const wasReconnect = this.Socket !== null;
+      if (this.Socket) {
+        this.id = uuid();
+        if (this.isOpen) {
+          this.Socket.close();
+        }
+        this.Socket.onopen = null;
+        this.Socket.onmessage = null;
+        this.Socket.onerror = null;
+        this.Socket.onclose = null;
+        this.Socket = null;
       }
-      this.Socket.onopen = null;
-      this.Socket.onmessage = null;
-      this.Socket.onerror = null;
-      this.Socket.onclose = null;
-      this.Socket = null;
+      this.Socket = new WebSocket(this.address);
+      this.Socket.onopen = () => this.#onOpen(wasReconnect);
+      this.Socket.onmessage = e => this.#onMessage(e);
+      this.Socket.onerror = e => this.#onError(e);
+      this.Socket.onclose = e => this.#onClose(e);
+      if (awaitOpen) {
+        await new Promise((resolve, reject) => {
+          this.once("connected", resolve);
+          this.once("disconnect", reject);
+        });
+      }
+    } catch (e) {
+      this.#connectStarted = false;
+      throw e;
     }
-    this.Socket = new WebSocket(this.address);
-    this.Socket.onopen = () => this.#onOpen(wasReconnect);
-    this.Socket.onmessage = e => this.#onMessage(e);
-    this.Socket.onerror = e => this.#onError(e);
-    this.Socket.onclose = e => this.#onClose(e);
-    this.#connectStarted = false;
   }
 
   close() {
@@ -158,6 +169,8 @@ export class Connection extends EventEmitter<ConnectionTypeEvents> implements Co
 
   #onOpen(wasReconnect: boolean) {
     this.#downCount = 0;
+    this.#connectStarted = false;
+    this.#wasUp = true;
     this.#log(`Open!`);
     this.#setupEphemeral();
     this.emit("connected", wasReconnect);
@@ -165,12 +178,12 @@ export class Connection extends EventEmitter<ConnectionTypeEvents> implements Co
   }
 
   #onClose(e: WebSocket.CloseEvent) {
-    // remote server closed the connection, dont re-connect
-    if (!this.#closing) {
+    // if not explicity closed or closed after, start re-connect timer
+    if (this.#wasUp && !this.#closing) {
       this.#downCount++;
       this.#reconnectTimer(e);
     } else {
-      this.#log(`Closed!`);
+      this.#log(`Closed: connecting=${this.#connectStarted}, closing=${this.#closing}`);
       this.#downCount = 0;
       if (this.ReconnectTimer) {
         clearTimeout(this.ReconnectTimer);
@@ -195,9 +208,7 @@ export class Connection extends EventEmitter<ConnectionTypeEvents> implements Co
       this.ReconnectTimer = undefined;
       try {
         this.connect();
-      } catch {
-        this.emit("disconnect", -1);
-      }
+      } catch {}
     }, this.ConnectTimeout);
   }
 
@@ -268,6 +279,7 @@ export class Connection extends EventEmitter<ConnectionTypeEvents> implements Co
   #onError(e: WebSocket.Event) {
     this.#log("Error: %O", e);
     this.emit("change");
+    this.emit("error");
   }
 
   /**

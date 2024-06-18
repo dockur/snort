@@ -15,7 +15,7 @@ export default defineConfig({
     }),
     VitePWA({
       strategies: "injectManifest",
-      injectRegister: "inline",
+      injectRegister: "script",
       srcDir: "src",
       filename: "service-worker.ts",
       registerType: "autoUpdate",
@@ -35,6 +35,7 @@ export default defineConfig({
       command: "git describe --always --tags",
       ifMeta: false,
       ifLog: false,
+      ifGlobal: false,
     }),
   ],
   assetsInclude: ["**/*.md", "**/*.wasm"],
