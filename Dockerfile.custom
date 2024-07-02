@@ -1,7 +1,10 @@
 FROM --platform=$BUILDPLATFORM node:current AS build
 
-RUN yarn --network-timeout 1000000
-RUN yarn build
+WORKDIR /src
+
+RUN cd snort && \ 
+         yarn --network-timeout 1000000 && \
+         yarn build
 
 FROM nginxinc/nginx-unprivileged:mainline-alpine
 
