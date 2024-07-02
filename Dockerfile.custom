@@ -3,8 +3,8 @@ FROM --platform=$BUILDPLATFORM node:current AS build
 WORKDIR /src
 COPY . .
 
-RUN yarn --network-timeout 1000000 && \
-         yarn build
+RUN yarn --network-timeout 1000000
+RUN yarn build
 
 FROM nginxinc/nginx-unprivileged:mainline-alpine
 
