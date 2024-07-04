@@ -3,11 +3,10 @@ import debug from "debug";
 import { EventEmitter } from "eventemitter3";
 import { unixNowMs, unwrap } from "@snort/shared";
 
-import { ReqFilter, Nips, TaggedNostrEvent, SystemInterface, ParsedFragment } from ".";
+import { ReqFilter, Nips, TaggedNostrEvent } from ".";
 import { NoteCollection } from "./note-collection";
 import { BuiltRawReqFilter, RequestBuilder } from "./request-builder";
 import { eventMatchesFilter } from "./request-matcher";
-import { LRUCache } from "lru-cache";
 import { ConnectionType } from "./connection-pool";
 
 interface QueryTraceEvents {
@@ -97,34 +96,22 @@ export interface TraceReport {
 
 export interface QueryEvents {
   trace: (report: TraceReport) => void;
-  request: (subId: string, req: BuiltRawReqFilter) => void;
+  request: (subId: string, req: Array<ReqFilter>) => void;
   event: (evs: Array<TaggedNostrEvent>) => void;
   end: () => void;
   done: () => void;
 }
 
-const QueryCache = new LRUCache<string, Array<TaggedNostrEvent>>({
-  ttl: 60_000 * 3,
-  ttlAutopurge: true,
-});
-
 /**
  * Active or queued query on the system
  */
 export class Query extends EventEmitter<QueryEvents> {
-  get id() {
-    return this.request.id;
-  }
+  id: string;
 
   /**
    * RequestBuilder instance
    */
-  request: RequestBuilder;
-
-  /**
-   * Nostr system interface
-   */
-  #system: SystemInterface;
+  requests: Array<ReqFilter> = [];
 
   /**
    * Which relays this query has already been executed on
@@ -168,26 +155,16 @@ export class Query extends EventEmitter<QueryEvents> {
 
   #log = debug("Query");
 
-  /**
-   * Compressed cached trace filters
-   */
-  #cachedFilters?: Array<ReqFilter>;
-
-  constructor(system: SystemInterface, req: RequestBuilder) {
+  constructor(req: RequestBuilder) {
     super();
-    this.request = req;
-    this.#system = system;
+    this.id = req.id;
     this.#feed = new NoteCollection();
     this.#leaveOpen = req.options?.leaveOpen ?? false;
     this.#timeout = req.options?.timeout ?? 5_000;
     this.#groupingDelay = req.options?.groupingDelay ?? 100;
     this.#checkTraces();
 
-    const cached = QueryCache.get(this.request.id);
-    if (cached) {
-      this.#log("Restored %o for %s", cached, this.request.id);
-      this.feed.add(cached);
-    }
+    this.requests.push(...req.buildRaw());
     this.feed.on("event", evs => this.emit("event", evs));
     this.#start();
   }
@@ -196,12 +173,8 @@ export class Query extends EventEmitter<QueryEvents> {
    * Adds another request to this one
    */
   addRequest(req: RequestBuilder) {
-    if (req.instance === this.request.instance) {
-      // same requst, do nothing
-      return;
-    }
     this.#log("Add query %O to %s", req, this.id);
-    this.request.add(req);
+    this.requests.push(...req.buildRaw());
     this.#start();
     return true;
   }
@@ -218,10 +191,7 @@ export class Query extends EventEmitter<QueryEvents> {
    * Recompute the complete set of compressed filters from all query traces
    */
   get filters() {
-    if (this.#system && !this.#cachedFilters) {
-      this.#cachedFilters = this.#system.optimizer.compress(this.#tracing.flatMap(a => a.filters));
-    }
-    return this.#cachedFilters ?? this.#tracing.flatMap(a => a.filters);
+    return this.#tracing.flatMap(a => a.filters);
   }
 
   get feed() {
@@ -263,8 +233,6 @@ export class Query extends EventEmitter<QueryEvents> {
     }
     this.#stopCheckTraces();
     this.emit("end");
-    QueryCache.set(this.request.id, this.feed.snapshot);
-    this.#log("Saved %O for %s", this.feed.snapshot, this.request.id);
   }
 
   /**
@@ -345,16 +313,9 @@ export class Query extends EventEmitter<QueryEvents> {
 
   async #emitFilters() {
     this.#log("Starting emit of %s", this.id);
-    const existing = this.filters;
-    if (!(this.request.options?.skipDiff ?? false) && existing.length > 0) {
-      const filters = this.request.buildDiff(this.#system, existing);
-      this.#log("Build %s %O", this.id, filters);
-      filters.forEach(f => this.emit("request", this.id, f));
-    } else {
-      const filters = this.request.build(this.#system);
-      this.#log("Build %s %O", this.id, filters);
-      filters.forEach(f => this.emit("request", this.id, f));
-    }
+    let rawFilters = [...this.requests];
+    this.requests = [];
+    this.emit("request", this.id, rawFilters);
   }
 
   #stopCheckTraces() {
@@ -419,7 +380,7 @@ export class Query extends EventEmitter<QueryEvents> {
       }
     });
     const eventHandler = (sub: string, ev: TaggedNostrEvent) => {
-      if ((this.request.options?.fillStore ?? true) && qt.id === sub) {
+      if (qt.id === sub) {
         if (qt.filters.some(v => eventMatchesFilter(ev, v))) {
           this.feed.add(ev);
         } else {
@@ -439,7 +400,6 @@ export class Query extends EventEmitter<QueryEvents> {
       c.off("closed", eoseHandler);
     });
     this.#tracing.push(qt);
-    this.#cachedFilters = undefined;
 
     if (q.syncFrom !== undefined) {
       c.request(["SYNC", qt.id, q.syncFrom, ...qt.filters], () => qt.sentToRelay());
