@@ -12,6 +12,10 @@ export class Nip29ChatSystem extends ExternalStore<Array<Chat>> implements ChatS
     this.#cache = cache;
   }
 
+  processEvents(): Promise<void> {
+    return Promise.resolve();
+  }
+
   takeSnapshot(): Chat[] {
     return this.listChats();
   }
