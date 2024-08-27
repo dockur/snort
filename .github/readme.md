@@ -50,4 +50,4 @@ docker run -it --rm -p 80:8080 dockurr/snort
 [Pulls]: https://img.shields.io/docker/pulls/dockurr/snort.svg?style=flat&label=pulls&logo=docker
 [Version]: https://img.shields.io/docker/v/dockurr/snort/latest?arch=amd64&sort=semver&color=066da5
 [Package]: 
-https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fipitio%2Fbackage%2Fmaster%2Findex%2Fdockur%2Fsnort%2Fsnort.json&query=%24.downloads&logo=github&style=flat&color=066da5&label=pulls
+https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fipitio.github.io%2Fbackage%2Fdockur%2Fsnort%2Fsnort.json&query=%24.downloads&logo=github&style=flat&color=066da5&label=pulls
