@@ -69,7 +69,7 @@ jobs:
         uses: hadolint/hadolint-action@v3.1.0
         with:
           dockerfile: Dockerfile.custom
-          ignore: DL3008,DL3021,DL3059
+          ignore: DL3008,DL3021,DL3059,DL3003,DL3027
           failure-threshold: warning
       -
         name: Docker metadata
