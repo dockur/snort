@@ -1,14 +1,10 @@
 FROM --platform=$BUILDPLATFORM node:current AS build
 
 WORKDIR /src
+COPY . .
 
-RUN export NODE_OPTIONS="--max-old-space-size=8192" \
-    && apt update \
-    && apt install -y --no-install-recommends git \
-    && git clone --single-branch -b main https://git.v0l.io/Kieran/snort \
-    && cd snort \
-    && yarn --network-timeout 1000000 \
-    && yarn build
+RUN yarn --network-timeout 1000000
+RUN yarn build
 
 FROM nginxinc/nginx-unprivileged:mainline-alpine
 
