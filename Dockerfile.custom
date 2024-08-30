@@ -2,7 +2,8 @@ FROM --platform=$BUILDPLATFORM node:current AS build
 
 WORKDIR /src
 
-RUN apt update \
+RUN export NODE_OPTIONS="--max-old-space-size=8192" \
+    && apt update \
     && apt install -y --no-install-recommends git \
     && git clone --single-branch -b main https://git.v0l.io/Kieran/snort \
     && cd snort \
