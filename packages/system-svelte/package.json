@@ -18,7 +18,7 @@
   "dependencies": {
     "@snort/shared": "^1.0.6",
     "@snort/system": "^1.0.21",
-    "svelte": "^4.2.0"
+    "svelte": "^4.2.19"
   },
   "devDependencies": {
     "typescript": "^5.2.2"
