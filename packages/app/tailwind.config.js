@@ -15,6 +15,7 @@ module.exports = {
         "nostr-purple": "var(--highlight)",
         warning: "var(--warning)",
         error: "var(--error)",
+        success: "var(--success)",
         "gray-light": "var(--gray-light)",
         "gray-medium": "var(--gray-medium)",
         gray: "var(--gray)",
@@ -23,10 +24,6 @@ module.exports = {
         "gray-dark": "var(--gray-dark)",
         "gray-superdark": "var(--gray-superdark)",
         "gray-ultradark": "var(--gray-ultradark)",
-      },
-      backgroundColor: {
-        background: "var(--bg-color)",
-        secondary: "var(--bg-secondary)",
       },
       textColor: {
         secondary: "var(--font-secondary-color)",
@@ -39,6 +36,8 @@ module.exports = {
       },
       backgroundColor: {
         header: "var(--header-bg-color)",
+        background: "var(--bg-color)",
+        secondary: "var(--bg-secondary)",
       },
     },
   },
