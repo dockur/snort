@@ -16,6 +16,7 @@ module.exports = {
         warning: "var(--warning)",
         error: "var(--error)",
         success: "var(--success)",
+        "gray-superlight": "var(--gray-superlight)",
         "gray-light": "var(--gray-light)",
         "gray-medium": "var(--gray-medium)",
         gray: "var(--gray)",
@@ -38,6 +39,15 @@ module.exports = {
         header: "var(--header-bg-color)",
         background: "var(--bg-color)",
         secondary: "var(--bg-secondary)",
+      },
+      animation: {
+        "infinite-scroll": "infinite-scroll 25s linear infinite",
+      },
+      keyframes: {
+        "infinite-scroll": {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-100%)" },
+        },
       },
     },
   },

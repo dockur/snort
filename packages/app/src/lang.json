@@ -53,11 +53,11 @@
   "/Xf4UW": {
     "defaultMessage": "Send anonymous usage metrics"
   },
-  "/clOBU": {
-    "defaultMessage": "Weekly"
-  },
   "/d6vEc": {
     "defaultMessage": "Make your profile easier to find and share"
+  },
+  "/ioUrF": {
+    "defaultMessage": "From File"
   },
   "/n5KSF": {
     "defaultMessage": "{n} ms"
@@ -186,11 +186,17 @@
   "3QwfJR": {
     "defaultMessage": "~{amount}"
   },
+  "3adEeb": {
+    "defaultMessage": "{n} viewers"
+  },
   "3cc4Ct": {
     "defaultMessage": "Light"
   },
   "3gOsZq": {
     "defaultMessage": "Translators"
+  },
+  "3kbIhS": {
+    "defaultMessage": "Untitled"
   },
   "3qnJlS": {
     "defaultMessage": "You are voting with {amount} sats"
@@ -333,6 +339,9 @@
   "7hp70g": {
     "defaultMessage": "NIP-05"
   },
+  "7pFGAQ": {
+    "defaultMessage": "Close Relays"
+  },
   "8/vBbP": {
     "defaultMessage": "Reposts ({n})"
   },
@@ -467,11 +476,17 @@
   "C81/uG": {
     "defaultMessage": "Logout"
   },
+  "C8FsOr": {
+    "defaultMessage": "Popular Servers"
+  },
   "C8HhVE": {
     "defaultMessage": "Suggested Follows"
   },
   "CHTbO3": {
     "defaultMessage": "Failed to load invoice"
+  },
+  "CJx5Nd": {
+    "defaultMessage": "Profile Zaps"
   },
   "CM+Cfj": {
     "defaultMessage": "Follow List"
@@ -533,6 +548,9 @@
   "Dx4ey3": {
     "defaultMessage": "Toggle all"
   },
+  "E3oB+t": {
+    "defaultMessage": "Browser"
+  },
   "E5ZIPD": {
     "defaultMessage": "<big>{amount}</big> <small>sats</small>"
   },
@@ -568,6 +586,9 @@
   },
   "EnCOBJ": {
     "defaultMessage": "Buy"
+  },
+  "F/6VqP": {
+    "defaultMessage": "Server"
   },
   "F3l7xL": {
     "defaultMessage": "Add Account"
@@ -750,9 +771,6 @@
   "JSx7y9": {
     "defaultMessage": "Subscribe to {site_name} {plan} for {price} and receive the following rewards"
   },
-  "JTht/T": {
-    "defaultMessage": "NIP-96"
-  },
   "JeoS4y": {
     "defaultMessage": "Repost"
   },
@@ -889,9 +907,6 @@
   "NAuFNH": {
     "defaultMessage": "You already have a subscription of this type, please renew or pay"
   },
-  "NdOYJJ": {
-    "defaultMessage": "Hmm nothing here.. Checkout {newUsersPage} to follow some recommended nostrich's!"
-  },
   "NepkXH": {
     "defaultMessage": "Can't vote with {amount} sats, please set a different default zap amount"
   },
@@ -952,6 +967,9 @@
   "P7nJT9": {
     "defaultMessage": "Total today (UTC): {amount} sats"
   },
+  "P8JC58": {
+    "defaultMessage": "Distance"
+  },
   "PCSt5T": {
     "defaultMessage": "Preferences"
   },
@@ -1009,9 +1027,6 @@
   "RoOyAh": {
     "defaultMessage": "Relays"
   },
-  "RrCui3": {
-    "defaultMessage": "Summary"
-  },
   "Rs4kCE": {
     "defaultMessage": "Bookmark"
   },
@@ -1051,6 +1066,9 @@
   "StKzTE": {
     "defaultMessage": "The author has marked this note as a <i>sensitive topic</i>"
   },
+  "T83nqf": {
+    "defaultMessage": "Relays close to your geographic location."
+  },
   "TDR5ge": {
     "defaultMessage": "Media in notes will automatically be shown for selected people, otherwise only the link will show"
   },
@@ -1059,6 +1077,9 @@
   },
   "TJo5E6": {
     "defaultMessage": "Preview"
+  },
+  "TOG64f": {
+    "defaultMessage": "Use Local Relay"
   },
   "TP/cMX": {
     "defaultMessage": "Ended"
@@ -1087,6 +1108,9 @@
   },
   "TwyMau": {
     "defaultMessage": "Account"
+  },
+  "TzeMlV": {
+    "defaultMessage": "Sorry, we dont understand this event kind, please try one of the following apps instead!"
   },
   "U1aPPi": {
     "defaultMessage": "Stop listening"
@@ -1151,8 +1175,14 @@
   "W2PiAr": {
     "defaultMessage": "{n} Blocked"
   },
+  "W4SaxY": {
+    "defaultMessage": "Local"
+  },
   "W9355R": {
     "defaultMessage": "Unmute"
+  },
+  "WeLEuL": {
+    "defaultMessage": "From Server"
   },
   "WmZhfL": {
     "defaultMessage": "Automatically translate notes to your local language"
@@ -1199,6 +1229,12 @@
   "YDURw6": {
     "defaultMessage": "Service URL"
   },
+  "YH2RKk": {
+    "defaultMessage": "Popular media servers."
+  },
+  "YQZY/S": {
+    "defaultMessage": "It looks like you dont follow enough people, take a look at {newUsersPage} to discover people to follow!"
+  },
   "YR2I9M": {
     "defaultMessage": "No keys, no {app}, There is no way to reset it if you don't back up. It only takes a minute."
   },
@@ -1216,6 +1252,9 @@
   },
   "Z7kkeJ": {
     "defaultMessage": "Delegated Event Signing"
+  },
+  "ZFe9tl": {
+    "defaultMessage": "Compose a note"
   },
   "ZKORll": {
     "defaultMessage": "Activate Now"
@@ -1256,6 +1295,9 @@
   "aWpBzj": {
     "defaultMessage": "Show more"
   },
+  "abbGKq": {
+    "defaultMessage": "{n} km"
+  },
   "b12Goz": {
     "defaultMessage": "Mnemonic"
   },
@@ -1294,6 +1336,9 @@
   },
   "c35bj2": {
     "defaultMessage": "If you have an enquiry about your NIP-05 order please DM {link}"
+  },
+  "c3LlRO": {
+    "defaultMessage": "{n}KiB"
   },
   "c3g2hL": {
     "defaultMessage": "Broadcast Again"
@@ -1443,6 +1488,9 @@
   "fsB/4p": {
     "defaultMessage": "Saved"
   },
+  "fucxlm": {
+    "defaultMessage": "Attach Media"
+  },
   "furjvW": {
     "defaultMessage": "Watch Stream"
   },
@@ -1548,6 +1596,9 @@
   "iYc3Ld": {
     "defaultMessage": "Payments"
   },
+  "icCxlA": {
+    "defaultMessage": "new users page"
+  },
   "ieGrWo": {
     "defaultMessage": "Follow"
   },
@@ -1598,6 +1649,9 @@
   },
   "kJYo0u": {
     "defaultMessage": "{n,plural,=0{{name} reposted} other{{name} & {n} others reposted}}"
+  },
+  "kQAf2d": {
+    "defaultMessage": "Select"
   },
   "kaaf1E": {
     "defaultMessage": "now"
@@ -1656,6 +1710,9 @@
   "mErPop": {
     "defaultMessage": "It looks like you dont have any, check {link} to buy one!"
   },
+  "mFtdYh": {
+    "defaultMessage": "{type} Worker Relay"
+  },
   "mKAr6h": {
     "defaultMessage": "Follow all"
   },
@@ -1673,6 +1730,9 @@
   },
   "n1Whvj": {
     "defaultMessage": "Switch"
+  },
+  "n8k1SG": {
+    "defaultMessage": "{n}MiB"
   },
   "nDejmx": {
     "defaultMessage": "Unblock"
@@ -1989,9 +2049,6 @@
   "xPCyu+": {
     "defaultMessage": "nostr: URI scheme"
   },
-  "xSoIUU": {
-    "defaultMessage": "Worker Relay"
-  },
   "xaj9Ba": {
     "defaultMessage": "Provider"
   },
@@ -2054,8 +2111,5 @@
   },
   "zvCDao": {
     "defaultMessage": "Automatically show latest notes"
-  },
-  "zxvhnE": {
-    "defaultMessage": "Daily"
   }
 }

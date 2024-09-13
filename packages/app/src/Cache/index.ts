@@ -25,22 +25,21 @@ async function tryUseCacheRelay(url: string) {
     localStorage.setItem("cache-relay", url);
     return conn;
   } catch (e) {
-    console.error(e);
+    console.warn(e);
   }
+}
+
+export async function tryUseLocalRelay() {
+  let conn = await tryUseCacheRelay("ws://localhost:4869");
+  if (!conn) {
+    conn = await tryUseCacheRelay("ws://umbrel:4848");
+  }
+  return conn;
 }
 
 export async function initRelayWorker() {
   try {
-    if (!cacheRelay) {
-      let conn = await tryUseCacheRelay("ws://localhost:4869");
-      if (!conn) {
-        conn = await tryUseCacheRelay("ws://umbrel:4848");
-      }
-      if (conn) {
-        window.location.reload();
-        return;
-      }
-    } else if (Relay instanceof ConnectionCacheRelay) {
+    if (Relay instanceof ConnectionCacheRelay) {
       await Relay.connection.connect(true);
       return;
     }
@@ -53,7 +52,7 @@ export async function initRelayWorker() {
   }
 
   try {
-    await workerRelay.debug("");
+    await workerRelay.debug("*");
     await workerRelay.init({
       databasePath: "relay.db",
       insertBatchSize: 100,

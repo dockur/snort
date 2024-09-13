@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import { LRUCache } from "typescript-lru-cache";
 
 import { Relay } from "@/Cache";
-import { CollapsedSection } from "@/Components/Collapsed";
 import NoteHeader from "@/Components/Event/Note/NoteHeader";
 import NoteQuote from "@/Components/Event/Note/NoteQuote";
 import { NoteText } from "@/Components/Event/Note/NoteText";
@@ -15,14 +14,12 @@ import { TranslationInfo } from "@/Components/Event/Note/TranslationInfo";
 import { NoteTranslation } from "@/Components/Event/Note/types";
 import Username from "@/Components/User/Username";
 import useModeration from "@/Hooks/useModeration";
-import { findTag } from "@/Utils";
 import { chainKey } from "@/Utils/Thread/ChainKey";
 
-import messages from "../../messages";
-import Text from "../../Text/Text";
-import { NoteProps } from "../EventComponent";
+import { NoteProps, NotePropsOptions } from "../EventComponent";
 import HiddenNote from "../HiddenNote";
 import Poll from "../Poll";
+import NoteAppHandler from "./NoteAppHandler";
 import NoteFooter from "./NoteFooter/NoteFooter";
 
 const defaultOptions = {
@@ -111,10 +108,10 @@ export function Note(props: NoteProps) {
   return !ignoreModeration && isEventMuted(ev) ? <HiddenNote>{noteElement}</HiddenNote> : noteElement;
 }
 
-function useGoToEvent(props, options) {
+function useGoToEvent(props: NoteProps, options: NotePropsOptions) {
   const navigate = useNavigate();
   return useCallback(
-    (e, eTarget) => {
+    (e: React.MouseEvent, eTarget: TaggedNostrEvent) => {
       if (options?.canClick === false) {
         return;
       }
@@ -133,11 +130,20 @@ function useGoToEvent(props, options) {
       }
 
       e.stopPropagation();
+
+      // prevent navigation if selecting text
+      const cellText = document.getSelection();
+      if (cellText?.type === "Range") {
+        return;
+      }
+
+      // custom onclick handler
       if (props.onClick) {
         props.onClick(eTarget);
         return;
       }
 
+      // link to event
       const link = NostrLink.fromEvent(eTarget);
       if (e.metaKey) {
         window.open(`/${link.encode(CONFIG.eventLinkPrefix)}`, "_blank");
@@ -169,22 +175,9 @@ function Reaction({ ev }: { ev: TaggedNostrEvent }) {
 }
 
 function handleNonTextNote(ev: TaggedNostrEvent) {
-  const alt = findTag(ev, "alt");
-  if (alt) {
-    return (
-      <div className="note-quote">
-        <Text id={ev.id} content={alt} tags={[]} creator={ev.pubkey} />
-      </div>
-    );
-  } else if (ev.kind === EventKind.Reaction) {
+  if (ev.kind === EventKind.Reaction) {
     return <Reaction ev={ev} />;
   } else {
-    return (
-      <div className="card">
-        <CollapsedSection title={<FormattedMessage {...messages.UnknownEventKind} values={{ kind: ev.kind }} />}>
-          <pre className="text-xs">{JSON.stringify(ev, undefined, "  ")}</pre>
-        </CollapsedSection>
-      </div>
-    );
+    return <NoteAppHandler ev={ev} />;
   }
 }

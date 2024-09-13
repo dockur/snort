@@ -84,9 +84,10 @@ export const InvoiceRegex = /(lnbc\w+)/i;
 
 /**
  * YouTube URL regex
+ * https://music.youtube.com/watch?v=KyF9hKd-EC4&list=RDTMAK5uy_kset8DisdE7LSD4TNjEVvrKRTmG7a56sY
  */
 export const YoutubeUrlRegex =
-  /(?:https?:\/\/)?(?:www|m\.)?(?:youtu\.be\/|youtube\.com\/(?:live\/|shorts\/|embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})/;
+  /(?:https?:\/\/)?(?:www|m\.)?(?:youtu\.be\/|youtube\.com\/(?:live\/|shorts\/|embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})((?:&list=)(?:(\w|-)+))?/;
 
 /**
  * Hashtag regex
@@ -160,3 +161,13 @@ export const MaxAboutLength = 1000;
  * Snort backend publishes rates
  */
 export const SnortPubkey = "npub1sn0rtcjcf543gj4wsg7fa59s700d5ztys5ctj0g69g2x6802npjqhjjtws";
+
+/**
+ * List of relay monitor relays
+ */
+export const MonitorRelays = [
+  "wss://relaypag.es",
+  "wss://relay.nostr.watch",
+  "wss://history.nostr.watch",
+  "wss://monitorlizard.nostr1.com",
+];
