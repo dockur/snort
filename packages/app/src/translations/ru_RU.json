@@ -115,6 +115,7 @@
   "6mr8WU": "Также подписаны",
   "6pdxsi": "Extra metadata fields and tags",
   "6uMqL1": "Не оплачено",
+  "6xNr8c": "Switch accounts",
   "6xap9L": "Good",
   "7+Domh": "Заметки",
   "712i26": "Proxy использует HODL-счета для пересылки платежа, что скрывает pubkey вашего узла",
@@ -330,6 +331,7 @@
   "M6C/px": "Станьте лидером",
   "MBAYRO": "Показывает \"Копировать ID\" и \"Копировать JSON\" в контекстном меню каждой заметки",
   "MI2jkA": "Недоступно:",
+  "MKDHEa": "Join Room",
   "MP54GY": "Пароль кошелька",
   "MWTx65": "Страница по умолчанию",
   "MYBYdJ": "Short Text Note",
@@ -533,7 +535,6 @@
   "ddd3JX": "Popular Hashtags",
   "deEeEI": "Регистр",
   "djLctd": "Сумма в сатоши",
-  "djNL6D": "Только для чтения",
   "dmcsBA": "Classified Listing",
   "dmsiLv": "Для разработчиков {site} по умолчанию настроено разделение Zap Pool на {n} , вы можете отключить его в любой момент в {link}.",
   "e5x8FT": "Добрый",
@@ -657,6 +658,7 @@
   "mKhgP9": "{n,plural,=0{} =1{zapped} other{zapped}}",
   "mOFG3K": "Начало",
   "mfe8RW": "Опция: {n}",
+  "mmPSWH": "Read Only",
   "n1Whvj": "Сменить",
   "n5l7tP": "Time-Based Calendar Event",
   "n8k1SG": "{n}MiB",
@@ -805,5 +807,6 @@
   "zi9MdS": "Chess (PGN)",
   "zm6qS1": "{n} минут на чтение",
   "zonsdq": "Не удалось загрузить службу LNURL",
-  "zvCDao": "Автоматически показывать новые заметки"
+  "zvCDao": "Автоматически показывать новые заметки",
+  "zx0myy": "Participants"
 }

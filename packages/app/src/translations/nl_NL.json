@@ -115,6 +115,7 @@
   "6mr8WU": "Gevolgd door",
   "6pdxsi": "Extra metadata fields and tags",
   "6uMqL1": "Niet betaald",
+  "6xNr8c": "Switch accounts",
   "6xap9L": "Good",
   "7+Domh": "Notes",
   "712i26": "Proxy gebruikt HODL facturen om de betaling door te sturen, wat de pubkey van je knooppunt verbergt",
@@ -330,6 +331,7 @@
   "M6C/px": "Een leider worden",
   "MBAYRO": "Toont \"Kopieer ID\" en \"Kopieer Event JSON\" in het context menu bij elk bericht",
   "MI2jkA": "Niet beschikbaar:",
+  "MKDHEa": "Join Room",
   "MP54GY": "Wachtwoord Wallet",
   "MWTx65": "Standaardpagina",
   "MYBYdJ": "Short Text Note",
@@ -533,7 +535,6 @@
   "ddd3JX": "Popular Hashtags",
   "deEeEI": "Registreer",
   "djLctd": "Bedrag in sats",
-  "djNL6D": "Alleen-lezen",
   "dmcsBA": "Classified Listing",
   "dmsiLv": "Een standaard Zap Pool-splitsing van {n} is geconfigureerd voor {site} ontwikkelaars, je kunt dit op elk moment uitschakelen in {link}.",
   "e5x8FT": "Vriendelijk",
@@ -657,6 +658,7 @@
   "mKhgP9": "{n,plural,one {}=0{} =1{zapped} other{zapped}}",
   "mOFG3K": "Start",
   "mfe8RW": "Optie: {n}",
+  "mmPSWH": "Read Only",
   "n1Whvj": "Wissel",
   "n5l7tP": "Time-Based Calendar Event",
   "n8k1SG": "{n}MiB",
@@ -805,5 +807,6 @@
   "zi9MdS": "Chess (PGN)",
   "zm6qS1": "{n} mins om te lezen",
   "zonsdq": "Laden van LNURL service mislukt",
-  "zvCDao": "Recente notities automatisch weergeven"
+  "zvCDao": "Recente notities automatisch weergeven",
+  "zx0myy": "Participants"
 }

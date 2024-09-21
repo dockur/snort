@@ -115,6 +115,7 @@
   "6mr8WU": "被這些人關注",
   "6pdxsi": "Extra metadata fields and tags",
   "6uMqL1": "未付款",
+  "6xNr8c": "Switch accounts",
   "6xap9L": "Good",
   "7+Domh": "筆記",
   "712i26": "代理使用 HODL 發票轉發付款，從而隱藏了你的節點的公鑰",
@@ -330,6 +331,7 @@
   "M6C/px": "成爲領袖",
   "MBAYRO": "每條消息的上下文菜單中顯示“複製 ID”和“複製事件 JSON”",
   "MI2jkA": "無法使用：",
+  "MKDHEa": "Join Room",
   "MP54GY": "錢包密碼",
   "MWTx65": "默認頁面",
   "MYBYdJ": "Short Text Note",
@@ -533,7 +535,6 @@
   "ddd3JX": "Popular Hashtags",
   "deEeEI": "註冊",
   "djLctd": "聰金額",
-  "djNL6D": "只讀模式",
   "dmcsBA": "Classified Listing",
   "dmsiLv": "已為 {site} 開發人員配置了 {n} 的默認打閃池分割，你隨時可以在 {link} 中禁用它。",
   "e5x8FT": "類別",
@@ -657,6 +658,7 @@
   "mKhgP9": "{n,plural,=0{} =1{已打閃} other{已打閃}}",
   "mOFG3K": "開始",
   "mfe8RW": "選項：{n}",
+  "mmPSWH": "Read Only",
   "n1Whvj": "切換",
   "n5l7tP": "Time-Based Calendar Event",
   "n8k1SG": "{n}MiB",
@@ -805,5 +807,6 @@
   "zi9MdS": "Chess (PGN)",
   "zm6qS1": "{n} 分鐘閱讀時間",
   "zonsdq": "加載 LNURL 服務失敗",
-  "zvCDao": "自動顯示最新筆記"
+  "zvCDao": "自動顯示最新筆記",
+  "zx0myy": "Participants"
 }

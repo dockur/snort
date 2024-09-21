@@ -115,6 +115,7 @@
   "6mr8WU": "Követett",
   "6pdxsi": "Extra metadata fields and tags",
   "6uMqL1": "Fizetetlen",
+  "6xNr8c": "Switch accounts",
   "6xap9L": "Good",
   "7+Domh": "Bejegyzések",
   "712i26": "A proxy HODL számlákat használ a fizetés továbbítására, ami elrejti a csomópont pubkey-jét.",
@@ -330,6 +331,7 @@
   "M6C/px": "Legyél vezető",
   "MBAYRO": "Mutasd az \"Egyedi azonosítót\" és a \"JSON esetet\" minden üzenet szövegmezőjében",
   "MI2jkA": "Nem elérhető:",
+  "MKDHEa": "Join Room",
   "MP54GY": "Pénztárca jelszava",
   "MWTx65": "Alapértelmezett oldal",
   "MYBYdJ": "Short Text Note",
@@ -533,7 +535,6 @@
   "ddd3JX": "Popular Hashtags",
   "deEeEI": "Regisztráció",
   "djLctd": "Mennyiség sat-ban",
-  "djNL6D": "Írásvédett",
   "dmcsBA": "Classified Listing",
   "dmsiLv": "A {n} alapértelmezett Zap Pool felosztása a {site} fejlesztők számára lett beállítva, ezt bármikor letilthatja a {link}oldalon.",
   "e5x8FT": "Típus",
@@ -657,6 +658,7 @@
   "mKhgP9": "{n, plural, =0 {} =1 {zapp-olva} other {zapp-olva}}",
   "mOFG3K": "Indítás",
   "mfe8RW": "Lehetőség: {n}",
+  "mmPSWH": "Read Only",
   "n1Whvj": "Váltás",
   "n5l7tP": "Time-Based Calendar Event",
   "n8k1SG": "{n}MiB",
@@ -805,5 +807,6 @@
   "zi9MdS": "Chess (PGN)",
   "zm6qS1": "{n} perc az olvasásig",
   "zonsdq": "Az LNURL szolgáltatás betöltése nem sikerült",
-  "zvCDao": "Automatikusan a legfrissebb bejegyzéseket mutassa"
+  "zvCDao": "Automatikusan a legfrissebb bejegyzéseket mutassa",
+  "zx0myy": "Participants"
 }

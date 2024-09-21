@@ -115,6 +115,7 @@
   "6mr8WU": "Suivi par",
   "6pdxsi": "Extra metadata fields and tags",
   "6uMqL1": "Non payé",
+  "6xNr8c": "Switch accounts",
   "6xap9L": "Good",
   "7+Domh": "Notes",
   "712i26": "Le mandataire utilise des factures HODL pour transmettre le paiement, ce qui masque la clé publique de votre nœud.",
@@ -330,6 +331,7 @@
   "M6C/px": "Devenir un leader",
   "MBAYRO": "Affiche \"Copy ID\" et \"Copy Event JSON\" dans le menu contextuel de chaque message",
   "MI2jkA": "Pas disponible:",
+  "MKDHEa": "Join Room",
   "MP54GY": "Mot de passe du portefeuille",
   "MWTx65": "Page par défaut",
   "MYBYdJ": "Short Text Note",
@@ -533,7 +535,6 @@
   "ddd3JX": "Popular Hashtags",
   "deEeEI": "Registre",
   "djLctd": "Quantité en sats",
-  "djNL6D": "Lecture seule",
   "dmcsBA": "Classified Listing",
   "dmsiLv": "Une répartition par défaut du Zap Pool de {n} a été configurée pour les développeurs de {site} . Vous pouvez la désactiver à tout moment dans {link}.",
   "e5x8FT": "Type",
@@ -657,6 +658,7 @@
   "mKhgP9": "{n,plural,=0{} =1{zappé} other{zappé}}",
   "mOFG3K": "Démarrer",
   "mfe8RW": "Option : {n}",
+  "mmPSWH": "Read Only",
   "n1Whvj": "Changer",
   "n5l7tP": "Time-Based Calendar Event",
   "n8k1SG": "{n}MiB",
@@ -805,5 +807,6 @@
   "zi9MdS": "Chess (PGN)",
   "zm6qS1": "{n} minutes de lecture",
   "zonsdq": "Échec du chargement du service LNURL",
-  "zvCDao": "Afficher automatiquement les dernières notes"
+  "zvCDao": "Afficher automatiquement les dernières notes",
+  "zx0myy": "Participants"
 }
