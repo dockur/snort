@@ -59,13 +59,11 @@ jobs:
           echo "exists=${val}" >> $GITHUB_ENV
       -
         name: Checkout
-        if: env.exists == 'Xfalse'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
       -
         name: Check if behind
-        if: env.exists == 'Xfalse'
         run: |
           #!/bin/bash
           git remote add upstream https://github.com/v0l/${{ github.event.repository.name }}.git
