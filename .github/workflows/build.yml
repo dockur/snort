@@ -59,10 +59,22 @@ jobs:
           echo "exists=${val}" >> $GITHUB_ENV
       -
         name: Checkout
-        if: env.exists == 'false'
+        if: env.exists == 'Xfalse'
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      -
+        name: Check if behind
+        if: env.exists == 'Xfalse'
+        run: |
+          #!/bin/bash
+          git remote add upstream https://github.com/v0l/${{ github.event.repository.name }}.git
+          git fetch upstream 2>/dev/null
+          ahead=$(git rev-list --count upstream/main..master
+          behind=$(git rev-list --count master..upstream/main
+          [[ "$behind" == "10" ]] && exit 0
+          echo "Behind upstream: $behind commits AHEAD: $ahead"
+          exit 33
       -
         name: Lint Dockerfile
         if: env.exists == 'false'
