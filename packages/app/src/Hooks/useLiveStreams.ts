@@ -17,7 +17,7 @@ export default function useLiveStreams() {
 
   return useRequestBuilder(sub)
     .filter(a => {
-      return findTag(a, "status") === "live";
+      return findTag(a, "status") === "disabled";
     })
     .sort((a, b) => {
       const sA = Number(findTag(a, "starts"));
