@@ -150,8 +150,9 @@ jobs:
         name: Copy custom config
         if: env.exists == 'false'
         run: |
-          cp packages/app/config/soloco.json ${{ github.event.repository.name }}/packages/app/config/default.json
           cp docker/nginx.conf.custom ${{ github.event.repository.name }}/docker/nginx.conf.custom
+          cp packages/app/config/soloco.json ${{ github.event.repository.name }}/packages/app/config/default.json
+          cp packages/app/src/Hooks/useLiveStreams.ts ${{ github.event.repository.name }}/packages/app/src/Hooks/useLiveStreams.ts
       -
         name: Build custom image
         if: env.exists == 'false'
