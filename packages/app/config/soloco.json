@@ -17,7 +17,6 @@
     "subscriptions": false,
     "deck": false,
     "zapPool": false,
-    "notificationGraph": true,
     "communityLeaders": false,
     "nostrAddress": false,
     "pushNotifications": false
@@ -36,7 +35,7 @@
   },
   "communityLeaders": null,
   "noteCreatorToast": true,
-  "hideFromNavbar": ["/graph"],
+  "hideFromNavbar": [""],
   "deckSubKind": 1,
   "showPowIcon": true,
   "eventLinkPrefix": "nevent",
