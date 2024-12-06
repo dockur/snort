@@ -19,7 +19,7 @@
     "zapPool": false,
     "communityLeaders": false,
     "nostrAddress": false,
-    "pushNotifications": false
+    "pushNotifications": true
   },
   "signUp": {
     "quickStart": false,
@@ -27,7 +27,8 @@
   },
   "defaultPreferences": {
     "hideMutedNotes": false,
-    "defaultRootTab": "following"
+    "defaultRootTab": "following",
+    "language": "nl"
   },
   "media": {
     "bypassImgProxyError": false,
