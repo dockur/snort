@@ -42,7 +42,7 @@
   "eventLinkPrefix": "nevent",
   "profileLinkPrefix": "nprofile",
   "defaultRelays": {
-    "wss://soloco.nl/": { "read": true, "write": false }
+    "wss://soloco.nl/": { "read": true, "write": true }
   },
   "alby": null,
   "chatChannels": null
