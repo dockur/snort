@@ -10,7 +10,7 @@ import { UITask } from "@/Components/Tasks/index";
 import useLogin from "@/Hooks/useLogin";
 
 import { BackupKeyTask } from "./BackupKey";
-import { DonateTask } from "./DonateTask";
+//import { DonateTask } from "./DonateTask";
 import { FollowMorePeopleTask } from "./FollowMorePeople";
 import { Nip5Task } from "./Nip5Task";
 import { NoticeZapPoolDefault } from "./NoticeZapPool";
