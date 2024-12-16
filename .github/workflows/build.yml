@@ -154,7 +154,6 @@ jobs:
           cp packages/app/config/soloco.json ${{ github.event.repository.name }}/packages/app/config/default.json
           cp packages/app/src/Hooks/useLiveStreams.ts ${{ github.event.repository.name }}/packages/app/src/Hooks/useLiveStreams.ts
           cp packages/app/src/Pages/Layout/NavSidebar.tsx ${{ github.event.repository.name }}/packages/app/src/Pages/Layout/NavSidebar.tsx
-          cp packages/app/src/Pages/settings/Menu/Menu.tsx ${{ github.event.repository.name }}/packages/app/src/Pages/settings/Menu/Menu.tsx
           cp packages/app/src/Components/Tasks/TaskList.tsx ${{ github.event.repository.name }}/packages/app/src/Components/Tasks/TaskList.tsx
       -
         name: Build custom image
