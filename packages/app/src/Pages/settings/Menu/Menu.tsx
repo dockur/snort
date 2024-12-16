@@ -136,12 +136,6 @@ const SettingsIndex = () => {
     {
       title: <FormattedMessage defaultMessage="Support" />,
       items: [
-        {
-          icon: "heart",
-          iconBg: "bg-purple-500",
-          message: <FormattedMessage defaultMessage="Donate" />,
-          path: "/donate",
-        },
         ...(CONFIG.features.subscriptions
           ? [
               {
