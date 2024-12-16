@@ -28,7 +28,7 @@ class TaskStore extends ExternalStore<Array<UITask>> {
     if (CONFIG.features.subscriptions) {
       AllTasks.push(new RenewSubTask());
     }
-    #AllTasks.push(new DonateTask());
+    //AllTasks.push(new DonateTask());
     AllTasks.forEach(a =>
       a.load(() => {
         this.notifyChange();
