@@ -134,7 +134,7 @@ jobs:
           cp docker/nginx.conf ${{ github.event.repository.name }}/docker/nginx.conf.custom
       -
         name: Build Docker image
-        if: env.exists == 'xfalse'
+        if: env.exists == 'false'
         uses: docker/build-push-action@v6
         with:
           context: ./${{ github.event.repository.name }}
