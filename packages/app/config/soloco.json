@@ -22,7 +22,7 @@
     "pushNotifications": true
   },
   "signUp": {
-    "quickStart": false,
+    "quickStart": true,
     "defaultFollows": []
   },
   "defaultPreferences": {
