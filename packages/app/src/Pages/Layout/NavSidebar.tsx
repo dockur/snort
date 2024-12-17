@@ -9,7 +9,6 @@ import useEventPublisher from "@/Hooks/useEventPublisher";
 import useLogin from "@/Hooks/useLogin";
 import useWindowSize from "@/Hooks/useWindowSize";
 import { HasNotificationsMarker } from "@/Pages/Layout/HasNotificationsMarker";
-import { WalletBalance } from "@/Pages/Layout/WalletBalance";
 import { subscribeToNotifications } from "@/Utils/Notifications";
 
 import { LogoHeader } from "./LogoHeader";
@@ -89,7 +88,6 @@ export default function NavSidebar({ narrow = false }: { narrow?: boolean }) {
             { "xl:items-start": !narrow, "xl:gap-2": !narrow },
             "gap-1 flex flex-col items-center text-lg font-bold",
           )}>
-          {!narrow && <WalletBalance />}
           {MENU_ITEMS.filter(a => {
             if ((CONFIG.hideFromNavbar ?? []).includes(a.link)) {
               return false;
