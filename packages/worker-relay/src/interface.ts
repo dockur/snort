@@ -126,7 +126,7 @@ export class WorkerRelayInterface {
           reject(cmdReply.args.error);
           return;
         }
-        debugLog("interface", `${cmd} took ${(unixNowMs() - start).toFixed(1)}ms`, args);
+        //debugLog("interface", `${cmd} took ${(unixNowMs() - start).toFixed(1)}ms`, args);
         resolve(cmdReply.args);
       });
     });
