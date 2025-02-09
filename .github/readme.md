@@ -25,6 +25,7 @@ services:
     image: dockurr/snort
     ports:
         - 80:8080
+    restart: always
 ```
 
 Via Docker CLI:
