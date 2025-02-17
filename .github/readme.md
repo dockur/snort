@@ -21,8 +21,8 @@ Via Docker Compose:
 ```yaml
 services:
   snort:
-    container_name: snort
     image: dockurr/snort
+    container_name: snort
     ports:
         - 80:8080
     restart: always
