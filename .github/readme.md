@@ -1,4 +1,4 @@
-<h1 align="center">snort-docker<br />
+<h1 align="center">Snort<br />
 <div align="center">
 <a href="https://github.com/dockur/snort"><img src="https://raw.githubusercontent.com/dockur/snort/master/.github/logo.png" title="Logo" style="max-width:100%;" width="128" heigth="128"/></a>
 </div>
@@ -31,12 +31,12 @@ services:
 Via Docker CLI:
 
 ```bash
-docker run -it --rm -p 80:8080 dockurr/snort
+docker run -it --rm --name snort -p 80:8080 dockurr/snort
 ```
 
 ## Demo 👀
 
-  See [snort.social](https://snort.social)
+  See [snort.social](https://snort.social) to see the project in action.
 
 ## Stars 🌟
 [![Stars](https://starchart.cc/dockur/snort.svg?variant=adaptive)](https://starchart.cc/dockur/snort)
