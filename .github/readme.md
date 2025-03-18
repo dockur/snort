@@ -16,7 +16,7 @@ Docker image of [snort](https://github.com/v0l/snort), an UI for the [nostr](htt
 
 ## Usage  🐳
 
-Via Docker Compose:
+##### Via Docker Compose:
 
 ```yaml
 services:
@@ -28,7 +28,7 @@ services:
     restart: always
 ```
 
-Via Docker CLI:
+##### Via Docker CLI:
 
 ```bash
 docker run -it --rm --name snort -p 80:8080 dockurr/snort
