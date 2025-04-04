@@ -34,6 +34,10 @@ services:
 docker run -it --rm --name snort -p 80:8080 dockurr/snort
 ```
 
+##### Via Github Codespaces:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/dockur/snort)
+
 ## Demo 👀
 
   See [snort.social](https://snort.social) to see the project in action.
