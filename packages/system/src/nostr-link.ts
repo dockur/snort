@@ -150,7 +150,11 @@ export class NostrLink implements ToNostrEventTag {
       const ifSetCheck = <T>(a: T | undefined, b: T) => {
         return !Boolean(a) || a === b;
       };
-      return (EventExt.isReplaceable(ev.kind) || ifSetCheck(this.id, ev.id)) && ifSetCheck(this.author, ev.pubkey) && ifSetCheck(this.kind, ev.kind);
+      return (
+        (EventExt.isReplaceable(ev.kind) || ifSetCheck(this.id, ev.id)) &&
+        ifSetCheck(this.author, ev.pubkey) &&
+        ifSetCheck(this.kind, ev.kind)
+      );
     }
 
     return false;
@@ -231,14 +235,28 @@ export class NostrLink implements ToNostrEventTag {
       }
       case "A": {
         const [kind, author, dTag] = tag[1].split(":");
+        if (!isHex(author)) {
+          throw new Error(`Invalid author in A tag: ${tag[1]}`);
+        }
         return new NostrLink(NostrPrefix.Address, dTag, Number(kind), author, relays, "root");
       }
       case "a": {
         const [kind, author, dTag] = tag[1].split(":");
+        if (!isHex(author)) {
+          throw new Error(`Invalid author in a tag: ${tag[1]}`);
+        }
         return new NostrLink(NostrPrefix.Address, dTag, Number(kind), author, relays, tag[3]);
       }
     }
     throw new Error("Unknown tag!");
+  }
+
+  static tryFromTag(tag: Array<string>, author?: string, kind?: number) {
+    try {
+      return NostrLink.fromTag(tag, author, kind);
+    } catch (e) {
+      // ignored
+    }
   }
 
   static fromTags(tags: ReadonlyArray<Array<string>>) {
