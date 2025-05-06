@@ -38,6 +38,7 @@ const enum EventKind {
   SearchRelaysList = 10_007, // NIP-51
   InterestsList = 10_015, // NIP-51
   EmojisList = 10_030, // NIP-51
+  BlossomServerList = 10_063,
   StorageServerList = 10_096, // NIP-96 server list
 
   FollowSet = 30_000, // NIP-51
@@ -46,6 +47,7 @@ const enum EventKind {
   CurationSet = 30_004, // NIP-51
   InterestSet = 30_015, // NIP-15
   EmojiSet = 30_030, // NIP-51
+  StarterPackSet = 39_089, // NIP-51
 
   Badge = 30009, // NIP-58
   ProfileBadges = 30008, // NIP-58
