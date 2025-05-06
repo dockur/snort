@@ -1,4 +1,4 @@
-import { unixNow, unwrap } from "@snort/shared";
+import { ExternalStore, unixNow, unwrap } from "@snort/shared";
 import {
   encodeTLVEntries,
   EventKind,
@@ -13,9 +13,8 @@ import {
   UserMetadata,
 } from "@snort/system";
 import { useRequestBuilder } from "@snort/system-react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 
-import { useEmptyChatSystem } from "@/Hooks/useEmptyChatSystem";
 import useEventPublisher from "@/Hooks/useEventPublisher";
 import useLogin from "@/Hooks/useLogin";
 import useModeration from "@/Hooks/useModeration";
@@ -23,7 +22,6 @@ import { findTag } from "@/Utils";
 import { LoginSession } from "@/Utils/Login";
 
 import { Nip17Chats, Nip17ChatSystem } from "./nip17";
-import { Nip28Chats, Nip28ChatSystem } from "./nip28";
 
 export enum ChatType {
   PublicGroupChat = 2,
@@ -57,6 +55,7 @@ export interface Chat {
   messages: Array<ChatMessage>;
   createMessage(msg: string, pub: EventPublisher): Promise<Array<NostrEvent>>;
   sendMessage(ev: Array<NostrEvent>, system: SystemInterface): void | Promise<void>;
+  markRead(id?: string): void;
 }
 
 export interface ChatSystem {
@@ -106,10 +105,13 @@ export function lastReadInChat(id: string) {
   return parseInt(window.localStorage.getItem(k) ?? "0");
 }
 
-export function setLastReadIn(id: string) {
-  const now = unixNow();
+export function setLastReadIn(id: string, time?: number) {
+  const now = time ?? unixNow();
   const k = `dm:seen:${id}`;
-  window.localStorage.setItem(k, now.toString());
+  const current = lastReadInChat(id);
+  if (current < now) {
+    window.localStorage.setItem(k, now.toString());
+  }
 }
 
 export function createChatLink(type: ChatType, ...params: Array<string>) {
@@ -135,41 +137,39 @@ export function createChatLink(type: ChatType, ...params: Array<string>) {
         ),
       )}`;
     }
-    case ChatType.PublicGroupChat: {
-      return `/messages/${Nip28ChatSystem.chatId(params[0])}`;
-    }
   }
   throw new Error("Unknown chat type");
 }
 
-export function createEmptyChatObject(id: string, messages?: Array<TaggedNostrEvent>) {
+export function createEmptyChatObject(id: string) {
   if (id.startsWith(NostrPrefix.Chat17)) {
     return Nip17ChatSystem.createChatObj(id, []);
-  }
-  if (id.startsWith(NostrPrefix.Chat28)) {
-    return Nip28ChatSystem.createChatObj(id, messages ?? []);
   }
   throw new Error("Cant create new empty chat, unknown id");
 }
 
-export function useChatSystem(chat: ChatSystem) {
+export function useChatSystem<T extends ChatSystem & ExternalStore<Array<Chat>>>(sys: T) {
   const login = useLogin();
   const { publisher } = useEventPublisher();
+  const chat = useSyncExternalStore(
+    s => sys.hook(s),
+    () => sys.snapshot(),
+  );
   const sub = useMemo(() => {
-    return chat.subscription(login);
-  }, [chat, login]);
+    return sys.subscription(login);
+  }, [login]);
   const data = useRequestBuilder(sub);
   const { isMuted } = useModeration();
 
   useEffect(() => {
     if (publisher) {
-      chat.processEvents(publisher, data);
+      sys.processEvents(publisher, data);
     }
   }, [data, publisher]);
 
   return useMemo(() => {
     if (login.publicKey) {
-      return chat.listChats(
+      return sys.listChats(
         login.publicKey,
         data.filter(a => !isMuted(a.pubkey)),
       );
@@ -179,23 +179,12 @@ export function useChatSystem(chat: ChatSystem) {
 }
 
 export function useChatSystems() {
-  const nip28 = useChatSystem(Nip28Chats);
   const nip17 = useChatSystem(Nip17Chats);
 
-  return [...nip28, ...nip17];
+  return nip17;
 }
 
 export function useChat(id: string) {
-  const getStore = () => {
-    if (id.startsWith(NostrPrefix.Chat17)) {
-      return Nip17Chats;
-    }
-    if (id.startsWith(NostrPrefix.Chat28)) {
-      return Nip28Chats;
-    }
-    throw new Error("Unsupported chat system");
-  };
-  const ret = useChatSystem(getStore()).find(a => a.id === id);
-  const emptyChat = useEmptyChatSystem(ret === undefined ? id : undefined);
-  return ret ?? emptyChat;
+  const ret = useChatSystem(Nip17Chats).find(a => a.id === id);
+  return ret;
 }
