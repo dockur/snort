@@ -1,7 +1,7 @@
 services:
   snort:
-    image: dockurr/snort
     container_name: snort
+    image: ghcr.io/dockur/snort
     ports:
       - 8080:8080
     restart: on-failure
