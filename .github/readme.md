@@ -31,7 +31,7 @@ services:
 ##### Via Docker CLI:
 
 ```bash
-docker run -it --rm --name snort -p 80:8080 dockurr/snort
+docker run -it --rm --name snort -p 80:8080 docker.io/dockurr/snort
 ```
 
 ##### Via Github Codespaces:
